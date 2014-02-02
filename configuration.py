@@ -1,3 +1,7 @@
+class ConfigurationError(KeyError):
+    pass
+
+
 class Configuration:
     separator = '.'
 
@@ -9,18 +13,19 @@ class Configuration:
         Gets a value for the specified path.
         """
         value = self.values
+        steps_taken = []
         try:
             # walk through the values dictionary
             for step in path.split(self.separator):
+                steps_taken.append(step)
                 value = value[step]
 
             return as_type(value) if as_type else value
         except KeyError:
-            return default
-            # TODO: allow some sort of failure method that includes the step that went wrong
-        except TypeError:
-            return default
-            # TODO: raise some kind of warning?
+            if default is not None:  # TODO: use sentinel value other than None?
+                return default
+            else:
+                raise ConfigurationError('no configuration for key {}'.format(self.separator.join(steps_taken)))
 
 
 class NamespaceConfiguration(Configuration):
