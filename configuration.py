@@ -21,3 +21,15 @@ class Configuration:
         except TypeError:
             return default
             # TODO: raise some kind of warning?
+
+
+class NamespaceConfiguration(Configuration):
+    def __getattr__(self, item):
+        value = self.get(item)
+        if type(value) == dict:
+            # deeper levels are treated as NamespaceConfiguration objects as well
+            return NamespaceConfiguration(value)
+        else:
+            # an actual value should just be retrieved
+            return value
+            # TODO:
