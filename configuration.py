@@ -35,11 +35,15 @@ class Configuration:
 
 class NamespaceConfiguration(Configuration):
     def __getattr__(self, item):
-        value = self.get(item)
+        value = self.get(item, default=NotConfigured)
         if type(value) == dict:
             # deeper levels are treated as NamespaceConfiguration objects as well
             return NamespaceConfiguration(value)
         else:
-            # an actual value should just be retrieved
+            # value is not a dict, so it will either be an actual value or NotConfigured
+            # in either case, it should be returned as provided
             return value
-            # TODO:
+
+
+NotConfigured = NamespaceConfiguration(values={})
+# TODO: create some __str__-like thing on NotConfigured (monkey patching doesn't seem to work)
