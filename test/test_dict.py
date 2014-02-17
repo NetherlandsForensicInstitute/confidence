@@ -1,0 +1,29 @@
+from configuration import Configuration, ConfigurationError
+
+
+def test_empty():
+    def run_test(subject):
+        assert subject.get('path.without.value', default=None) is None
+        assert subject.get('another.path.without.value', default=4) == 4
+        try:
+            subject.get('some_long.path')
+        except ConfigurationError as e:
+            assert 'some_long' in str(e)
+        else:
+            raise AssertionError('path without default should raise a ConfigurationError')
+
+    run_test(Configuration())
+    run_test(Configuration({}))
+
+
+def test_value_types():
+    def run_test(subject, key, expected_type):
+        assert type(subject.get(key)) is expected_type, 'key {} not of type {}'.format(key, expected_type)
+
+    run_test(Configuration({'just': 'string'}), 'just', str)
+    run_test(Configuration({'a': 42}), 'a', int)
+    run_test(Configuration({'simple': 3.14}), 'simple', float)
+    run_test(Configuration({'silly': False}), 'silly', bool)
+    run_test(Configuration({'test': [1, 2, 3]}), 'test', list)
+    run_test(Configuration({'case': {'surprise!': None}}), 'case', dict)
+    run_test(Configuration({'we_must': {'go_deeper': True}}), 'we_must.go_deeper', bool)
