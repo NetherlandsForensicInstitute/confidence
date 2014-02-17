@@ -16,6 +16,9 @@ class Configuration:
     """
 
     def __init__(self, values=None, separator="."):
+        """
+        TODO: Document me.
+        """
         self.values = values or {}
         self.separator = separator
 
@@ -55,23 +58,20 @@ class Configuration:
             else:
                 raise ConfigurationError('no configuration for key {}'.format(self.separator.join(steps_taken)))
 
-
-class NamespaceConfiguration(Configuration):
-    """
-    TODO: Document me.
-    """
-
     def __getattr__(self, item):
+        """
+        TODO: Document me.
+        """
         value = self.get(item, default=NotConfigured)
         if type(value) == dict:
             # deeper levels are treated as NamespaceConfiguration objects as well
-            return NamespaceConfiguration(value)
+            return Configuration(value)
         else:
             # value is not a dict, so it will either be an actual value or NotConfigured
             # in either case, it should be returned as provided
             return value
 
 
-NotConfigured = NamespaceConfiguration()
+NotConfigured = Configuration()
 # TODO: provide documentation for NotConfigured
 # TODO: create some __str__-like thing on NotConfigured (monkey patching doesn't seem to work)
