@@ -5,6 +5,28 @@ class ConfigurationError(KeyError):
     pass
 
 
+def _merge(left, right, _path=None):
+    """
+    TODO: Document me.
+    """
+    _path = _path or []
+
+    for key in right:
+        if key in left:
+            if isinstance(left[key], dict) and isinstance(right[key], dict):
+                # recurs, merge left and right dict values, update _path for current 'step'
+                _merge(left[key], right[key], _path + [key])
+            elif left[key] != right[key]:
+                # not both dicts we could merge, but also not the same, this doesn't work
+                raise ConfigurationError('merge conflict at {}'.format('.'.join(_path + [key])))
+            # else: left[key] is already equal to right[key], no action needed
+        else:
+            # key not yet in left, simple addition of right's mapping to left
+            left[key] = right[key]
+
+    return left
+
+
 # sentinel value to indicate no default is specified, allowing a default of
 # None for Configuration.get()
 _NoDefault = object()
