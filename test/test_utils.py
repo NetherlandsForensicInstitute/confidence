@@ -1,4 +1,4 @@
-from configuration import _merge
+from configuration import _merge, _split_keys
 
 
 def test_merge_trivial():
@@ -57,3 +57,67 @@ def test_merge_conflict():
         assert 'parent.first' in str(e), "conflict error didn't specify conflicting key"
     else:
         raise AssertionError('conflicting merge was accepted')
+
+
+def test_split_none():
+    subject = {'key': 'value', 'another_key': 123}
+
+    separated = _split_keys(subject)
+
+    assert subject == separated
+
+
+def test_split_trivial():
+    subject = {'dotted.key': 42}
+
+    separated = _split_keys(subject)
+
+    assert separated['dotted']['key'] == 42
+
+
+def test_split_multiple():
+    subject = {'dotted.key': 123, 'another.dotted.key': 456}
+
+    separated = _split_keys(subject)
+
+    assert len(separated) == 2
+    assert separated['dotted']['key'] == 123
+    assert separated['another']['dotted']['key'] == 456
+
+
+def test_split_overlap_simple():
+    subject = {'dotted.key': 123, 'dotted.something_else': 456}
+
+    separated = _split_keys(subject)
+
+    assert len(separated) == 1
+    assert len(separated['dotted']) == 2
+    assert separated['dotted']['something_else'] == 456
+
+
+def test_split_overlap_complex():
+    subject = {
+        'dotted': {'key': 1},
+        'dotted.something_else': {'again': 2},
+        'dotted.something_else.entirely': 3,
+        'key.thing': {'key': 4},
+        'key': {'thing.another_key': 5},
+    }
+
+    separated = _split_keys(subject)
+
+    assert separated == {
+        'dotted': {
+            'key': 1,
+            'something_else': {
+                'again': 2,
+                'entirely': 3
+            }
+        },
+        'key': {
+            'thing': {
+                'key': 4,
+                'another_key': 5
+            }
+        }
+    }

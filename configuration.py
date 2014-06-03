@@ -27,6 +27,29 @@ def _merge(left, right, _path=None):
     return left
 
 
+def _split_keys(values, separator='.'):
+    """
+    TODO: Document me.
+    """
+    result = {}
+
+    for key, value in values.items():
+        if isinstance(value, dict):
+            # recursively split key(s) in value
+            value = _split_keys(value, separator)
+
+        if separator in key:
+            # update key to be the first part before the separator
+            key, rest = key.split(separator, 1)
+            # use rest as the new key of value, recursively split that and update value
+            value = _split_keys({rest: value}, separator)
+
+        # merge the result so far with the (possibly updated / fixed / split) current key and value
+        _merge(result, {key: value})
+
+    return result
+
+
 # sentinel value to indicate no default is specified, allowing a default of
 # None for Configuration.get()
 _NoDefault = object()
@@ -37,11 +60,11 @@ class Configuration:
     TODO: Document me.
     """
 
-    def __init__(self, values=None, separator="."):
+    def __init__(self, values=None, separator='.'):
         """
         TODO: Document me.
         """
-        self.values = values or {}
+        self.values = _split_keys(values or {})
         self.separator = separator
 
     def get(self, path, default=_NoDefault, as_type=None):
@@ -86,7 +109,7 @@ class Configuration:
         """
         value = self.get(item, default=NotConfigured)
         if type(value) == dict:
-            # deeper levels are treated as NamespaceConfiguration objects as well
+            # deeper levels are treated as Configuration objects as well
             return Configuration(value)
         else:
             # value is not a dict, so it will either be an actual value or NotConfigured
