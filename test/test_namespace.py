@@ -20,12 +20,12 @@ def test_value_types():
         'we_must': {'go_deeper': True},
     })
 
-    assert type(subject.a_string) is str
-    assert type(subject.an_int) is int
-    assert type(subject.a_float) is float
-    assert type(subject.a_boolean) is bool
-    assert type(subject.a_list) is list
-    assert type(subject.we_must) is Configuration  # TODO: this test makes it look like a dict would be more logical...
+    assert isinstance(subject.a_string, str)
+    assert isinstance(subject.an_int, int)
+    assert isinstance(subject.a_float, float)
+    assert isinstance(subject.a_boolean, bool)
+    assert isinstance(subject.a_list, list)
+    assert isinstance(subject.we_must, Configuration)  # TODO: this test makes it look like a dict would be more logical...
 
 
 def test_not_configured():
