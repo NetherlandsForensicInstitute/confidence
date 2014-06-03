@@ -1,0 +1,17 @@
+language: python
+
+python:
+  - 2.7
+  - 3.2
+  - 3.3
+  - 3.4
+  - pypy
+
+install:
+  - pip install coveralls
+
+script:
+  - coverage run --source configuration -m py.test
+
+after_succes:
+  - coveralls
