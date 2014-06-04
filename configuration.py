@@ -120,3 +120,43 @@ class Configuration:
 NotConfigured = Configuration()
 # TODO: provide documentation for NotConfigured
 # TODO: create some __str__-like thing on NotConfigured (monkey patching doesn't seem to work)
+
+
+_readers = {}
+
+try:
+    import yaml
+    _readers['yaml'] = yaml.load
+except ImportError:
+    pass
+
+try:
+    import json
+    _readers['json'] = json.loads
+except ImportError:
+    pass
+
+
+def _do_load(stream, reader):
+    return Configuration(reader(stream))
+
+
+def load(file, reader='yaml'):
+    """
+    TODO: Document me.
+    """
+    if isinstance(reader, str):
+        reader = _readers[reader]
+
+    with open(file, 'r') as file:
+        return _do_load(file.read(), reader)
+
+
+def loads(s, reader='yaml'):
+    """
+    TODO: Document me.
+    """
+    if isinstance(reader, str):
+        reader = _readers[reader]
+
+    return _do_load(s, reader)
