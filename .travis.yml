@@ -8,6 +8,7 @@ python:
   - pypy
 
 install:
+  - pip install PyYAML
   - pip install coveralls
 
 script:
