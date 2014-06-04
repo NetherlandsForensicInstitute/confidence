@@ -13,5 +13,5 @@ install:
 script:
   - coverage run --source configuration -m py.test
 
-after_succes:
+after_success:
   - coveralls
