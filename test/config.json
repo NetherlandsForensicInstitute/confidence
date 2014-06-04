@@ -1,0 +1,5 @@
+{
+    "key": "value",
+    "some.other.key": [1, 2, 3],
+    "some.thing": false
+}
