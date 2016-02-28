@@ -35,3 +35,5 @@ def test_not_configured():
     assert subject.does_nope_exist is NotConfigured
     assert subject.does.nope.exist is NotConfigured
     assert subject.does_nope_exist is subject.does.nope.exist
+    assert 'not configured' in str(subject.does_nope.exist)
+    assert str(subject.does_nope_exist) == repr(subject.does.nope.exist)

@@ -117,9 +117,17 @@ class Configuration:
             return value
 
 
-NotConfigured = Configuration()
-# TODO: provide documentation for NotConfigured
-# TODO: create some __str__-like thing on NotConfigured (monkey patching doesn't seem to work)
+class NotConfigured(Configuration):
+    """
+    Value indicating a value is not configured.
+    """
+    def __str__(self):
+        return '(not configured)'
+
+    __repr__ = __str__
+
+# overwrite NotConfigured as an instance of itself
+NotConfigured = NotConfigured()
 
 
 _readers = {}
