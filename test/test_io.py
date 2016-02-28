@@ -1,6 +1,6 @@
 from os import path
 
-from configuration import Configuration, load, loads, NotConfigured
+from configuration import Configuration, load, loadf, loads, NotConfigured
 
 
 here = path.dirname(__file__)
@@ -44,14 +44,14 @@ def test_loads_json():
     _assert_values(loads(json_str, 'json'))
 
 
-def test_load_default():
-    _assert_values(load(path.join(here, 'config.yaml')))
-    _assert_values(load(path.join(here, 'config.json')))
+def test_loadf_default():
+    _assert_values(loadf(path.join(here, 'config.yaml')))
+    _assert_values(loadf(path.join(here, 'config.json')))
 
 
-def test_load_yaml():
-    _assert_values(load(path.join(here, 'config.yaml'), 'yaml'))
+def test_loadf_yaml():
+    _assert_values(loadf(path.join(here, 'config.yaml'), 'yaml'))
 
 
-def test_load_json():
-    _assert_values(load(path.join(here, 'config.json'), 'json'))
+def test_loadf_json():
+    _assert_values(loadf(path.join(here, 'config.json'), 'json'))

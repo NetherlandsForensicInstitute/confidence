@@ -145,26 +145,55 @@ except ImportError:
     pass
 
 
+def _get_reader(reader='yaml'):
+    if isinstance(reader, str):
+        instance = _readers.get(reader)
+    else:
+        instance = reader
+
+    if not instance:
+        raise ConfigurationError('no valid reader: {}'.format(reader))
+
+    return instance
+
+
 def _do_load(stream, reader):
     return Configuration(reader(stream))
 
 
-def load(file, reader='yaml'):
+def load(fp, reader='yaml'):
     """
-    TODO: Document me.
-    """
-    if isinstance(reader, str):
-        reader = _readers[reader]
+    Read a `.Configuration` instance from a file-like object.
 
-    with open(file, 'r') as file:
-        return _do_load(file.read(), reader)
+    :param fp: file-like object (supporting ``.read()``)
+    :param reader: the reader (`callable`) or reader type (`str`) to use
+    :return: a `.Configuration` instance providing values from *fp*
+    :rtype: `.Configuration`
+    """
+    return _do_load(fp.read(), _get_reader(reader))
+
+
+def loadf(fname, reader='yaml'):
+    """
+    Read a `.Configuration` instance from a named file.
+
+    :param fname: name of the file to ``open()``
+    :param reader: the reader (`callable`) or reader type (`str`) to use
+    :return: a `.Configuration` instance providing values from *fname*
+    :rtype: `.Configuration`
+    """
+    reader = _get_reader(reader)
+    with open(fname, 'r') as fp:
+        return _do_load(fp.read(), reader)
 
 
 def loads(s, reader='yaml'):
     """
-    TODO: Document me.
-    """
-    if isinstance(reader, str):
-        reader = _readers[reader]
+    Read a `.Configuration` instance from a string.
 
-    return _do_load(s, reader)
+    :param s: configuration content (a `str`)
+    :param reader: the reader (`callable`) or reader type (`str`) to use
+    :return: a `.Configuration` instance providing values from *s*
+    :rtype: `.Configuration`
+    """
+    return _do_load(s, _get_reader(reader))
