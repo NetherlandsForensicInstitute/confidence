@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections import Mapping
 
 
 class ConfigurationError(KeyError):
