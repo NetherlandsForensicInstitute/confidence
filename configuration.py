@@ -151,8 +151,8 @@ def _get_reader(reader='yaml'):
     else:
         instance = reader
 
-    if not instance:
-        raise ConfigurationError('no valid reader: {}'.format(reader))
+    if not callable(instance):
+        raise ConfigurationError('invalid reader: {}'.format(reader))
 
     return instance
 

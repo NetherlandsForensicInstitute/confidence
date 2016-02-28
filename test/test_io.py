@@ -61,6 +61,18 @@ def test_loads_json():
     _assert_values(loads(json_str, 'json'))
 
 
+def test_loads_custom():
+    def read_local(s):
+        # ignores input, returns dict matching test values
+        return {
+            'key': 'value',
+            'some.other.key': [1, 2, 3],
+            'some.thing': False
+        }
+
+    _assert_values(loads('anything', reader=read_local))
+
+
 def test_loadf_default():
     _assert_values(loadf(path.join(here, 'config.yaml')))
     _assert_values(loadf(path.join(here, 'config.json')))
