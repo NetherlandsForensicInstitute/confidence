@@ -1,3 +1,5 @@
+import pytest
+
 from configuration import Configuration, ConfigurationError
 
 
@@ -5,12 +7,15 @@ def test_empty():
     def run_test(subject):
         assert subject.get('path.without.value', default=None) is None
         assert subject.get('another.path.without.value', default=4) == 4
-        try:
+        with pytest.raises(ConfigurationError) as e:
             subject.get('some_long.path')
-        except ConfigurationError as e:
-            assert 'some_long' in str(e)
-        else:
-            raise AssertionError('path without default should raise a ConfigurationError')
+        assert 'some_long' in str(e.value)
+        with pytest.raises(KeyError) as e:
+            subject['some_long']
+        assert 'some_long' in str(e.value)
+        with pytest.raises(KeyError) as e:
+            subject['some_long.path']
+        assert 'path' not in str(e.value)
 
     run_test(Configuration())
     run_test(Configuration({}))

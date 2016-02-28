@@ -62,7 +62,7 @@ class _NoDefault:
 _NoDefault = _NoDefault()
 
 
-class Configuration:
+class Configuration(Mapping):
     """
     TODO: Document me.
     """
@@ -111,13 +111,24 @@ class Configuration:
         TODO: Document me.
         """
         value = self.get(item, default=NotConfigured)
-        if isinstance(value, Mapping):
+        if isinstance(value, Configuration):
+            return value
+        elif isinstance(value, Mapping):
             # deeper levels are treated as Configuration objects as well
             return Configuration(value)
         else:
             # value is not a dict, so it will either be an actual value or NotConfigured
             # in either case, it should be returned as provided
             return value
+
+    def __len__(self):
+        return len(self.values)
+
+    def __getitem__(self, item):
+        return self.get(item)
+
+    def __iter__(self):
+        return iter(self.values)
 
 
 class NotConfigured(Configuration):

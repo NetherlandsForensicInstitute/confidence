@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+
 from configuration import Configuration, NotConfigured
 
 
@@ -25,7 +27,7 @@ def test_value_types():
     assert isinstance(subject.a_float, float)
     assert isinstance(subject.a_boolean, bool)
     assert isinstance(subject.a_list, list)
-    assert isinstance(subject.we_must, Configuration)  # TODO: this test makes it look like a dict would be more logical...
+    assert isinstance(subject.we_must, Mapping)
 
 
 def test_not_configured():
