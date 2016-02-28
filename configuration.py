@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+
+
 class ConfigurationError(KeyError):
     """
     TODO: Document me.
@@ -13,7 +16,7 @@ def _merge(left, right, _path=None):
 
     for key in right:
         if key in left:
-            if isinstance(left[key], dict) and isinstance(right[key], dict):
+            if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
                 # recurs, merge left and right dict values, update _path for current 'step'
                 _merge(left[key], right[key], _path + [key])
             elif left[key] != right[key]:
@@ -34,7 +37,7 @@ def _split_keys(values, separator='.'):
     result = {}
 
     for key, value in values.items():
-        if isinstance(value, dict):
+        if isinstance(value, Mapping):
             # recursively split key(s) in value
             value = _split_keys(value, separator)
 
@@ -50,9 +53,13 @@ def _split_keys(values, separator='.'):
     return result
 
 
-# sentinel value to indicate no default is specified, allowing a default of
-# None for Configuration.get()
-_NoDefault = object()
+class _NoDefault:
+    def __str__(self):
+        return '(raise)'
+    __repr__ = __str__
+
+# overwrite _NoDefault as an instance of itself
+_NoDefault = _NoDefault()
 
 
 class Configuration:
@@ -71,22 +78,18 @@ class Configuration:
         """
         Gets a value for the specified path.
 
-        Args:
-            path: The configuration key to fetch a value for, steps separated
-                by the separator supplied to the constructor (default ".").
-            default: The value to return if no value is found for the supplied
-                path (None is allowed).
-            as_type: An optional callable to apply to the value found for the
-                supplied path (possibly raising exceptions of its own if the
-                value can not be coerced to the expected type).
-
-        Returns:
-            The value associated with the supplied configuration key, if
-            available or a supplied default value if the key was not found.
-
-        Raises:
-            ConfigurationError: When no default was provided and no value was
-            found on the supplied path.
+        :param path: the configuration key to fetch a value for, steps
+            separated by the separator supplied to the constructor (default
+            ``.``)
+        :param default: a value to return if no value is found for the
+            supplied path (``None`` is allowed)
+        :param as_type: an optional callable to apply to the value found for
+            the supplied path (possibly raising exceptions of its own if the
+            value can not be coerced to the expected type)
+        :return: the value associated with the supplied configuration key, if
+            available, or a supplied default value if the key was not found
+        :raises ConfigurationError: when no value was found for *path* and
+            *default* was not provided
         """
         value = self.values
         steps_taken = []
@@ -108,7 +111,7 @@ class Configuration:
         TODO: Document me.
         """
         value = self.get(item, default=NotConfigured)
-        if type(value) == dict:
+        if isinstance(value, Mapping):
             # deeper levels are treated as Configuration objects as well
             return Configuration(value)
         else:
@@ -119,7 +122,7 @@ class Configuration:
 
 class NotConfigured(Configuration):
     """
-    Value indicating a value is not configured.
+    Sentinel value to signal there is no value for a requested key.
     """
     def __str__(self):
         return '(not configured)'
