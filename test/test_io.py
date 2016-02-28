@@ -30,9 +30,26 @@ def _assert_values(conf):
     assert conf.does_not.exist is NotConfigured
 
 
+def test_load_default():
+    with open(path.join(here, 'config.yaml')) as file:
+        _assert_values(load(file))
+    # as json is a subset of yaml, this should work just fine
+    with open(path.join(here, 'config.json')) as file:
+        _assert_values(load(file))
+
+
+def test_load_yaml():
+    with open(path.join(here, 'config.yaml')) as file:
+        _assert_values(load(file, 'yaml'))
+
+
+def test_load_json():
+    with open(path.join(here, 'config.json')) as file:
+        _assert_values(load(file, 'json'))
+
+
 def test_loads_default():
     _assert_values(loads(yaml_str))
-    # as json is a subset of yaml, this should work identical
     _assert_values(loads(json_str))
 
 
