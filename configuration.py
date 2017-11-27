@@ -135,6 +135,9 @@ class NotConfigured(Configuration):
     """
     Sentinel value to signal there is no value for a requested key.
     """
+    def __bool__(self):
+        return False
+
     def __str__(self):
         return '(not configured)'
 
