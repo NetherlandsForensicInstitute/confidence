@@ -58,6 +58,7 @@ class _NoDefault:
         return '(raise)'
     __repr__ = __str__
 
+
 # overwrite _NoDefault as an instance of itself
 _NoDefault = _NoDefault()
 
@@ -142,6 +143,7 @@ class NotConfigured(Configuration):
         return '(not configured)'
 
     __repr__ = __str__
+
 
 # overwrite NotConfigured as an instance of itself
 NotConfigured = NotConfigured()
