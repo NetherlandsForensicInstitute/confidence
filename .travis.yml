@@ -1,13 +1,13 @@
 language: python
 
 python:
-  - 3.3
   - 3.4
   - 3.5
+  - 3.6
   - pypy3
 
 install:
-  - pip install PyYAML
+  - pip install pyyaml
   - pip install flake8 pep8-naming
   - pip install coveralls
 
