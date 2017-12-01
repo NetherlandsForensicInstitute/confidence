@@ -17,7 +17,7 @@ def test_empty():
             subject['some_long.path']
         assert 'path' not in str(e.value)
 
-    run_test(Configuration())
+    run_test(Configuration(None))
     run_test(Configuration({}))
 
 

@@ -68,7 +68,7 @@ class Configuration(Mapping):
     TODO: Document me.
     """
 
-    def __init__(self, values=None, separator='.'):
+    def __init__(self, values, separator='.'):
         """
         TODO: Document me.
         """
@@ -146,7 +146,7 @@ class NotConfigured(Configuration):
 
 
 # overwrite NotConfigured as an instance of itself
-NotConfigured = NotConfigured()
+NotConfigured = NotConfigured({})
 
 
 _readers = {}
