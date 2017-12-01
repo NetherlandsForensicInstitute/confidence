@@ -56,9 +56,10 @@ def _split_keys(values, separator='.'):
 
 
 class _NoDefault:
-    def __str__(self):
+    def __repr__(self):
         return '(raise)'
-    __repr__ = __str__
+
+    __str__ = __repr__
 
 
 # overwrite _NoDefault as an instance of itself
@@ -141,10 +142,10 @@ class NotConfigured(Configuration):
     def __bool__(self):
         return False
 
-    def __str__(self):
+    def __repr__(self):
         return '(not configured)'
 
-    __repr__ = __str__
+    __str__ = __repr__
 
 
 # overwrite NotConfigured as an instance of itself
