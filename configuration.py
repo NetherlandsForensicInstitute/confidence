@@ -1,5 +1,7 @@
 from collections import Mapping
 
+import yaml
+
 
 class ConfigurationError(KeyError):
     """
@@ -149,70 +151,35 @@ class NotConfigured(Configuration):
 NotConfigured = NotConfigured({})
 
 
-_readers = {}
-
-try:
-    import yaml
-    _readers['yaml'] = yaml.load
-except ImportError:
-    pass
-
-try:
-    import json
-    _readers['json'] = json.loads
-except ImportError:
-    pass
-
-
-def _get_reader(reader='yaml'):
-    if isinstance(reader, str):
-        instance = _readers.get(reader)
-    else:
-        instance = reader
-
-    if not callable(instance):
-        raise ConfigurationError('invalid reader: {}'.format(reader))
-
-    return instance
-
-
-def _do_load(stream, reader):
-    return Configuration(reader(stream))
-
-
-def load(fp, reader='yaml'):
+def load(fp):
     """
     Read a `.Configuration` instance from a file-like object.
 
     :param fp: file-like object (supporting ``.read()``)
-    :param reader: the reader (`callable`) or reader type (`str`) to use
     :return: a `.Configuration` instance providing values from *fp*
     :rtype: `.Configuration`
     """
-    return _do_load(fp.read(), _get_reader(reader))
+    return Configuration(yaml.load(fp.read()))
 
 
-def loadf(fname, reader='yaml'):
+def loadf(fname):
     """
     Read a `.Configuration` instance from a named file.
 
     :param fname: name of the file to ``open()``
-    :param reader: the reader (`callable`) or reader type (`str`) to use
     :return: a `.Configuration` instance providing values from *fname*
     :rtype: `.Configuration`
     """
-    reader = _get_reader(reader)
     with open(fname, 'r') as fp:
-        return _do_load(fp.read(), reader)
+        return Configuration(yaml.load(fp.read()))
 
 
-def loads(s, reader='yaml'):
+def loads(s):
     """
     Read a `.Configuration` instance from a string.
 
     :param s: configuration content (a `str`)
-    :param reader: the reader (`callable`) or reader type (`str`) to use
     :return: a `.Configuration` instance providing values from *s*
     :rtype: `.Configuration`
     """
-    return _do_load(s, _get_reader(reader))
+    return Configuration(yaml.load(s))

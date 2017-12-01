@@ -40,12 +40,12 @@ def test_load_default():
 
 def test_load_yaml():
     with open(path.join(here, 'config.yaml')) as file:
-        _assert_values(load(file, 'yaml'))
+        _assert_values(load(file))
 
 
 def test_load_json():
     with open(path.join(here, 'config.json')) as file:
-        _assert_values(load(file, 'json'))
+        _assert_values(load(file))
 
 
 def test_loads_default():
@@ -54,23 +54,11 @@ def test_loads_default():
 
 
 def test_loads_yaml():
-    _assert_values(loads(yaml_str, 'yaml'))
+    _assert_values(loads(yaml_str))
 
 
 def test_loads_json():
-    _assert_values(loads(json_str, 'json'))
-
-
-def test_loads_custom():
-    def read_local(s):
-        # ignores input, returns dict matching test values
-        return {
-            'key': 'value',
-            'some.other.key': [1, 2, 3],
-            'some.thing': False
-        }
-
-    _assert_values(loads('anything', reader=read_local))
+    _assert_values(loads(json_str))
 
 
 def test_loadf_default():
@@ -79,8 +67,8 @@ def test_loadf_default():
 
 
 def test_loadf_yaml():
-    _assert_values(loadf(path.join(here, 'config.yaml'), 'yaml'))
+    _assert_values(loadf(path.join(here, 'config.yaml')))
 
 
 def test_loadf_json():
-    _assert_values(loadf(path.join(here, 'config.json'), 'json'))
+    _assert_values(loadf(path.join(here, 'config.json')))
