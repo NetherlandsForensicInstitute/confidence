@@ -13,7 +13,7 @@ install:
 
 script:
   - flake8 --max-line-length=120 configuration.py
-  - coverage run --branch --source configuration --module py.tests --strict
+  - coverage run --branch --source configuration --module py.test --strict tests/
 
 after_success:
   - coveralls
