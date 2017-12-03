@@ -199,35 +199,38 @@ class NotConfigured(Configuration):
 NotConfigured = NotConfigured({})
 
 
-def load(fp):
+def load(*fps):
     """
-    Read a `.Configuration` instance from a file-like object.
+    Read a `.Configuration` instance from file-like objects.
 
-    :param fp: file-like object (supporting ``.read()``)
-    :return: a `.Configuration` instance providing values from *fp*
+    :param fps: file-like objects (supporting ``.read()``)
+    :return: a `.Configuration` instance providing values from *fps*
     :rtype: `.Configuration`
     """
-    return Configuration(yaml.load(fp.read()))
+    return Configuration(*(yaml.load(fp.read()) for fp in fps))
 
 
-def loadf(fname):
+def loadf(*fnames):
     """
-    Read a `.Configuration` instance from a named file.
+    Read a `.Configuration` instance from named files.
 
-    :param fname: name of the file to ``open()``
-    :return: a `.Configuration` instance providing values from *fname*
+    :param fnames: name of the files to ``open()``
+    :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
-    with open(fname, 'r') as fp:
-        return Configuration(yaml.load(fp.read()))
+    def readf(fname):
+        with open(fname, 'r') as fp:
+            return yaml.load(fp.read())
+
+    return Configuration(*(readf(fname) for fname in fnames))
 
 
-def loads(s):
+def loads(*strings):
     """
-    Read a `.Configuration` instance from a string.
+    Read a `.Configuration` instance from strings.
 
-    :param s: configuration content (a `str`)
-    :return: a `.Configuration` instance providing values from *s*
+    :param strings: configuration contents
+    :return: a `.Configuration` instance providing values from *strings*
     :rtype: `.Configuration`
     """
-    return Configuration(yaml.load(s))
+    return Configuration(*(yaml.load(string) for string in strings))
