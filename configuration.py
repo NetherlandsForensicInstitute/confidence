@@ -6,24 +6,32 @@ import yaml
 
 class ConfigurationError(KeyError):
     """
-    TODO: Document me.
+    `KeyError` raised when merge conflicts are detected during `.Configuration`
+    construction (see `.Configuration.__init__`) or retrieving an unavailable
+    configured value when no default is supplied (see `.Configuration.get`).
     """
     pass
 
 
-class Conflict(IntEnum):
-    """
-    TODO: Document me.
-    """
+class _Conflict(IntEnum):
     overwrite = 0
     error = 1
 
 
-def _merge(left, right, path=None, conflict=Conflict.error):
+def _merge(left, right, path=None, conflict=_Conflict.error):
     """
-    TODO: Document me.
+    Merges values in place from *right* into *left*.
+
+    :param left: mapping to merge into
+    :param right: mapping to merge from
+    :param path: `list` of keys processed before (used for error reporting
+        only, should only need to be provided by recursive calls)
+    :param conflict: action to be taken on merge conflict, raising an error
+        or overwriting an existing value
+    :return: *left*, for convenience
     """
     path = path or []
+    conflict = _Conflict(conflict)
 
     for key in right:
         if key in left:
@@ -31,7 +39,7 @@ def _merge(left, right, path=None, conflict=Conflict.error):
                 # recurse, merge left and right dict values, update path for current 'step'
                 _merge(left[key], right[key], path + [key], conflict=conflict)
             elif left[key] != right[key]:
-                if conflict is Conflict.error:
+                if conflict is _Conflict.error:
                     # not both dicts we could merge, but also not the same, this doesn't work
                     raise ConfigurationError('merge conflict at {}'.format('.'.join(path + [key])))
                 else:
@@ -45,13 +53,20 @@ def _merge(left, right, path=None, conflict=Conflict.error):
     return left
 
 
-def _split_keys(values, separator='.'):
+def _split_keys(mapping, separator='.'):
     """
-    TODO: Document me.
+    Recursively walks *mapping* to split keys that contain the separator into
+    nested mappings.
+
+    :param mapping: the mapping to process
+    :param separator: the character (sequence) to use as the separator between
+        keys
+    :return: a mapping where keys containing *separator* are split into nested
+        mappings
     """
     result = {}
 
-    for key, value in values.items():
+    for key, value in mapping.items():
         if isinstance(value, Mapping):
             # recursively split key(s) in value
             value = _split_keys(value, separator)
@@ -81,19 +96,25 @@ _NoDefault = _NoDefault()
 
 class Configuration(Mapping):
     """
-    TODO: Document me.
+    A collection of configured values, retrievable as either `dict`-like items
+    or attributes.
     """
 
     def __init__(self, *sources, separator='.'):
         """
-        TODO: Document me.
+        Create a new `.Configuration`, based on one or multiple source mappings.
+
+        :param sources: source mappings to base this `.Configuration` on,
+            ordered from least to most significant
+        :param separator: the character (sequence) to use as the separator
+            between keys
         """
         self._separator = separator
 
         self._source = {}
         for source in sources:
             # merge values from source into self._source, overwriting any corresponding keys
-            _merge(self._source, _split_keys(source, separator=self._separator), conflict=Conflict.overwrite)
+            _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
@@ -127,19 +148,25 @@ class Configuration(Mapping):
             else:
                 raise ConfigurationError('no configuration for key {}'.format(self._separator.join(steps_taken)))
 
-    def __getattr__(self, item):
+    def __getattr__(self, attr):
         """
-        TODO: Document me.
+        Gets a 'single step value', as either a configured value or a
+        namespace-like object in the form of a `.Configuration` instance. An
+        unconfigured value will return `.NotConfigured`, a 'safe' sentinel
+        value.
+
+        :param attr: the 'step' (key, attribute, …) to take
+        :return: a value, as either an actual value or a `.Configuration`
+            instance (`.NotConfigured` in case of an unconfigured 'step')
         """
-        value = self.get(item, default=NotConfigured)
-        if isinstance(value, Configuration):
+        value = self.get(attr, default=NotConfigured)
+        if isinstance(value, Configuration):  # NB: this includes NotConfigured
             return value
         elif isinstance(value, Mapping):
             # deeper levels are treated as Configuration objects as well
             return Configuration(value)
         else:
-            # value is not a dict, so it will either be an actual value or NotConfigured
-            # in either case, it should be returned as provided
+            # value is not a dict, so it will either be an actual value, return as provided
             return value
 
     def __len__(self):
@@ -165,7 +192,7 @@ class NotConfigured(Configuration):
     __str__ = __repr__
 
 
-# overwrite NotConfigured as an instance of itself
+# overwrite NotConfigured as an instance of itself, a Configuration instance without any values
 NotConfigured = NotConfigured({})
 
 

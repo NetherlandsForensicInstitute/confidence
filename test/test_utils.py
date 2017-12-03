@@ -1,4 +1,4 @@
-from configuration import Conflict, _merge, _split_keys
+from configuration import _Conflict, _merge, _split_keys
 
 
 def test_merge_trivial():
@@ -63,7 +63,7 @@ def test_merge_conflict_overwrite():
     left = {'parent': {'first': 1, 'second': 2}}
     right = {'parent': {'third': 3, 'first': 4}}  # parent.first differs
 
-    merged = _merge(left, right, conflict=Conflict.overwrite)
+    merged = _merge(left, right, conflict=_Conflict.overwrite)
 
     assert len(merged) == 1
     assert len(merged['parent']) == 3
