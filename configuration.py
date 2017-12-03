@@ -75,8 +75,8 @@ class Configuration(Mapping):
         """
         TODO: Document me.
         """
-        self.values = _split_keys(values or {})
-        self.separator = separator
+        self._values = _split_keys(values or {})
+        self._separator = separator
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
@@ -95,11 +95,11 @@ class Configuration(Mapping):
         :raises ConfigurationError: when no value was found for *path* and
             *default* was not provided
         """
-        value = self.values
+        value = self._values
         steps_taken = []
         try:
             # walk through the values dictionary
-            for step in path.split(self.separator):
+            for step in path.split(self._separator):
                 steps_taken.append(step)
                 value = value[step]
 
@@ -108,7 +108,7 @@ class Configuration(Mapping):
             if default is not _NoDefault:
                 return default
             else:
-                raise ConfigurationError('no configuration for key {}'.format(self.separator.join(steps_taken)))
+                raise ConfigurationError('no configuration for key {}'.format(self._separator.join(steps_taken)))
 
     def __getattr__(self, item):
         """
@@ -126,13 +126,13 @@ class Configuration(Mapping):
             return value
 
     def __len__(self):
-        return len(self.values)
+        return len(self._values)
 
     def __getitem__(self, item):
         return self.get(item)
 
     def __iter__(self):
-        return iter(self.values)
+        return iter(self._values)
 
 
 class NotConfigured(Configuration):
