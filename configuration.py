@@ -84,11 +84,15 @@ class Configuration(Mapping):
     TODO: Document me.
     """
 
-    def __init__(self, values, separator='.'):
+    def __init__(self, *values, separator='.'):
         """
         TODO: Document me.
         """
-        self._values = _split_keys(values or {})
+        self._values = {}
+        for value in values:
+            # merge values from value into self._values, overwriting any corresponding keys
+            _merge(self._values, _split_keys(value), conflict=Conflict.overwrite)
+
         self._separator = separator
 
     def get(self, path, default=_NoDefault, as_type=None):

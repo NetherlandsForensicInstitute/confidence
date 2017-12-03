@@ -8,7 +8,7 @@ def test_empty():
         assert subject.key is NotConfigured
         assert subject.deeper.key is NotConfigured
 
-    run_test(Configuration(None))
+    run_test(Configuration())
     run_test(Configuration({}))
 
 
