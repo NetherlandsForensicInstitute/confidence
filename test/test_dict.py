@@ -1,6 +1,6 @@
 import pytest
 
-from configuration import Configuration, ConfigurationError
+from configuration import _NoDefault, Configuration, ConfigurationError
 
 
 def test_empty():
@@ -32,3 +32,7 @@ def test_value_types():
     run_test(Configuration({'test': [1, 2, 3]}), 'test', list)
     run_test(Configuration({'case': {'surprise!': None}}), 'case', dict)
     run_test(Configuration({'we_must': {'go_deeper': True}}), 'we_must.go_deeper', bool)
+
+
+def test_no_default_doc_friendly():
+    assert 'raise' in repr(_NoDefault)
