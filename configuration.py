@@ -84,16 +84,16 @@ class Configuration(Mapping):
     TODO: Document me.
     """
 
-    def __init__(self, *values, separator='.'):
+    def __init__(self, *sources, separator='.'):
         """
         TODO: Document me.
         """
-        self._values = {}
-        for value in values:
-            # merge values from value into self._values, overwriting any corresponding keys
-            _merge(self._values, _split_keys(value), conflict=Conflict.overwrite)
-
         self._separator = separator
+
+        self._source = {}
+        for source in sources:
+            # merge values from source into self._source, overwriting any corresponding keys
+            _merge(self._source, _split_keys(source, separator=self._separator), conflict=Conflict.overwrite)
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
@@ -112,7 +112,7 @@ class Configuration(Mapping):
         :raises ConfigurationError: when no value was found for *path* and
             *default* was not provided
         """
-        value = self._values
+        value = self._source
         steps_taken = []
         try:
             # walk through the values dictionary
@@ -143,13 +143,13 @@ class Configuration(Mapping):
             return value
 
     def __len__(self):
-        return len(self._values)
+        return len(self._source)
 
     def __getitem__(self, item):
         return self.get(item)
 
     def __iter__(self):
-        return iter(self._values)
+        return iter(self._source)
 
 
 class NotConfigured(Configuration):
