@@ -1,3 +1,4 @@
+from enum import IntEnum
 from collections import Mapping
 
 import yaml
@@ -10,23 +11,35 @@ class ConfigurationError(KeyError):
     pass
 
 
-def _merge(left, right, _path=None):
+class Conflict(IntEnum):
     """
     TODO: Document me.
     """
-    _path = _path or []
+    overwrite = 0
+    error = 1
+
+
+def _merge(left, right, path=None, conflict=Conflict.error):
+    """
+    TODO: Document me.
+    """
+    path = path or []
 
     for key in right:
         if key in left:
             if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
-                # recurs, merge left and right dict values, update _path for current 'step'
-                _merge(left[key], right[key], _path + [key])
+                # recurse, merge left and right dict values, update path for current 'step'
+                _merge(left[key], right[key], path + [key], conflict=conflict)
             elif left[key] != right[key]:
-                # not both dicts we could merge, but also not the same, this doesn't work
-                raise ConfigurationError('merge conflict at {}'.format('.'.join(_path + [key])))
+                if conflict is Conflict.error:
+                    # not both dicts we could merge, but also not the same, this doesn't work
+                    raise ConfigurationError('merge conflict at {}'.format('.'.join(path + [key])))
+                else:
+                    # overwrite left value with right value
+                    left[key] = right[key]
             # else: left[key] is already equal to right[key], no action needed
         else:
-            # key not yet in left, simple addition of right's mapping to left
+            # key not yet in left or not considering conflicts, simple addition of right's mapping to left
             left[key] = right[key]
 
     return left
