@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from enum import IntEnum
 from itertools import chain
+from pathlib import Path
 
 import yaml
 
@@ -241,3 +242,15 @@ def loads(*strings):
     :rtype: `.Configuration`
     """
     return Configuration(*(yaml.load(string) for string in strings))
+
+
+def load_name(*names, load_order=LOAD_ORDER):
+    def generate_contents():
+        for template in load_order:
+            for name in names:
+                path = Path(template.format(name=name)).expanduser()
+                if path.exists():
+                    with path.open('r') as fd:
+                        yield yaml.load(fd.read())
+
+    return Configuration(*generate_contents())
