@@ -164,7 +164,10 @@ class Configuration(Mapping):
             return value
         elif isinstance(value, Mapping):
             # deeper levels are treated as Configuration objects as well
-            return Configuration(value)
+            # create an empty object and overwrite the source to avoid splitting and merging an already processed source
+            namespace = Configuration()
+            namespace._source = value
+            return namespace
         else:
             # value is not a dict, so it will either be an actual value, return as provided
             return value
