@@ -6,10 +6,12 @@ from pathlib import Path
 import yaml
 
 
+# ordered sequence of file name templates to load, in increasing significance
 LOAD_ORDER = (
     '/etc/{name}.yaml',
     '~/.{name}.yaml',
     './{name}.yaml',
+    # TODO: load from env var(s)
 )
 
 
@@ -245,6 +247,18 @@ def loads(*strings):
 
 
 def load_name(*names, load_order=LOAD_ORDER):
+    """
+    Read a `.Configuration` instance by name, trying to read from files in
+    increasing significance. System-wide configuration locations are preceded
+    by user locations, and again by local files.
+
+    :param names: application or configuration set names, in increasing
+        significance
+    :param load_order: ordered list of file name templates, in increasing
+        significance
+    :return: a `.Configuration` instances providing loaded from *names* in
+        *load_order* ordering
+    """
     def generate_contents():
         for template in load_order:
             for name in names:
