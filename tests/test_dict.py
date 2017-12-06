@@ -1,3 +1,5 @@
+from collections.abc import Mapping, Sequence
+
 import pytest
 
 from configuration import _NoDefault, Configuration, ConfigurationError
@@ -23,14 +25,14 @@ def test_empty():
 
 def test_value_types():
     def run_test(subject, key, expected_type):
-        assert type(subject.get(key)) is expected_type, 'key {} not of type {}'.format(key, expected_type)
+        assert isinstance(subject.get(key), expected_type), 'key {} not of type {}'.format(key, expected_type)
 
     run_test(Configuration({'just': 'string'}), 'just', str)
     run_test(Configuration({'a': 42}), 'a', int)
     run_test(Configuration({'simple': 3.14}), 'simple', float)
     run_test(Configuration({'silly': False}), 'silly', bool)
-    run_test(Configuration({'test': [1, 2, 3]}), 'test', list)
-    run_test(Configuration({'case': {'surprise!': None}}), 'case', dict)
+    run_test(Configuration({'test': [1, 2, 3]}), 'test', Sequence)
+    run_test(Configuration({'case': {'surprise!': None}}), 'case', Mapping)
     run_test(Configuration({'we_must': {'go_deeper': True}}), 'we_must.go_deeper', bool)
 
 

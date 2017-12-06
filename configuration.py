@@ -1,5 +1,5 @@
 from enum import IntEnum
-from collections import Mapping
+from collections.abc import Mapping
 
 import yaml
 
@@ -141,7 +141,14 @@ class Configuration(Mapping):
                 steps_taken.append(step)
                 value = value[step]
 
-            return as_type(value) if as_type else value
+            if as_type:
+                return as_type(value)
+            elif isinstance(value, Mapping):
+                namespace = Configuration()
+                namespace._source = value
+                return namespace
+            else:
+                return value
         except KeyError:
             if default is not _NoDefault:
                 return default
