@@ -5,6 +5,13 @@ from itertools import chain
 import yaml
 
 
+LOAD_ORDER = (
+    '/etc/{name}.yaml',
+    '~/.{name}.yaml',
+    './{name}.yaml',
+)
+
+
 class ConfigurationError(KeyError):
     """
     `KeyError` raised when merge conflicts are detected during `.Configuration`
