@@ -36,5 +36,16 @@ def test_value_types():
     run_test(Configuration({'we_must': {'go_deeper': True}}), 'we_must.go_deeper', bool)
 
 
+def test_as_type():
+    subject = Configuration({'as_int': 5, 'as_str': '5'})
+
+    assert subject.get('as_int') == 5
+    assert subject.get('as_str') == '5'
+    assert subject.get('as_str', as_type=str) == '5'
+    assert subject.get('as_str', as_type=int) == 5
+    assert subject.get('as_str', as_type=bool) is True
+    assert subject.get('as_str', as_type=lambda value: int(value) - 2) == 3
+
+
 def test_no_default_doc_friendly():
     assert 'raise' in repr(_NoDefault)
