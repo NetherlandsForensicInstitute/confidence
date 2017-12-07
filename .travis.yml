@@ -7,12 +7,12 @@ python:
   - pypy3
 
 install:
-  - pip install pyyaml
-  - pip install flake8 pep8-naming
+  - pip install -r requirements
+  - pip install -r test-requirements
   - pip install coveralls
 
 script:
-  - flake8 --max-line-length=120 configuration.py
+  - flake8 configuration.py
   - coverage run --branch --source configuration --module py.test --strict tests/
 
 after_success:
