@@ -1,5 +1,6 @@
 from enum import IntEnum
 from collections.abc import Mapping
+from itertools import chain
 
 import yaml
 
@@ -176,6 +177,9 @@ class Configuration(Mapping):
 
     def __iter__(self):
         return iter(self._source)
+
+    def __dir__(self):
+        return sorted(set(chain(super().__dir__(), self.keys())))
 
 
 class NotConfigured(Configuration):

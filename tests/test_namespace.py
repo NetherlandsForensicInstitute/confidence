@@ -42,3 +42,12 @@ def test_not_configured():
     assert (subject.does_not_exist or 'default') == 'default'
     assert 'not configured' in str(subject.does_nope.exist)
     assert str(subject.does_nope_exist) == repr(subject.does.nope.exist)
+
+
+def test_dir():
+    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False})
+
+    assert 'keys' in dir(subject)
+    assert 'key1' in dir(subject)
+    assert 'namespace' in dir(subject)
+    assert 'key3' in dir(subject.namespace)
