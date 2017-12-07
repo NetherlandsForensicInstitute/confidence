@@ -166,18 +166,7 @@ class Configuration(Mapping):
         :return: a value, as either an actual value or a `.Configuration`
             instance (`.NotConfigured` in case of an unconfigured 'step')
         """
-        value = self.get(attr, default=NotConfigured)
-        if isinstance(value, Configuration):  # NB: this includes NotConfigured
-            return value
-        elif isinstance(value, Mapping):
-            # deeper levels are treated as Configuration objects as well
-            # create an empty object and overwrite the source to avoid splitting and merging an already processed source
-            namespace = Configuration()
-            namespace._source = value
-            return namespace
-        else:
-            # value is not a dict, so it will either be an actual value, return as provided
-            return value
+        return self.get(attr, default=NotConfigured)
 
     def __len__(self):
         return len(self._source)
