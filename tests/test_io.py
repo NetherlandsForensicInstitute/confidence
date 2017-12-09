@@ -3,7 +3,7 @@ from os import path
 from configuration import Configuration, load, loadf, loads, NotConfigured
 
 
-here = path.dirname(__file__)
+test_files = path.join(path.dirname(__file__), 'files')
 
 yaml_str = """
     key: value
@@ -31,25 +31,25 @@ def _assert_values(conf):
 
 
 def test_load_default():
-    with open(path.join(here, 'config.yaml')) as file:
+    with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
     # as json is a subset of yaml, this should work just fine
-    with open(path.join(here, 'config.json')) as file:
+    with open(path.join(test_files, 'config.json')) as file:
         _assert_values(load(file))
 
 
 def test_load_yaml():
-    with open(path.join(here, 'config.yaml')) as file:
+    with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
 
 
 def test_load_json():
-    with open(path.join(here, 'config.json')) as file:
+    with open(path.join(test_files, 'config.json')) as file:
         _assert_values(load(file))
 
 
 def test_load_multiple():
-    with open(path.join(here, 'config.json')) as file1, open(path.join(here, 'config.yaml')) as file2:
+    with open(path.join(test_files, 'config.json')) as file1, open(path.join(test_files, 'config.yaml')) as file2:
         _assert_values(load(file1, file2))
 
 
@@ -72,18 +72,18 @@ def test_loads_multiple():
 
 
 def test_loadf_default():
-    _assert_values(loadf(path.join(here, 'config.yaml')))
-    _assert_values(loadf(path.join(here, 'config.json')))
+    _assert_values(loadf(path.join(test_files, 'config.yaml')))
+    _assert_values(loadf(path.join(test_files, 'config.json')))
 
 
 def test_loadf_yaml():
-    _assert_values(loadf(path.join(here, 'config.yaml')))
+    _assert_values(loadf(path.join(test_files, 'config.yaml')))
 
 
 def test_loadf_json():
-    _assert_values(loadf(path.join(here, 'config.json')))
+    _assert_values(loadf(path.join(test_files, 'config.json')))
 
 
 def test_loadf_multiple():
-    _assert_values(loadf(path.join(here, 'config.json'),
-                         path.join(here, 'config.yaml')))
+    _assert_values(loadf(path.join(test_files, 'config.json'),
+                         path.join(test_files, 'config.yaml')))
