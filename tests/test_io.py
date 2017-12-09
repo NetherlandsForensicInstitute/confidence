@@ -31,18 +31,6 @@ def _assert_values(conf):
     assert conf.does_not.exist is NotConfigured
 
 
-def _assert_has_calls_in_oder(mock, calls):
-    # utility as mock.assert_has_calls() requires calls to be sequential within mock_calls,
-    # we want to check for ordering among calls only
-    idx = -1
-    for expected in calls:
-        # lookup index for all expected calls
-        expected = mock.mock_calls.index(expected)
-        # assert index is greater than previous (and thus greater than -1 / not found)
-        assert expected > idx
-        idx = expected
-
-
 def test_load_default():
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
@@ -137,11 +125,11 @@ def test_load_name_order():
 
         assert len(load_name('foo', 'bar')) == 0
 
-    _assert_has_calls_in_oder(mocked.expanduser, [
+    mocked.expanduser.assert_has_calls([
         call('/etc/foo.yaml'),
         call('/etc/bar.yaml'),
         call('~/.foo.yaml'),
         call('~/.bar.yaml'),
         call('./foo.yaml'),
         call('./bar.yaml'),
-    ])
+    ], any_order=False)
