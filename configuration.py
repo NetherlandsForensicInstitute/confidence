@@ -238,12 +238,27 @@ def loads(*strings):
 
 
 def read_envvars(name):
+    """
+    Read environment variables starting with ``NAME_``, where subsequent
+    underscores are interpreted as namespaces.
+
+    .. note::
+
+        Environment variables are always `str`s, this function makes no effort
+        to changes this. All values read from command line variables will be
+        `str` instances.
+
+    :param name: environment variable prefix to look for (without the ``_``)
+    :return: a nested (possibly empty) `dict` with values read from
+        environment variables
+    """
     prefix = '{}_'.format(name)
     prefix_len = len(prefix)
     envvar_file = '{}_config_file'.format(name)
     # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
     values = {var.lower()[prefix_len:]: value
               for var, value in environ.items()
+              # TODO: document ignoring envvar_file
               if var.lower().startswith(prefix) and var.lower() != envvar_file}
     # TODO: envvar values can only be str, how do we configure non-str values?
     # provide it as a nested dict, treating _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
@@ -251,6 +266,14 @@ def read_envvars(name):
 
 
 def read_envvar_file(name):
+    """
+    Read values from a file provided as a environment variable
+    ``NAME_CONFIG_FILE``.
+
+    :param name: environment variable prefix to look for (without the
+        ``_CONFIG_FILE``)
+    :return: a nested (possibly empty) `dict` with values read from file
+    """
     envvar_file = environ.get('{}_config_file'.format(name).upper())
     if envvar_file:
         # envvar set, load value as file
@@ -279,8 +302,8 @@ def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
 
     :param names: application or configuration set names, in increasing
         significance
-    :param load_order: ordered list of file name templates, in increasing
-        significance
+    :param load_order: ordered list of name templates or `callable`s, in
+        increasing order of significance
     :param extension: file extension to be used
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
