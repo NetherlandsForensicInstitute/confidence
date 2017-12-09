@@ -1,18 +1,9 @@
 from collections.abc import Mapping
 from enum import IntEnum
 from itertools import chain, product
-from os import path
+from os import environ, path
 
 import yaml
-
-
-# ordered sequence of file name templates to load, in increasing significance
-LOAD_ORDER = (
-    '/etc/{name}.{extension}',
-    '~/.{name}.{extension}',
-    './{name}.{extension}',
-    # TODO: load from env var(s)
-)
 
 
 class ConfigurationError(KeyError):
@@ -246,6 +237,26 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
+def load_envvars(name):
+    prefix = '{}_'.format(name)
+    prefix_len = len(prefix)
+    # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
+    values = {var.lower()[prefix_len:]: value
+              for var, value in environ.items()
+              if var.lower().startswith(prefix)}
+    # provide it as a nested dict, treating _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
+    return _split_keys(values, separator='_')
+
+
+# ordered sequence of name templates to load, in increasing significance
+LOAD_ORDER = (
+    '/etc/{name}.{extension}',
+    '~/.{name}.{extension}',
+    './{name}.{extension}',
+    load_envvars,
+)
+
+
 def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
     """
     Read a `.Configuration` instance by name, trying to read from files in
@@ -260,14 +271,17 @@ def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
-    def generate_contents():
+    def generate_sources():
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
-        for template, name in product(load_order, names):
-            # expand user to turn ~/.name.yaml into /home/user/.name.yaml
-            candidate = path.expanduser(template.format(name=name, extension=extension))
-            if path.exists(candidate):
-                with open(candidate, 'r') as fd:
-                    yield yaml.load(fd.read())
+        for source, name in product(load_order, names):
+            if callable(source):
+                yield source(name)
+            else:
+                # expand user to turn ~/.name.yaml into /home/user/.name.yaml
+                candidate = path.expanduser(source.format(name=name, extension=extension))
+                if path.exists(candidate):
+                    with open(candidate, 'r') as fd:
+                        yield yaml.load(fd.read())
 
-    return Configuration(*generate_contents())
+    return Configuration(*generate_sources())
