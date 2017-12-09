@@ -1,7 +1,7 @@
 from os import path
 from unittest.mock import call, patch
 
-from configuration import Configuration, load, load_name, loadf, loads, NotConfigured, read_envvar_file, read_envvars
+from confidence import Configuration, load, load_name, loadf, loads, NotConfigured, read_envvar_file, read_envvars
 
 
 test_files = path.join(path.dirname(__file__), 'files')
@@ -118,7 +118,7 @@ def test_load_name_multiple():
 
 
 def test_load_name_order():
-    with patch('configuration.path') as mocked:
+    with patch('confidence.path') as mocked:
         mocked.expanduser.return_value = mocked
         # avoid actually opening files that might unexpectedly exist
         mocked.exists.return_value = False
@@ -142,7 +142,7 @@ def test_load_name_envvars():
         'BAR_KEY': 'bar',
     }
 
-    with patch('configuration.environ', env):
+    with patch('confidence.environ', env):
         subject = load_name('foo', 'bar', load_order=(read_envvars,))
 
     assert subject.key == 'bar'
@@ -155,7 +155,7 @@ def test_load_name_envvar_file():
         'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
     }
 
-    with patch('configuration.environ', env):
+    with patch('confidence.environ', env):
         subject = load_name('foo', 'bar', load_order=(read_envvar_file,))
 
     assert len(subject.semi.overlapping) == 2
@@ -173,7 +173,7 @@ def test_load_name_overlapping_envvars():
         'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
     }
 
-    with patch('configuration.environ', env):
+    with patch('confidence.environ', env):
         subject = load_name('foo', 'bar', load_order=(read_envvar_file, read_envvars))
 
     assert subject.key == 'bar'

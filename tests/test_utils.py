@@ -1,4 +1,4 @@
-from configuration import _Conflict, _merge, _split_keys
+from confidence import _Conflict, _merge, _split_keys
 
 
 def test_merge_trivial():
