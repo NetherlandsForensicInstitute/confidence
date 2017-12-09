@@ -8,11 +8,11 @@ dependencies = [
 
 
 setup(
-    name='configuration',
+    name='confidence',
     version='0.0',
     author='Mattijs Ugen',
     author_email=codecs.encode('nxnvqvbg@hfref.abercyl.tvguho.pbz', 'rot-13'),
     description='',
-    py_modules=['configuration'],
+    py_modules=['confidence'],
     install_requires=dependencies,
 )
