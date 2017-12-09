@@ -1,7 +1,7 @@
 from os import path
 from unittest.mock import call, patch
 
-from configuration import Configuration, load, load_name, loadf, loads, NotConfigured
+from configuration import Configuration, load, load_name, loadf, loads, NotConfigured, load_envvar_file, load_envvars
 
 
 test_files = path.join(path.dirname(__file__), 'files')
@@ -133,3 +133,55 @@ def test_load_name_order():
         call('./foo.yaml'),
         call('./bar.yaml'),
     ], any_order=False)
+
+
+def test_load_name_envvars():
+    env = {
+        'FOO_KEY': 'foo',
+        'FOO_NS_KEY': 'value',
+        'BAR_KEY': 'bar',
+    }
+
+    with patch('configuration.environ', env):
+        subject = load_name('foo', 'bar', load_order=(load_envvars,))
+
+    assert subject.key == 'bar'
+    assert subject.ns.key == 'value'
+
+
+def test_load_name_envvar_file():
+    env = {
+        'FOO_CONFIG_FILE': path.join(test_files, 'foo.yaml'),
+        'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
+    }
+
+    with patch('configuration.environ', env):
+        subject = load_name('foo', 'bar', load_order=(load_envvar_file,))
+
+    assert len(subject.semi.overlapping) == 2
+    assert subject.semi.overlapping.foo is True
+    assert subject.semi.overlapping.bar is False
+    assert subject.overlapping.fully == 'bar'
+
+
+def test_load_name_overlapping_envvars():
+    env = {
+        'FOO_KEY': 'foo',
+        'FOO_NS_KEY': 'value',
+        'BAR_KEY': 'bar',
+        'FOO_CONFIG_FILE': path.join(test_files, 'foo.yaml'),
+        'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
+    }
+
+    with patch('configuration.environ', env):
+        subject = load_name('foo', 'bar', load_order=(load_envvar_file, load_envvars))
+
+    assert subject.key == 'bar'
+    assert subject.ns.key == 'value'
+    assert subject.foo.config.file is NotConfigured
+    assert subject.bar.config.file is NotConfigured
+    assert subject.config.file is NotConfigured
+    assert len(subject.semi.overlapping) == 2
+    assert subject.semi.overlapping.foo is True
+    assert subject.semi.overlapping.bar is False
+    assert subject.overlapping.fully == 'bar'
