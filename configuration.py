@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 from enum import IntEnum
-from itertools import chain
+from itertools import chain, product
 from pathlib import Path
 
 import yaml
@@ -8,9 +8,9 @@ import yaml
 
 # ordered sequence of file name templates to load, in increasing significance
 LOAD_ORDER = (
-    '/etc/{name}.yaml',
-    '~/.{name}.yaml',
-    './{name}.yaml',
+    '/etc/{name}.{extension}',
+    '~/.{name}.{extension}',
+    './{name}.{extension}',
     # TODO: load from env var(s)
 )
 
@@ -246,7 +246,7 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
-def load_name(*names, load_order=LOAD_ORDER):
+def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. System-wide configuration locations are preceded
@@ -256,15 +256,18 @@ def load_name(*names, load_order=LOAD_ORDER):
         significance
     :param load_order: ordered list of file name templates, in increasing
         significance
-    :return: a `.Configuration` instances providing loaded from *names* in
-        *load_order* ordering
+    :param extension: file extension to be used
+    :return: a `.Configuration` instances providing values loaded from *names*
+        in *load_order* ordering
     """
     def generate_contents():
-        for template in load_order:
-            for name in names:
-                path = Path(template.format(name=name)).expanduser()
-                if path.exists():
-                    with path.open('r') as fd:
-                        yield yaml.load(fd.read())
+        # argument order for product matters, for names "foo" and "bar":
+        # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
+        for template, name in product(load_order, names):
+            # expand user to turn ~/.name.yaml into /home/user/.name.yaml
+            path = Path(template.format(name=name, extension=extension)).expanduser()
+            if path.exists():
+                with path.open('r') as fd:
+                    yield yaml.load(fd.read())
 
     return Configuration(*generate_contents())
