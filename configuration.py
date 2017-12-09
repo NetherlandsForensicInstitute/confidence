@@ -240,12 +240,25 @@ def loads(*strings):
 def load_envvars(name):
     prefix = '{}_'.format(name)
     prefix_len = len(prefix)
+    envvar_file = '{}_config_file'.format(name)
     # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
     values = {var.lower()[prefix_len:]: value
               for var, value in environ.items()
-              if var.lower().startswith(prefix)}
+              if var.lower().startswith(prefix) and var.lower() != envvar_file}
+    # TODO: envvar values can only be str, how do we configure non-str values?
     # provide it as a nested dict, treating _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
     return _split_keys(values, separator='_')
+
+
+def load_envvar_file(name):
+    envvar_file = environ.get('{}_config_file'.format(name).upper())
+    if envvar_file:
+        # envvar set, load value as file
+        with open(envvar_file) as fp:
+            return yaml.load(fp)
+    else:
+        # envvar not set, return an empty source
+        return {}
 
 
 # ordered sequence of name templates to load, in increasing significance
@@ -253,6 +266,7 @@ LOAD_ORDER = (
     '/etc/{name}.{extension}',
     '~/.{name}.{extension}',
     './{name}.{extension}',
+    load_envvar_file,
     load_envvars,
 )
 
