@@ -237,7 +237,7 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
-def load_envvars(name):
+def read_envvars(name):
     prefix = '{}_'.format(name)
     prefix_len = len(prefix)
     envvar_file = '{}_config_file'.format(name)
@@ -250,7 +250,7 @@ def load_envvars(name):
     return _split_keys(values, separator='_')
 
 
-def load_envvar_file(name):
+def read_envvar_file(name):
     envvar_file = environ.get('{}_config_file'.format(name).upper())
     if envvar_file:
         # envvar set, load value as file
@@ -266,8 +266,8 @@ LOAD_ORDER = (
     '/etc/{name}.{extension}',
     '~/.{name}.{extension}',
     './{name}.{extension}',
-    load_envvar_file,
-    load_envvars,
+    read_envvar_file,
+    read_envvars,
 )
 
 
