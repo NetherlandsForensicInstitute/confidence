@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from enum import IntEnum
 from itertools import chain, product
-from pathlib import Path
+from os import path
 
 import yaml
 
@@ -265,9 +265,9 @@ def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for template, name in product(load_order, names):
             # expand user to turn ~/.name.yaml into /home/user/.name.yaml
-            path = Path(template.format(name=name, extension=extension)).expanduser()
-            if path.exists():
-                with path.open('r') as fd:
+            candidate = path.expanduser(template.format(name=name, extension=extension))
+            if path.exists(candidate):
+                with open(candidate, 'r') as fd:
                     yield yaml.load(fd.read())
 
     return Configuration(*generate_contents())

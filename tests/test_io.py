@@ -130,14 +130,14 @@ def test_load_name_multiple():
 
 
 def test_load_name_order():
-    with patch('configuration.Path') as mocked:
-        mocked.return_value = mocked.expanduser.return_value = mocked
+    with patch('configuration.path') as mocked:
+        mocked.expanduser.return_value = mocked
         # avoid actually opening files that might unexpectedly exist
         mocked.exists.return_value = False
 
         assert len(load_name('foo', 'bar')) == 0
 
-    _assert_has_calls_in_oder(mocked, [
+    _assert_has_calls_in_oder(mocked.expanduser, [
         call('/etc/foo.yaml'),
         call('/etc/bar.yaml'),
         call('~/.foo.yaml'),
