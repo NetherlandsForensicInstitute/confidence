@@ -7,6 +7,9 @@ here = path.abspath(path.dirname(__file__))
 
 
 with open(path.join(here, 'README.rst'), 'r') as readme:
+    # use the contents of the readme as the long_description for the module
+    # strip the first line (no need for repo badges on PyPI)
+    readme.readline()
     readme = readme.read()
 
 
