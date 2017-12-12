@@ -21,9 +21,12 @@ dependencies = [
 setup(
     name='confidence',
     version='0.0',
+    url='https://github.com/akaIDIOT/python-configuration/',
     author='Mattijs Ugen',
     author_email=codecs.encode('nxnvqvbg@hfref.abercyl.tvguho.pbz', 'rot-13'),
+    license='Apache Software License 2.0',
     description="Simple module to load and use configuration in a clean, 'pythonic' way.",
+    keywords='configuration',
     long_description=readme,
 
     py_modules=['confidence'],
