@@ -1,6 +1,6 @@
 from collections import Mapping
 
-from configuration import Configuration, NotConfigured
+from confidence import Configuration, NotConfigured
 
 
 def test_empty():

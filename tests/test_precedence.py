@@ -1,4 +1,4 @@
-from configuration import Configuration
+from confidence import Configuration
 
 
 def test_multiple_sources():

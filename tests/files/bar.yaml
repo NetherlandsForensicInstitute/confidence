@@ -1,0 +1,7 @@
+non.overlapping:
+  key: bar value
+
+semi.overlapping.bar: false
+
+overlapping:
+  fully: bar

@@ -1,0 +1,7 @@
+nope.overlapping:
+  key: foo value
+
+semi.overlapping.foo: true
+
+overlapping:
+  fully: foo

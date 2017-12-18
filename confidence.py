@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from enum import IntEnum
-from itertools import chain
+from itertools import chain, product
+from os import environ, path
 
 import yaml
 
@@ -234,3 +235,90 @@ def loads(*strings):
     :rtype: `.Configuration`
     """
     return Configuration(*(yaml.load(string) for string in strings))
+
+
+def read_envvars(name):
+    """
+    Read environment variables starting with ``NAME_``, where subsequent
+    underscores are interpreted as namespaces.
+
+    .. note::
+
+        Environment variables are always `str`s, this function makes no effort
+        to changes this. All values read from command line variables will be
+        `str` instances.
+
+    :param name: environment variable prefix to look for (without the ``_``)
+    :return: a nested (possibly empty) `dict` with values read from
+        environment variables
+    """
+    prefix = '{}_'.format(name)
+    prefix_len = len(prefix)
+    envvar_file = '{}_config_file'.format(name)
+    # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
+    values = {var.lower()[prefix_len:]: value
+              for var, value in environ.items()
+              # TODO: document ignoring envvar_file
+              if var.lower().startswith(prefix) and var.lower() != envvar_file}
+    # TODO: envvar values can only be str, how do we configure non-str values?
+    # provide it as a nested dict, treating _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
+    return _split_keys(values, separator='_')
+
+
+def read_envvar_file(name):
+    """
+    Read values from a file provided as a environment variable
+    ``NAME_CONFIG_FILE``.
+
+    :param name: environment variable prefix to look for (without the
+        ``_CONFIG_FILE``)
+    :return: a nested (possibly empty) `dict` with values read from file
+    """
+    envvar_file = environ.get('{}_config_file'.format(name).upper())
+    if envvar_file:
+        # envvar set, load value as file
+        with open(envvar_file) as fp:
+            return yaml.load(fp)
+    else:
+        # envvar not set, return an empty source
+        return {}
+
+
+# ordered sequence of name templates to load, in increasing significance
+LOAD_ORDER = (
+    '/etc/{name}.{extension}',
+    '~/.{name}.{extension}',
+    './{name}.{extension}',
+    read_envvar_file,
+    read_envvars,
+)
+
+
+def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
+    """
+    Read a `.Configuration` instance by name, trying to read from files in
+    increasing significance. System-wide configuration locations are preceded
+    by user locations, and again by local files.
+
+    :param names: application or configuration set names, in increasing
+        significance
+    :param load_order: ordered list of name templates or `callable`s, in
+        increasing order of significance
+    :param extension: file extension to be used
+    :return: a `.Configuration` instances providing values loaded from *names*
+        in *load_order* ordering
+    """
+    def generate_sources():
+        # argument order for product matters, for names "foo" and "bar":
+        # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
+        for source, name in product(load_order, names):
+            if callable(source):
+                yield source(name)
+            else:
+                # expand user to turn ~/.name.yaml into /home/user/.name.yaml
+                candidate = path.expanduser(source.format(name=name, extension=extension))
+                if path.exists(candidate):
+                    with open(candidate, 'r') as fd:
+                        yield yaml.load(fd.read())
+
+    return Configuration(*generate_sources())
