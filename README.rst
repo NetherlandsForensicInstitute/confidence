@@ -3,8 +3,6 @@
 confidence.py :+1:
 ==================
 
-Simple module to load and use configuration in a clean, 'pythonic' way.
-
 Confidence makes it easy to load one or multiple sources of
 configuration values and exposes them as a simple to use Python object.
 Given the following YAML file:
@@ -23,7 +21,7 @@ Use it with confidence:
     # load configuration from a YAML file
     configuration = confidence.loadf('path/to/configuration.yaml')
 
-    # a Configuration object is like a dict, but than better
+    # a Configuration object is like a dict, but better
     value = configuration.get('foo.bar')
     value = configuration.get('foo.bar', default=42)
     # or even kwargs, should you want to
