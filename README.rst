@@ -26,7 +26,7 @@ Use it with confidence:
     # a Configuration object is like a dict, but than better
     value = configuration.get('foo.bar')
     value = configuration.get('foo.bar', default=42)
-    # or even kwargs, should you want to 
+    # or even kwargs, should you want to
     # (passing bar=42 and foo='21 is only half the answer')
     function(**configuration.foo)
 
@@ -44,7 +44,7 @@ defining defaults or reading from multiple files:
 
 .. code:: python
 
-    configuration = confidence.loadf('/etc/system-wide-defaults.yaml', 
+    configuration = confidence.loadf('/etc/system-wide-defaults.yaml',
                                      './local-overrides.yaml')
 
     # confidence provides a convenient way of using this kind of precedence,
@@ -54,7 +54,7 @@ defining defaults or reading from multiple files:
     # - ~/.app.yaml
     # - ./app.yaml
     configuration = confidence.load_name('app')
-    # if set, load_name will take a look at environment variables like 
+    # if set, load_name will take a look at environment variables like
     # APP_FOO_BAR and APP_FOO_BAZ, mixing those in as foo.bar and foo.baz
 
 While powerful, no set of convenience functions will even satisfy
@@ -73,7 +73,7 @@ possible, confidence doesn't hide away its flexible internal API.
         return read_values
 
     # all of this can be combined to turn it into a single glorious Configuration instance
-    # precedence rules apply here, values from read_from_source will overwrite both 
+    # precedence rules apply here, values from read_from_source will overwrite both
     # app_defaults and values read from file
     configuration = confidence.Configuration(app_defaults,
                                              # yeah, this would be a Configuration instance
@@ -83,7 +83,7 @@ possible, confidence doesn't hide away its flexible internal API.
     # make it so, no. 1
     run_app(configuration)
 
-.. |Build Status| image:: https://img.shields.io/travis/akaIDIOT/python-configuration/master.svg
-   :target: https://travis-ci.org/akaIDIOT/python-configuration
-.. |Coverage Status| image:: https://img.shields.io/coveralls/akaIDIOT/python-configuration/master.svg
-   :target: https://coveralls.io/r/akaIDIOT/python-configuration?branch=master
+.. |Build Status| image:: https://img.shields.io/travis/HolmesNL/confidence/master.svg
+   :target: https://travis-ci.org/HolmesNL/confidence
+.. |Coverage Status| image:: https://img.shields.io/coveralls/HolmesNL/confidence/master.svg
+   :target: https://coveralls.io/r/HolmesNL/confidence?branch=master
