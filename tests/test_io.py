@@ -90,6 +90,15 @@ def test_loadf_multiple():
                          path.join(test_files, 'config.yaml')))
 
 
+def test_loadf_home():
+    with patch('confidence.path') as mocked_path:
+        # actual expanded home directory not under test, verify that it was called
+        mocked_path.expanduser.return_value = path.join(test_files, 'config.yaml')
+        _assert_values(loadf('~/config.yaml'))
+
+    mocked_path.expanduser.assert_called_once_with('~/config.yaml')
+
+
 def test_load_name_single():
     test_path = path.join(test_files, '{name}.{extension}')
 
