@@ -223,7 +223,7 @@ def loadf(*fnames):
         with open(fname, 'r') as fp:
             return yaml.load(fp.read())
 
-    return Configuration(*(readf(fname) for fname in fnames))
+    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames))
 
 
 def loads(*strings):
