@@ -223,7 +223,7 @@ def loadf(*fnames):
         with open(fname, 'r') as fp:
             return yaml.load(fp.read())
 
-    return Configuration(*(readf(fname) for fname in fnames))
+    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames))
 
 
 def loads(*strings):
@@ -272,16 +272,15 @@ def read_envvar_file(name):
 
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
-    :return: a nested (possibly empty) `dict` with values read from file
+    :return: a `.Configuration`, possibly `.NotConfigured`
     """
     envvar_file = environ.get('{}_config_file'.format(name).upper())
     if envvar_file:
         # envvar set, load value as file
-        with open(envvar_file) as fp:
-            return yaml.load(fp)
+        return loadf(envvar_file)
     else:
         # envvar not set, return an empty source
-        return {}
+        return NotConfigured
 
 
 # ordered sequence of name templates to load, in increasing significance
