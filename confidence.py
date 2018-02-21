@@ -238,12 +238,18 @@ def loads(*strings):
 
 
 def read_xdg_config_home(name, extension):
+    # find optional value of ${XDG_CONFIG_HOME}
     config_home = environ.get('XDG_CONFIG_HOME')
-    if config_home:
-        config_path = path.join(path.expanduser(config_home),
-                                '{name}.{extension}'.format(name=name, extension=extension))
-        if path.exists(config_path):
-            return loadf(config_path)
+    if not config_home:
+        # XDG spec: "If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used."
+        # see https://specifications.freedesktop.org/basedir-spec/latest/ar01s03.html
+        config_home = path.expandvars('${HOME}/.config')
+
+    # expand to full path to configuration file in XDG config path
+    config_path = path.join(path.expanduser(config_home),
+                            '{name}.{extension}'.format(name=name, extension=extension))
+    if path.exists(config_path):
+        return loadf(config_path)
 
     return NotConfigured
 
