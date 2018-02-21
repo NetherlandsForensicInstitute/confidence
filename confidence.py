@@ -237,6 +237,17 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
+def read_xdg_config_home(name, extension):
+    config_home = environ.get('XDG_CONFIG_HOME')
+    if config_home:
+        config_path = path.join(path.expanduser(config_home),
+                                '{name}.{extension}'.format(name=name, extension=extension))
+        if path.exists(config_path):
+            return loadf(config_path)
+
+    return NotConfigured
+
+
 def read_envvars(name, extension):
     """
     Read environment variables starting with ``NAME_``, where subsequent
@@ -288,6 +299,7 @@ def read_envvar_file(name, extension):
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
     '/etc/{name}.{extension}',
+    read_xdg_config_home,
     '~/.{name}.{extension}',
     './{name}.{extension}',
     read_envvar_file,
