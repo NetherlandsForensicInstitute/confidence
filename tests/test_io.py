@@ -127,7 +127,11 @@ def test_load_name_multiple():
 
 
 def test_load_name_order():
-    with patch('confidence.path') as mocked:
+    env = {
+        'HOME': '/home/user'
+    }
+
+    with patch('confidence.path') as mocked, patch('confidence.environ', env):
         mocked.expanduser.return_value = mocked
         # avoid actually opening files that might unexpectedly exist
         mocked.exists.return_value = False

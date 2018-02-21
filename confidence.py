@@ -255,8 +255,7 @@ def read_xdg_config_home(name, extension):
         config_home = path.expandvars('${HOME}/.config')
 
     # expand to full path to configuration file in XDG config path
-    config_path = path.join(path.expanduser(config_home),
-                            '{name}.{extension}'.format(name=name, extension=extension))
+    config_path = path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension))
     if path.exists(config_path):
         return loadf(config_path)
 
