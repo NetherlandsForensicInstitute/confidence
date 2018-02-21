@@ -237,7 +237,7 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
-def read_envvars(name):
+def read_envvars(name, extension):
     """
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces.
@@ -249,6 +249,7 @@ def read_envvars(name):
         `str` instances.
 
     :param name: environment variable prefix to look for (without the ``_``)
+    :param extension: *(unused)*
     :return: a nested (possibly empty) `dict` with values read from
         environment variables
     """
@@ -265,13 +266,14 @@ def read_envvars(name):
     return _split_keys(values, separator='_')
 
 
-def read_envvar_file(name):
+def read_envvar_file(name, extension):
     """
     Read values from a file provided as a environment variable
     ``NAME_CONFIG_FILE``.
 
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
+    :param extension: *(unused)*
     :return: a `.Configuration`, possibly `.NotConfigured`
     """
     envvar_file = environ.get('{}_config_file'.format(name).upper())
@@ -312,7 +314,7 @@ def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):
             if callable(source):
-                yield source(name)
+                yield source(name, extension)
             else:
                 # expand user to turn ~/.name.yaml into /home/user/.name.yaml
                 candidate = path.expanduser(source.format(name=name, extension=extension))
