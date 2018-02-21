@@ -238,6 +238,15 @@ def loads(*strings):
 
 
 def read_xdg_config_home(name, extension):
+    """
+    Read from file found in XDG-specified configuration home directory,
+    expanding to ``${HOME}/.config/name.extension`` by default. Depends on
+    ``XDG_CONFIG_HOME`` or ``HOME`` environment variables.
+
+    :param name: application or configuration set name
+    :param extension: file extension to look for
+    :return: a `.Configuration` instance, possibly `.NotConfigured`
+    """
     # find optional value of ${XDG_CONFIG_HOME}
     config_home = environ.get('XDG_CONFIG_HOME')
     if not config_home:
