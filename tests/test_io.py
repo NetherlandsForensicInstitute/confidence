@@ -1,7 +1,8 @@
 from os import path
 from unittest.mock import call, patch
 
-from confidence import Configuration, load, load_name, loadf, loads, NotConfigured, read_envvar_file, read_envvars, read_xdg_config_home
+from confidence import Configuration, load, load_name, loadf, loads, NotConfigured
+from confidence import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
 test_files = path.join(path.dirname(__file__), 'files')
@@ -145,6 +146,8 @@ def test_load_name_order():
         assert len(load_name('foo', 'bar')) == 0
 
     mocked_path.exists.assert_has_calls([
+        call('/etc/xdg/foo.yaml'),
+        call('/etc/xdg/bar.yaml'),
         call('/etc/foo.yaml'),
         call('/etc/bar.yaml'),
         call('/home/user/.config/foo.yaml'),
@@ -153,6 +156,44 @@ def test_load_name_order():
         call('/home/user/.bar.yaml'),
         call('./foo.yaml'),
         call('./bar.yaml'),
+    ], any_order=False)
+
+
+def test_load_name_xdg_config_dirs():
+    env = {
+        'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
+    }
+
+    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+        # hard-code path separator, unmock join
+        mocked_path.pathsep = ':'
+        mocked_path.join.side_effect = path.join
+        # avoid actually opening files that might unexpectedly exist
+        mocked_path.exists.return_value = False
+
+        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
+
+    mocked_path.exists.assert_has_calls([
+        # this might not be ideal (/etc/not-xdg should maybe show up twice first), but also not realistic…
+        call('/etc/not-xdg/foo.yaml'),
+        call('/etc/xdg-desktop/foo.yaml'),
+        call('/etc/not-xdg/bar.yaml'),
+        call('/etc/xdg-desktop/bar.yaml'),
+    ], any_order=False)
+
+
+def test_load_name_xdg_config_dirs_fallback():
+    with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', {}):
+        # hard-code path separator, unmock join
+        mocked_path.pathsep = ':'
+        mocked_path.join.side_effect = path.join
+        mocked_path.exists.return_value = True
+
+        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
+
+    mocked_loadf.assert_has_calls([
+        call('/etc/xdg/foo.yaml'),
+        call('/etc/xdg/bar.yaml'),
     ], any_order=False)
 
 
@@ -186,7 +227,6 @@ def test_load_name_xdg_config_home_fallback():
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
-        # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = True
         mocked_loadf.return_value = NotConfigured
 
