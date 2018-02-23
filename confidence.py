@@ -238,13 +238,26 @@ def loads(*strings):
 
 
 def read_xdg_config_dirs(name, extension):
+    """
+    Read from files found in XDG-specified system-wide configuration paths,
+    defaulting to ``/etc/xdg``. Depends on ``XDG_CONFIG_DIRS`` environment
+    variable.
+
+    :param name: application or configuration set name
+    :param extension: file extension to look for
+    :return: a `.Configuration` instance with values read from XDG-specified
+        directories
+    """
+    # find optional value of ${XDG_CONFIG_DIRS}
     config_dirs = environ.get('XDG_CONFIG_DIRS')
     if config_dirs:
         # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
         config_dirs = reversed(config_dirs.split(path.pathsep))
     else:
+        # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
         config_dirs = ['/etc/xdg']
 
+    # collect existing files in the config dirs
     hits = []
     for config_dir in config_dirs:
         candidate = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
