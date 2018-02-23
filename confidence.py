@@ -237,6 +237,23 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
+def read_xdg_config_dirs(name, extension):
+    config_dirs = environ.get('XDG_CONFIG_DIRS')
+    if config_dirs:
+        # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
+        config_dirs = reversed(config_dirs.split(path.pathsep))
+    else:
+        config_dirs = ['/etc/xdg']
+
+    hits = []
+    for config_dir in config_dirs:
+        candidate = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
+        if path.exists(candidate):
+            hits.append(candidate)
+
+    return loadf(*hits)
+
+
 def read_xdg_config_home(name, extension):
     """
     Read from file found in XDG-specified configuration home directory,
@@ -312,6 +329,7 @@ def read_envvar_file(name, extension):
 
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
+    read_xdg_config_dirs,
     '/etc/{name}.{extension}',
     read_xdg_config_home,
     '~/.{name}.{extension}',
