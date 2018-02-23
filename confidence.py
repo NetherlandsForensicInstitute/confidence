@@ -252,7 +252,7 @@ def read_xdg_config_home(name, extension):
     if not config_home:
         # XDG spec: "If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used."
         # see https://specifications.freedesktop.org/basedir-spec/latest/ar01s03.html
-        config_home = path.join(environ.get('HOME'), '.config')
+        config_home = path.expanduser('~/.config')
 
     # expand to full path to configuration file in XDG config path
     config_path = path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension))
