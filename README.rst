@@ -47,8 +47,12 @@ defining defaults or reading from multiple files:
 
     # confidence provides a convenient way of using this kind of precedence,
     # letting 'more local' files take precedence over system-wide sources
-    # load_name will attempt to load
+    # load_name will attempt to load the following files, skipping ones that
+    # don't exist (see XDG spec for *-marked entries, confidence will read
+    # $XDG_CONFIG_DIRS and $XDG_CONFIG_HOME):
+    # - /etc/xdg/app.yaml   (*)
     # - /etc/app.yaml
+    # - ~/.config/app.yaml  (*)
     # - ~/.app.yaml
     # - ./app.yaml
     configuration = confidence.load_name('app')
