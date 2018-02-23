@@ -31,6 +31,10 @@ def _assert_values(conf):
     assert conf.does_not.exist is NotConfigured
 
 
+def _patched_expanduser(value):
+    return value.replace('~', '/home/user')
+
+
 def test_load_default():
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
@@ -131,18 +135,22 @@ def test_load_name_order():
         'HOME': '/home/user'
     }
 
-    with patch('confidence.path') as mocked, patch('confidence.environ', env):
-        mocked.expanduser.return_value = mocked
+    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+        # hard-code user-expansion, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
+        mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
-        mocked.exists.return_value = False
+        mocked_path.exists.return_value = False
 
         assert len(load_name('foo', 'bar')) == 0
 
-    mocked.expanduser.assert_has_calls([
+    mocked_path.exists.assert_has_calls([
         call('/etc/foo.yaml'),
         call('/etc/bar.yaml'),
-        call('~/.foo.yaml'),
-        call('~/.bar.yaml'),
+        call('/home/user/.config/foo.yaml'),
+        call('/home/user/.config/bar.yaml'),
+        call('/home/user/.foo.yaml'),
+        call('/home/user/.bar.yaml'),
         call('./foo.yaml'),
         call('./bar.yaml'),
     ], any_order=False)
@@ -154,15 +162,16 @@ def test_load_name_xdg_config_home():
         'HOME': '/home/user'
     }
 
-    with patch('confidence.path') as mocked, patch('confidence.environ', env):
-        # 'unmock' path.join
-        mocked.join.side_effect = path.join
+    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+        # hard-code user-expansion, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
+        mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
-        mocked.exists.return_value = False
+        mocked_path.exists.return_value = False
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
-    mocked.exists.assert_has_calls([
+    mocked_path.exists.assert_has_calls([
         call('/home/user/.not-config/foo.yaml'),
         call('/home/user/.not-config/bar.yaml'),
     ], any_order=False)
@@ -174,7 +183,8 @@ def test_load_name_xdg_config_home_fallback():
     }
 
     with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', env):
-        # 'unmock' path.join
+        # hard-code user-expansion, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = True
