@@ -305,8 +305,7 @@ def read_envvars(name, extension):
 
     :param name: environment variable prefix to look for (without the ``_``)
     :param extension: *(unused)*
-    :return: a nested (possibly empty) `dict` with values read from
-        environment variables
+    :return: a `.Configuration` instance, possibly `.NotConfigured`
     """
     prefix = '{}_'.format(name)
     prefix_len = len(prefix)
@@ -317,8 +316,11 @@ def read_envvars(name, extension):
               # TODO: document ignoring envvar_file
               if var.lower().startswith(prefix) and var.lower() != envvar_file}
     # TODO: envvar values can only be str, how do we configure non-str values?
-    # provide it as a nested dict, treating _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
-    return _split_keys(values, separator='_')
+    if not values:
+        return NotConfigured
+
+    # treat _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
+    return Configuration(values, separator='_')
 
 
 def read_envvar_file(name, extension):
