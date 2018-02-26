@@ -6,11 +6,15 @@ from setuptools import setup
 here = path.abspath(path.dirname(__file__))
 
 
-with open(path.join(here, 'README.rst'), 'r') as readme:
+with open(path.join(here, 'README.rst'), 'r', encoding='utf-8') as readme:
     # use the contents of the readme as the long_description for the module
     # strip the first line (no need for repo badges on PyPI)
     readme.readline()
     readme = readme.read()
+
+
+with open(path.join(here, 'CHANGES.rst'), 'r', encoding='utf-8') as changes:
+    changes = changes.read()
 
 
 dependencies = [
@@ -27,7 +31,7 @@ setup(
     license='Apache Software License 2.0',
     description="Simple module to load and use configuration in a clean, 'pythonic' way.",
     keywords='configuration',
-    long_description=readme,
+    long_description='\n\n'.join((readme, changes)),
 
     py_modules=['confidence'],
     install_requires=dependencies,
