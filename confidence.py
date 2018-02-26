@@ -237,7 +237,62 @@ def loads(*strings):
     return Configuration(*(yaml.load(string) for string in strings))
 
 
-def read_envvars(name):
+def read_xdg_config_dirs(name, extension):
+    """
+    Read from files found in XDG-specified system-wide configuration paths,
+    defaulting to ``/etc/xdg``. Depends on ``XDG_CONFIG_DIRS`` environment
+    variable.
+
+    :param name: application or configuration set name
+    :param extension: file extension to look for
+    :return: a `.Configuration` instance with values read from XDG-specified
+        directories
+    """
+    # find optional value of ${XDG_CONFIG_DIRS}
+    config_dirs = environ.get('XDG_CONFIG_DIRS')
+    if config_dirs:
+        # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
+        config_dirs = reversed(config_dirs.split(path.pathsep))
+    else:
+        # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
+        config_dirs = ['/etc/xdg']
+
+    # collect existing files in the config dirs
+    hits = []
+    for config_dir in config_dirs:
+        candidate = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
+        if path.exists(candidate):
+            hits.append(candidate)
+
+    return loadf(*hits)
+
+
+def read_xdg_config_home(name, extension):
+    """
+    Read from file found in XDG-specified configuration home directory,
+    expanding to ``${HOME}/.config/name.extension`` by default. Depends on
+    ``XDG_CONFIG_HOME`` or ``HOME`` environment variables.
+
+    :param name: application or configuration set name
+    :param extension: file extension to look for
+    :return: a `.Configuration` instance, possibly `.NotConfigured`
+    """
+    # find optional value of ${XDG_CONFIG_HOME}
+    config_home = environ.get('XDG_CONFIG_HOME')
+    if not config_home:
+        # XDG spec: "If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used."
+        # see https://specifications.freedesktop.org/basedir-spec/latest/ar01s03.html
+        config_home = path.expanduser('~/.config')
+
+    # expand to full path to configuration file in XDG config path
+    config_path = path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension))
+    if not path.exists(config_path):
+        return NotConfigured
+
+    return loadf(config_path)
+
+
+def read_envvars(name, extension):
     """
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces.
@@ -249,8 +304,8 @@ def read_envvars(name):
         `str` instances.
 
     :param name: environment variable prefix to look for (without the ``_``)
-    :return: a nested (possibly empty) `dict` with values read from
-        environment variables
+    :param extension: *(unused)*
+    :return: a `.Configuration` instance, possibly `.NotConfigured`
     """
     prefix = '{}_'.format(name)
     prefix_len = len(prefix)
@@ -261,17 +316,21 @@ def read_envvars(name):
               # TODO: document ignoring envvar_file
               if var.lower().startswith(prefix) and var.lower() != envvar_file}
     # TODO: envvar values can only be str, how do we configure non-str values?
-    # provide it as a nested dict, treating _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
-    return _split_keys(values, separator='_')
+    if not values:
+        return NotConfigured
+
+    # treat _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
+    return Configuration(values, separator='_')
 
 
-def read_envvar_file(name):
+def read_envvar_file(name, extension):
     """
     Read values from a file provided as a environment variable
     ``NAME_CONFIG_FILE``.
 
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
+    :param extension: *(unused)*
     :return: a `.Configuration`, possibly `.NotConfigured`
     """
     envvar_file = environ.get('{}_config_file'.format(name).upper())
@@ -285,7 +344,9 @@ def read_envvar_file(name):
 
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
+    read_xdg_config_dirs,
     '/etc/{name}.{extension}',
+    read_xdg_config_home,
     '~/.{name}.{extension}',
     './{name}.{extension}',
     read_envvar_file,
@@ -312,7 +373,7 @@ def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):
             if callable(source):
-                yield source(name)
+                yield source(name, extension)
             else:
                 # expand user to turn ~/.name.yaml into /home/user/.name.yaml
                 candidate = path.expanduser(source.format(name=name, extension=extension))
