@@ -370,13 +370,18 @@ def read_envvar_dir(envvar, name, extension):
 
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
+    # system-wide locations
     read_xdg_config_dirs,
     '/etc/{name}.{extension}',
     partial(read_envvar_dir, 'PROGRAMDATA'),
+
+    # user-local locations
     read_xdg_config_home,
     partial(read_envvar_dir, 'APPDATA'),
     partial(read_envvar_dir, 'LOCALAPPDATA'),
     '~/.{name}.{extension}',
+
+    # application-local locations
     './{name}.{extension}',
     read_envvar_file,
     read_envvars,
