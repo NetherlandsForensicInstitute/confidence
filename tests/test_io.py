@@ -1,7 +1,8 @@
+from functools import partial
 from os import path
 from unittest.mock import call, patch
 
-from confidence import Configuration, load, load_name, loadf, loads, NotConfigured
+from confidence import Configuration, LOAD_ORDER, load, load_name, loadf, loads, NotConfigured
 from confidence import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
@@ -133,7 +134,8 @@ def test_load_name_multiple():
 
 def test_load_name_order():
     env = {
-        'HOME': '/home/user'
+        'HOME': '/home/user',
+        'LOCALAPPDATA': 'C:/Users/user/AppData/Local'
     }
 
     with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
@@ -152,6 +154,8 @@ def test_load_name_order():
         call('/etc/bar.yaml'),
         call('/home/user/.config/foo.yaml'),
         call('/home/user/.config/bar.yaml'),
+        call('C:/Users/user/AppData/Local/foo.yaml'),
+        call('C:/Users/user/AppData/Local/bar.yaml'),
         call('/home/user/.foo.yaml'),
         call('/home/user/.bar.yaml'),
         call('./foo.yaml'),
@@ -288,3 +292,29 @@ def test_load_name_overlapping_envvars():
     assert subject.semi.overlapping.foo is True
     assert subject.semi.overlapping.bar is False
     assert subject.overlapping.fully == 'bar'
+
+
+def test_load_name_envvar_dir():
+    env = {
+        'PROGRAMDATA': 'C:/ProgramData',
+        'APPDATA': 'D:/Users/user/AppData/Roaming'
+    }
+
+    # only the envvar dir loaders are partials in LOAD_ORDER
+    load_order = [loader for loader in LOAD_ORDER if isinstance(loader, partial)]
+
+    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+        # hard-code user-expansion, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
+        mocked_path.join.side_effect = path.join
+        # avoid actually opening files that might unexpectedly exist
+        mocked_path.exists.return_value = False
+
+        assert len(load_name('foo', 'bar', load_order=load_order)) == 0
+
+    mocked_path.exists.assert_has_calls([
+        call('C:/ProgramData/foo.yaml'),
+        call('C:/ProgramData/bar.yaml'),
+        call('D:/Users/user/AppData/Roaming/foo.yaml'),
+        call('D:/Users/user/AppData/Roaming/bar.yaml'),
+    ], any_order=False)
