@@ -303,16 +303,16 @@ def test_load_name_envvar_dir():
     # only the envvar dir loaders are partials in LOAD_ORDER
     load_order = [loader for loader in LOAD_ORDER if isinstance(loader, partial)]
 
-    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+    with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
-        # avoid actually opening files that might unexpectedly exist
-        mocked_path.exists.return_value = False
+        mocked_path.exists.return_value = True
+        mocked_loadf.return_value = NotConfigured
 
         assert len(load_name('foo', 'bar', load_order=load_order)) == 0
 
-    mocked_path.exists.assert_has_calls([
+    mocked_loadf.assert_has_calls([
         call('C:/ProgramData/foo.yaml'),
         call('C:/ProgramData/bar.yaml'),
         call('D:/Users/user/AppData/Roaming/foo.yaml'),
