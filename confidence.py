@@ -344,11 +344,24 @@ def read_envvar_file(name, extension):
 
 
 def read_envvar_dir(envvar, name, extension):
+    """
+    Read values from a file located in a directory specified by a particular
+    environment file. ``read_envvar_dir('HOME', 'example', 'yaml')`` would
+    look for a file at ``/home/user/example.yaml``. When the environment
+    variable isn't set or the file does not exist, `NotConfigured` will be
+    returned.
+
+    :param envvar: the environment variable to interpret as a directory
+    :param name: application or configuration set name
+    :param extension: file extension to look for
+    :return: a `.Configuration`, possibly `.NotConfigured`
+    """
     config_dir = environ.get(envvar)
     if not config_dir:
         return NotConfigured
 
-    config_path = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
+    # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
+    config_path = path.join(path.expanduser(config_dir), '{name}.{extension}'.format(name=name, extension=extension))
     if not path.exists(config_path):
         return NotConfigured
 
