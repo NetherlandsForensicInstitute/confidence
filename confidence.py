@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from enum import IntEnum
+from functools import partial
 from itertools import chain, product
 from os import environ, path
 
@@ -342,11 +343,26 @@ def read_envvar_file(name, extension):
         return NotConfigured
 
 
+def read_envvar_dir(envvar, name, extension):
+    config_dir = environ.get(envvar)
+    if not config_dir:
+        return NotConfigured
+
+    config_path = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
+    if not path.exists(config_path):
+        return NotConfigured
+
+    return loadf(config_path)
+
+
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
     read_xdg_config_dirs,
     '/etc/{name}.{extension}',
+    partial(read_envvar_dir, 'PROGRAMDATA'),
     read_xdg_config_home,
+    partial(read_envvar_dir, 'APPDATA'),
+    partial(read_envvar_dir, 'LOCALAPPDATA'),
     '~/.{name}.{extension}',
     './{name}.{extension}',
     read_envvar_file,
