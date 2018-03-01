@@ -373,10 +373,12 @@ LOAD_ORDER = (
     # system-wide locations
     read_xdg_config_dirs,
     '/etc/{name}.{extension}',
+    '/Library/Preferences/{name}.{extension}',
     partial(read_envvar_dir, 'PROGRAMDATA'),
 
     # user-local locations
     read_xdg_config_home,
+    '~/Library/Preferences/{name}.{extension}',
     partial(read_envvar_dir, 'APPDATA'),
     partial(read_envvar_dir, 'LOCALAPPDATA'),
     '~/.{name}.{extension}',
