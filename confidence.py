@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from enum import IntEnum
+from functools import partial
 from itertools import chain, product
 from os import environ, path
 
@@ -342,12 +343,47 @@ def read_envvar_file(name, extension):
         return NotConfigured
 
 
+def read_envvar_dir(envvar, name, extension):
+    """
+    Read values from a file located in a directory specified by a particular
+    environment file. ``read_envvar_dir('HOME', 'example', 'yaml')`` would
+    look for a file at ``/home/user/example.yaml``. When the environment
+    variable isn't set or the file does not exist, `NotConfigured` will be
+    returned.
+
+    :param envvar: the environment variable to interpret as a directory
+    :param name: application or configuration set name
+    :param extension: file extension to look for
+    :return: a `.Configuration`, possibly `.NotConfigured`
+    """
+    config_dir = environ.get(envvar)
+    if not config_dir:
+        return NotConfigured
+
+    # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
+    config_path = path.join(path.expanduser(config_dir), '{name}.{extension}'.format(name=name, extension=extension))
+    if not path.exists(config_path):
+        return NotConfigured
+
+    return loadf(config_path)
+
+
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
+    # system-wide locations
     read_xdg_config_dirs,
     '/etc/{name}.{extension}',
+    '/Library/Preferences/{name}.{extension}',
+    partial(read_envvar_dir, 'PROGRAMDATA'),
+
+    # user-local locations
     read_xdg_config_home,
+    '~/Library/Preferences/{name}.{extension}',
+    partial(read_envvar_dir, 'APPDATA'),
+    partial(read_envvar_dir, 'LOCALAPPDATA'),
     '~/.{name}.{extension}',
+
+    # application-local locations
     './{name}.{extension}',
     read_envvar_file,
     read_envvars,
