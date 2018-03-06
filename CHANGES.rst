@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.2 (2018-03-06)
+----------------
 
 - Read files from `XDG-specified <https://specifications.freedesktop.org/basedir-spec/latest/>`_ directories.
 - Read files form system-wide and user-local directories specified in environment variables ``PROGRAMDATA``, ``APPDATA`` and ``LOCALAPPDATA`` (in that order).
