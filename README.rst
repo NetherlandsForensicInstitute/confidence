@@ -47,19 +47,25 @@ defining defaults or reading from multiple files:
 
     # confidence provides a convenient way of using this kind of precedence,
     # letting 'more local' files take precedence over system-wide sources
-    # load_name will attempt to load the following files, skipping ones that
-    # don't exist (see XDG spec for *-marked entries, confidence will read
-    # $XDG_CONFIG_DIRS and $XDG_CONFIG_HOME):
-    # - /etc/xdg/app.yaml   (*)
+    # load_name will attempt to load multiple files, skipping ones that
+    # don't exist (using typical *nix paths, XDG-specified locations, some
+    # Windows environment variables and typical OSX paths):
+    # - /etc/xdg/app.yaml
     # - /etc/app.yaml
-    # - ~/.config/app.yaml  (*)
+    # - /Library/Preferences/app.yaml
+    # - C:/ProgramData/app.yaml
+    # - ~/.config/app.yaml
+    # - ~/Library/Preferences/app.yaml
+    # - ~/AppData/Roaming/app.yaml
     # - ~/.app.yaml
     # - ./app.yaml
+
     configuration = confidence.load_name('app')
+
     # if set, load_name will take a look at environment variables like
     # APP_FOO_BAR and APP_FOO_BAZ, mixing those in as foo.bar and foo.baz
 
-While powerful, no set of convenience functions will even satisfy
+While powerful, no set of convenience functions will ever satisfy
 everyone's use case. To be able to serve as wide an audience as
 possible, confidence doesn't hide away its flexible internal API.
 
