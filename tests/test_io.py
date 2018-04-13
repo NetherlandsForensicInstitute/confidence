@@ -1,5 +1,6 @@
 from functools import partial
 from os import path
+import pytest
 from unittest.mock import call, patch
 
 from confidence import Configuration, LOAD_ORDER, load, load_name, loadf, loads, NotConfigured
@@ -37,7 +38,7 @@ def _patched_expanduser(value):
     return value.replace('~', '/home/user')
 
 
-def test_load_default():
+def test_load_defaults():
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
     # as json is a subset of yaml, this should work just fine
@@ -60,7 +61,7 @@ def test_load_multiple():
         _assert_values(load(file1, file2))
 
 
-def test_loads_default():
+def test_loads_defaults():
     _assert_values(loads(yaml_str))
     _assert_values(loads(json_str))
 
@@ -78,7 +79,7 @@ def test_loads_multiple():
                          yaml_str))
 
 
-def test_loadf_default():
+def test_loadf_defaults():
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
     _assert_values(loadf(path.join(test_files, 'config.json')))
 
@@ -103,6 +104,26 @@ def test_loadf_home():
         _assert_values(loadf('~/config.yaml'))
 
     mocked_path.expanduser.assert_called_once_with('~/config.yaml')
+
+
+def test_loadf_default():
+    with patch('confidence.path') as mocked_path:
+        mocked_path.exists.return_value = False
+        mocked_path.expanduser.side_effect = _patched_expanduser
+
+        config = loadf('/path/to/file', default={'a': 2})
+        assert config.a == 2
+
+        config = loadf('/path/to/file', default=Configuration({'b': 2}))
+        assert config.b == 2
+
+
+def test_loadf_missing():
+    with patch('confidence.path') as mocked_path:
+        mocked_path.exists.return_value = False
+        mocked_path.expanduser.side_effect = _patched_expanduser
+        with pytest.raises(FileNotFoundError):
+            loadf('/path/to/file')
 
 
 def test_load_name_single():

@@ -219,7 +219,7 @@ def loadf(*fnames, default=_NoDefault):
 
     :param fnames: name of the files to ``open()``
     :param default: `dict` or `.Configuration` to use when a file does not
-        exist (default is to raise an error)
+        exist (default is to raise a `FileNotFoundError`)
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
