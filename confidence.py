@@ -265,14 +265,10 @@ def read_xdg_config_dirs(name, extension):
         # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
         config_dirs = ['/etc/xdg']
 
-    # collect existing files in the config dirs
-    hits = []
-    for config_dir in config_dirs:
-        candidate = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
-        if path.exists(candidate):
-            hits.append(candidate)
-
-    return loadf(*hits)
+    # load a file from all config dirs, default to NotConfigured
+    fname = '{name}.{extension}'.format(name=name, extension=extension)
+    return loadf(*(path.join(config_dir, fname) for config_dir in config_dirs),
+                 default=NotConfigured)
 
 
 def read_xdg_config_home(name, extension):
@@ -293,11 +289,8 @@ def read_xdg_config_home(name, extension):
         config_home = path.expanduser('~/.config')
 
     # expand to full path to configuration file in XDG config path
-    config_path = path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension))
-    if not path.exists(config_path):
-        return NotConfigured
-
-    return loadf(config_path)
+    return loadf(path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension)),
+                 default=NotConfigured)
 
 
 def read_envvars(name, extension):
@@ -369,10 +362,7 @@ def read_envvar_dir(envvar, name, extension):
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
     config_path = path.join(path.expanduser(config_dir), '{name}.{extension}'.format(name=name, extension=extension))
-    if not path.exists(config_path):
-        return NotConfigured
-
-    return loadf(config_path)
+    return loadf(config_path, default=NotConfigured)
 
 
 # ordered sequence of name templates to load, in increasing significance
