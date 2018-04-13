@@ -213,17 +213,23 @@ def load(*fps):
     return Configuration(*(yaml.load(fp.read()) for fp in fps))
 
 
-def loadf(*fnames):
+def loadf(*fnames, default=_NoDefault):
     """
     Read a `.Configuration` instance from named files.
 
     :param fnames: name of the files to ``open()``
+    :param default: `dict` or `.Configuration` to use when a file does not
+        exist (default is to raise an error)
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
     def readf(fname):
-        with open(fname, 'r') as fp:
-            return yaml.load(fp.read())
+        if default is _NoDefault or path.exists(fname):
+            # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
+            with open(fname, 'r') as fp:
+                return yaml.load(fp.read())
+        else:
+            return default
 
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames))
 
