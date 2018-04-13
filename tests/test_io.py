@@ -174,6 +174,7 @@ def test_load_name_xdg_config_dirs():
 
     with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
         # hard-code path separator, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
@@ -193,6 +194,7 @@ def test_load_name_xdg_config_dirs():
 def test_load_name_xdg_config_dirs_fallback():
     with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', {}):
         # hard-code path separator, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
         mocked_path.join.side_effect = path.join
         mocked_path.exists.return_value = True
@@ -200,8 +202,8 @@ def test_load_name_xdg_config_dirs_fallback():
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
     mocked_loadf.assert_has_calls([
-        call('/etc/xdg/foo.yaml'),
-        call('/etc/xdg/bar.yaml'),
+        call('/etc/xdg/foo.yaml', default=NotConfigured),
+        call('/etc/xdg/bar.yaml', default=NotConfigured),
     ], any_order=False)
 
 
@@ -241,8 +243,8 @@ def test_load_name_xdg_config_home_fallback():
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
     mocked_loadf.assert_has_calls([
-        call('/home/user/.config/foo.yaml'),
-        call('/home/user/.config/bar.yaml'),
+        call('/home/user/.config/foo.yaml', default=NotConfigured),
+        call('/home/user/.config/bar.yaml', default=NotConfigured),
     ], any_order=False)
 
 
@@ -317,8 +319,8 @@ def test_load_name_envvar_dir():
         assert len(load_name('foo', 'bar', load_order=load_order)) == 0
 
     mocked_loadf.assert_has_calls([
-        call('C:/ProgramData/foo.yaml'),
-        call('C:/ProgramData/bar.yaml'),
-        call('D:/Users/user/AppData/Roaming/foo.yaml'),
-        call('D:/Users/user/AppData/Roaming/bar.yaml'),
+        call('C:/ProgramData/foo.yaml', default=NotConfigured),
+        call('C:/ProgramData/bar.yaml', default=NotConfigured),
+        call('D:/Users/user/AppData/Roaming/foo.yaml', default=NotConfigured),
+        call('D:/Users/user/AppData/Roaming/bar.yaml', default=NotConfigured),
     ], any_order=False)
