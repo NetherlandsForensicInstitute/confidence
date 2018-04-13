@@ -116,8 +116,9 @@ class Configuration(Mapping):
 
         self._source = {}
         for source in sources:
-            # merge values from source into self._source, overwriting any corresponding keys
-            _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
+            if source:
+                # merge values from source into self._source, overwriting any corresponding keys
+                _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
