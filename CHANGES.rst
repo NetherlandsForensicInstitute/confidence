@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Enable ignoring missing files in ``loadf``.
+
 0.2 (2018-03-06)
 ----------------
 
