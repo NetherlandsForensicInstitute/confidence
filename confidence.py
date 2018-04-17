@@ -116,8 +116,9 @@ class Configuration(Mapping):
 
         self._source = {}
         for source in sources:
-            # merge values from source into self._source, overwriting any corresponding keys
-            _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
+            if source:
+                # merge values from source into self._source, overwriting any corresponding keys
+                _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
@@ -212,17 +213,23 @@ def load(*fps):
     return Configuration(*(yaml.load(fp.read()) for fp in fps))
 
 
-def loadf(*fnames):
+def loadf(*fnames, default=_NoDefault):
     """
     Read a `.Configuration` instance from named files.
 
     :param fnames: name of the files to ``open()``
+    :param default: `dict` or `.Configuration` to use when a file does not
+        exist (default is to raise a `FileNotFoundError`)
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
     def readf(fname):
-        with open(fname, 'r') as fp:
-            return yaml.load(fp.read())
+        if default is _NoDefault or path.exists(fname):
+            # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
+            with open(fname, 'r') as fp:
+                return yaml.load(fp.read())
+        else:
+            return default
 
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames))
 
@@ -258,14 +265,10 @@ def read_xdg_config_dirs(name, extension):
         # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
         config_dirs = ['/etc/xdg']
 
-    # collect existing files in the config dirs
-    hits = []
-    for config_dir in config_dirs:
-        candidate = path.join(config_dir, '{name}.{extension}'.format(name=name, extension=extension))
-        if path.exists(candidate):
-            hits.append(candidate)
-
-    return loadf(*hits)
+    # load a file from all config dirs, default to NotConfigured
+    fname = '{name}.{extension}'.format(name=name, extension=extension)
+    return loadf(*(path.join(config_dir, fname) for config_dir in config_dirs),
+                 default=NotConfigured)
 
 
 def read_xdg_config_home(name, extension):
@@ -286,11 +289,8 @@ def read_xdg_config_home(name, extension):
         config_home = path.expanduser('~/.config')
 
     # expand to full path to configuration file in XDG config path
-    config_path = path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension))
-    if not path.exists(config_path):
-        return NotConfigured
-
-    return loadf(config_path)
+    return loadf(path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension)),
+                 default=NotConfigured)
 
 
 def read_envvars(name, extension):
@@ -362,10 +362,7 @@ def read_envvar_dir(envvar, name, extension):
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
     config_path = path.join(path.expanduser(config_dir), '{name}.{extension}'.format(name=name, extension=extension))
-    if not path.exists(config_path):
-        return NotConfigured
-
-    return loadf(config_path)
+    return loadf(config_path, default=NotConfigured)
 
 
 # ordered sequence of name templates to load, in increasing significance

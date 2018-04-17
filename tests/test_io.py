@@ -1,5 +1,6 @@
 from functools import partial
 from os import path
+import pytest
 from unittest.mock import call, patch
 
 from confidence import Configuration, LOAD_ORDER, load, load_name, loadf, loads, NotConfigured
@@ -37,7 +38,7 @@ def _patched_expanduser(value):
     return value.replace('~', '/home/user')
 
 
-def test_load_default():
+def test_load_defaults():
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
     # as json is a subset of yaml, this should work just fine
@@ -60,7 +61,7 @@ def test_load_multiple():
         _assert_values(load(file1, file2))
 
 
-def test_loads_default():
+def test_loads_defaults():
     _assert_values(loads(yaml_str))
     _assert_values(loads(json_str))
 
@@ -78,7 +79,7 @@ def test_loads_multiple():
                          yaml_str))
 
 
-def test_loadf_default():
+def test_loadf_defaults():
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
     _assert_values(loadf(path.join(test_files, 'config.json')))
 
@@ -103,6 +104,26 @@ def test_loadf_home():
         _assert_values(loadf('~/config.yaml'))
 
     mocked_path.expanduser.assert_called_once_with('~/config.yaml')
+
+
+def test_loadf_default():
+    with patch('confidence.path') as mocked_path:
+        mocked_path.exists.return_value = False
+        mocked_path.expanduser.side_effect = _patched_expanduser
+
+        config = loadf('/path/to/file', default={'a': 2})
+        assert config.a == 2
+
+        config = loadf('/path/to/file', default=Configuration({'b': 2}))
+        assert config.b == 2
+
+
+def test_loadf_missing():
+    with patch('confidence.path') as mocked_path:
+        mocked_path.exists.return_value = False
+        mocked_path.expanduser.side_effect = _patched_expanduser
+        with pytest.raises(FileNotFoundError):
+            loadf('/path/to/file')
 
 
 def test_load_name_single():
@@ -174,6 +195,7 @@ def test_load_name_xdg_config_dirs():
 
     with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
         # hard-code path separator, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
@@ -193,6 +215,7 @@ def test_load_name_xdg_config_dirs():
 def test_load_name_xdg_config_dirs_fallback():
     with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', {}):
         # hard-code path separator, unmock join
+        mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
         mocked_path.join.side_effect = path.join
         mocked_path.exists.return_value = True
@@ -200,8 +223,8 @@ def test_load_name_xdg_config_dirs_fallback():
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
     mocked_loadf.assert_has_calls([
-        call('/etc/xdg/foo.yaml'),
-        call('/etc/xdg/bar.yaml'),
+        call('/etc/xdg/foo.yaml', default=NotConfigured),
+        call('/etc/xdg/bar.yaml', default=NotConfigured),
     ], any_order=False)
 
 
@@ -241,8 +264,8 @@ def test_load_name_xdg_config_home_fallback():
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
     mocked_loadf.assert_has_calls([
-        call('/home/user/.config/foo.yaml'),
-        call('/home/user/.config/bar.yaml'),
+        call('/home/user/.config/foo.yaml', default=NotConfigured),
+        call('/home/user/.config/bar.yaml', default=NotConfigured),
     ], any_order=False)
 
 
@@ -317,8 +340,8 @@ def test_load_name_envvar_dir():
         assert len(load_name('foo', 'bar', load_order=load_order)) == 0
 
     mocked_loadf.assert_has_calls([
-        call('C:/ProgramData/foo.yaml'),
-        call('C:/ProgramData/bar.yaml'),
-        call('D:/Users/user/AppData/Roaming/foo.yaml'),
-        call('D:/Users/user/AppData/Roaming/bar.yaml'),
+        call('C:/ProgramData/foo.yaml', default=NotConfigured),
+        call('C:/ProgramData/bar.yaml', default=NotConfigured),
+        call('D:/Users/user/AppData/Roaming/foo.yaml', default=NotConfigured),
+        call('D:/Users/user/AppData/Roaming/bar.yaml', default=NotConfigured),
     ], any_order=False)
