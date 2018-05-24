@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Enable ignoring missing files in ``loadf``.
+- Fix crashes when reading empty or comment-only yaml files.
 
 0.2 (2018-03-06)
 ----------------
