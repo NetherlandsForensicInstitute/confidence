@@ -410,8 +410,6 @@ def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
             else:
                 # expand user to turn ~/.name.yaml into /home/user/.name.yaml
                 candidate = path.expanduser(source.format(name=name, extension=extension))
-                if path.exists(candidate):
-                    with open(candidate, 'r') as fd:
-                        yield yaml.load(fd.read())
+                yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources())
