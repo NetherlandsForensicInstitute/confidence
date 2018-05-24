@@ -126,6 +126,17 @@ def test_loadf_missing():
             loadf('/path/to/file')
 
 
+def test_loadf_empty():
+    assert len(loadf(path.join(test_files, 'empty.yaml'))) == 0
+    assert len(loadf(path.join(test_files, 'comments.yaml'))) == 0
+    assert len(loadf(path.join(test_files, 'empty.yaml'),
+                     path.join(test_files, 'comments.yaml'))) == 0
+
+    _assert_values(loadf(path.join(test_files, 'empty.yaml'),
+                         path.join(test_files, 'config.yaml'),
+                         path.join(test_files, 'comments.yaml')))
+
+
 def test_load_name_single():
     test_path = path.join(test_files, '{name}.{extension}')
 
