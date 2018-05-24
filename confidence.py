@@ -227,7 +227,8 @@ def loadf(*fnames, default=_NoDefault):
         if default is _NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
-                return yaml.load(fp.read())
+                # default to empty dict, yaml.load will return None for an empty document
+                return yaml.load(fp.read()) or {}
         else:
             return default
 
