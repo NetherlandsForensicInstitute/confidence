@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.3 (2018-05-24)
+----------------
 
 - Enable ignoring missing files in ``loadf``.
 - Fix crashes when reading empty or comment-only yaml files.
