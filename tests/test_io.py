@@ -285,6 +285,7 @@ def test_load_name_envvars():
         'FOO_KEY': 'foo',
         'FOO_NS_KEY': 'value',
         'BAR_KEY': 'bar',
+        'BAR_N__S_KEY': 'space',
     }
 
     with patch('confidence.environ', env):
@@ -292,6 +293,7 @@ def test_load_name_envvars():
 
     assert subject.key == 'bar'
     assert subject.ns.key == 'value'
+    assert subject.n_s.key == 'space'
 
 
 def test_load_name_envvar_file():
