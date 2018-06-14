@@ -1,6 +1,11 @@
 Changes
 =======
 
+development (master)
+--------------------
+
+- Enable escaping underscores in environment variables (``NAME_FOO__BAR`` results in ``config.foo_bar``)
+
 0.3 (2018-05-24)
 ----------------
 

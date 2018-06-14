@@ -3,6 +3,7 @@ from enum import IntEnum
 from functools import partial
 from itertools import chain, product
 from os import environ, path
+import re
 
 import yaml
 
@@ -297,7 +298,10 @@ def read_xdg_config_home(name, extension):
 def read_envvars(name, extension):
     """
     Read environment variables starting with ``NAME_``, where subsequent
-    underscores are interpreted as namespaces.
+    underscores are interpreted as namespaces. Underscores can be retained as
+    namespaces by doubling them up, e.g. ``NAME_SPA__CE_KEY`` would be
+    accessible in the resulting `.Configuration` as
+    ``c.spa_ce.key``, where ``c`` is the `.Configuration` instance.
 
     .. note::
 
@@ -321,8 +325,13 @@ def read_envvars(name, extension):
     if not values:
         return NotConfigured
 
-    # treat _'s as separators, FOO_NS_KEY=bar resulting in {'ns': {'key': 'bar'}}
-    return Configuration(values, separator='_')
+    def dotted(name):
+        # replace 'regular' underscores (those between alphanumeric characters) with dots first
+        name = re.sub(r'([0-9A-Za-z])_([0-9A-Za-z])', r'\1.\2', name)
+        # unescape double underscores back to a single one
+        return re.sub(r'__', '_', name)
+
+    return Configuration({dotted(name): value for name, value in values.items()})
 
 
 def read_envvar_file(name, extension):
