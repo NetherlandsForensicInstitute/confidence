@@ -173,6 +173,12 @@ class Configuration(Mapping):
         """
         return self.get(attr, default=NotConfigured)
 
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super().__setattr__(name, value)
+        else:
+            raise AttributeError('assignment not supported ({})'.format(name))
+
     def __len__(self):
         return len(self._source)
 
