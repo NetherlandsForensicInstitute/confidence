@@ -1,5 +1,7 @@
 from collections import Mapping
 
+import pytest
+
 from confidence import Configuration, NotConfigured
 
 
@@ -51,3 +53,37 @@ def test_dir():
     assert 'key1' in dir(subject)
     assert 'namespace' in dir(subject)
     assert 'key3' in dir(subject.namespace)
+
+
+def test_assignments():
+    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False})
+
+    subject._private = 42
+    subject.__very_private = 43
+
+    assert subject._private == 42
+    assert subject.__very_private == 43
+
+    with pytest.raises(AttributeError) as e:
+        subject.non_existent = True
+    assert 'assignment not supported' in str(e.value) and 'non_existent' in str(e.value)
+
+    with pytest.raises(AttributeError) as e:
+        subject.key1 = True
+    assert 'assignment not supported' in str(e.value) and 'key1' in str(e.value)
+
+    with pytest.raises(AttributeError) as e:
+        subject.namespace.key3 = True
+    assert 'assignment not supported' in str(e.value) and 'key3' in str(e.value)
+
+    with pytest.raises(AttributeError) as e:
+        subject.namespace.key4 = True
+    assert 'assignment not supported' in str(e.value) and 'key4' in str(e.value)
+
+    with pytest.raises(AttributeError) as e:
+        subject.non_existent.key6 = True
+    assert 'assignment not supported' in str(e.value) and 'key6' in str(e.value)
+
+    with pytest.raises(AttributeError) as e:
+        subject.we.must.go.deeper = True
+    assert 'assignment not supported' in str(e.value) and 'deeper' in str(e.value)
