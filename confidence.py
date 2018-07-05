@@ -174,6 +174,14 @@ class Configuration(Mapping):
         return self.get(attr, default=NotConfigured)
 
     def __setattr__(self, name, value):
+        """
+        Attempts to set a named attribute to this `.Configuration` instance.
+        Only protected / private style attribute names are accepted, anything
+        not starting with an underscore will raise an `AttributeError`.
+
+        :param name: name of the attribute to set
+        :param value: value to be associated to *name*
+        """
         if name.startswith('_'):
             super().__setattr__(name, value)
         else:
