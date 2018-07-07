@@ -211,7 +211,7 @@ def load(*fps):
     :return: a `.Configuration` instance providing values from *fps*
     :rtype: `.Configuration`
     """
-    return Configuration(*(yaml.load(fp.read()) for fp in fps))
+    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps))
 
 
 def loadf(*fnames, default=_NoDefault):
@@ -228,8 +228,8 @@ def loadf(*fnames, default=_NoDefault):
         if default is _NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
-                # default to empty dict, yaml.load will return None for an empty document
-                return yaml.load(fp.read()) or {}
+                # default to empty dict, yaml.safe_load will return None for an empty document
+                return yaml.safe_load(fp.read()) or {}
         else:
             return default
 
@@ -244,7 +244,7 @@ def loads(*strings):
     :return: a `.Configuration` instance providing values from *strings*
     :rtype: `.Configuration`
     """
-    return Configuration(*(yaml.load(string) for string in strings))
+    return Configuration(*(yaml.safe_load(string) for string in strings))
 
 
 def read_xdg_config_dirs(name, extension):
