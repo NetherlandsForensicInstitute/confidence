@@ -1,3 +1,5 @@
+dist: xenial
+
 language: python
 
 python:
@@ -13,6 +15,7 @@ install:
   - pip install coveralls
 
 script:
+  - bandit confidence.py
   - flake8 confidence.py
   - coverage run --branch --source confidence --module py.test --strict tests/
 
