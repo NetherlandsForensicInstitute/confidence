@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.4 (2018-07-09)
+----------------
 
 - Enable escaping underscores in environment variables (``NAME_FOO__BAR`` results in ``config.foo_bar``)
 - Use ``yaml.safe_load`` to avoid security issues with ``yaml.load``
