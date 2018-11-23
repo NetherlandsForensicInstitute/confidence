@@ -82,18 +82,7 @@ def _split_keys(mapping, separator='.'):
             # use rest as the new key of value, recursively split that and update value
             value = _split_keys({rest: value}, separator)
 
-        if key in {'__abstractmethods__', '__class__', '__contains__',
-                   '__delattr__', '__dict__', '__dir__', '__doc__',
-                   '__eq__', '__format__', '__ge__', '__getattr__',
-                   '__getattribute__', '__getitem__', '__gt__', '__hash__',
-                   '__init__', '__init_subclass__', '__iter__', '__le__',
-                   '__len__', '__lt__', '__module__', '__ne__', '__new__',
-                   '__reduce__', '__reduce_ex__', '__repr__', '__reversed__',
-                   '__setattr__', '__sizeof__', '__slots__', '__str__',
-                   '__subclasshook__', '__weakref__', '_abc_cache',
-                   '_abc_negative_cache', '_abc_negative_cache_version',
-                   '_abc_registry', '_separator', '_source', 'get',
-                   'items', 'keys', 'values'}:
+        if key in _COLLIDING_KEYS:
             warnings.warn('The supplied configuration contains the key '
                           '\'{reserved_key}\', which conflicts with '
                           'methods used by mappings in Python. '
@@ -220,6 +209,9 @@ class Configuration(Mapping):
 
     def __dir__(self):
         return sorted(set(chain(super().__dir__(), self.keys())))
+
+
+_COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
 class NotConfigured(Configuration):
