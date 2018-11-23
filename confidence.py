@@ -83,13 +83,9 @@ def _split_keys(mapping, separator='.'):
             value = _split_keys({rest: value}, separator)
 
         if key in _COLLIDING_KEYS:
-            warnings.warn('The supplied configuration contains the key '
-                          '\'{reserved_key}\', which conflicts with '
-                          'methods used by mappings in Python. '
-                          'Accessing this attribute is not possible '
-                          'with the dot-separated notation, but only '
-                          'with the configuration\'s .get() '
-                          'method.'.format(reserved_key=key),
+            # warn about configured keys colliding with Configuration members
+            warnings.warn('key {key} collides with member of Configuration type, use get() method to retrieve key '
+                          '{key}'.format(key=key),
                           UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
