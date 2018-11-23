@@ -1,10 +1,10 @@
-import warnings
 from collections.abc import Mapping
 from enum import IntEnum
 from functools import partial
 from itertools import chain, product
 from os import environ, path
 import re
+import warnings
 
 import yaml
 
