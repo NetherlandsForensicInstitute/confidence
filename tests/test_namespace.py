@@ -1,4 +1,5 @@
-from collections import Mapping
+from collections.abc import Mapping
+from unittest.mock import patch
 
 import pytest
 
@@ -44,6 +45,20 @@ def test_not_configured():
     assert (subject.does_not_exist or 'default') == 'default'
     assert 'not configured' in str(subject.does_nope.exist)
     assert str(subject.does_nope_exist) == repr(subject.does.nope.exist)
+
+
+def test_collisions():
+    with patch('confidence.warnings') as warnings:
+        subject = Configuration({'key': 'value', 'keys': [1, 2], '_separator': '_'})
+
+    for collision in ('keys', '_separator'):
+        warnings.warn.assert_any_call('key {key} collides with member of Configuration type, use get() method to '
+                                      'retrieve key {key}'.format(key=collision),
+                                      UserWarning)
+
+    assert subject.key == 'value'
+    assert callable(subject.keys)
+    assert subject._separator == '.'
 
 
 def test_dir():
