@@ -4,6 +4,7 @@ from functools import partial
 from itertools import chain, product
 from os import environ, path
 import re
+import warnings
 
 import yaml
 
@@ -80,6 +81,12 @@ def _split_keys(mapping, separator='.'):
             key, rest = key.split(separator, 1)
             # use rest as the new key of value, recursively split that and update value
             value = _split_keys({rest: value}, separator)
+
+        if key in _COLLIDING_KEYS:
+            # warn about configured keys colliding with Configuration members
+            warnings.warn('key {key} collides with member of Configuration type, use get() method to retrieve the '
+                          'value for {key}'.format(key=key),
+                          UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
         _merge(result, {key: value})
@@ -198,6 +205,9 @@ class Configuration(Mapping):
 
     def __dir__(self):
         return sorted(set(chain(super().__dir__(), self.keys())))
+
+
+_COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
 class NotConfigured(Configuration):
