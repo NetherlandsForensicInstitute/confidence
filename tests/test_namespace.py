@@ -53,7 +53,7 @@ def test_collisions():
 
     for collision in ('keys', '_separator'):
         warnings.warn.assert_any_call('key {key} collides with member of Configuration type, use get() method to '
-                                      'retrieve key {key}'.format(key=collision),
+                                      'retrieve the value for {key}'.format(key=collision),
                                       UserWarning)
 
     assert subject.key == 'value'

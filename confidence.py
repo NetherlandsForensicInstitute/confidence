@@ -84,8 +84,8 @@ def _split_keys(mapping, separator='.'):
 
         if key in _COLLIDING_KEYS:
             # warn about configured keys colliding with Configuration members
-            warnings.warn('key {key} collides with member of Configuration type, use get() method to retrieve key '
-                          '{key}'.format(key=key),
+            warnings.warn('key {key} collides with member of Configuration type, use get() method to retrieve the '
+                          'value for {key}'.format(key=key),
                           UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
