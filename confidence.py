@@ -171,6 +171,8 @@ class Configuration(Mapping):
                 namespace._source = value
                 namespace._root = self._root
                 return namespace
+            elif isinstance(value, str):
+                return self._resolve(value)
             else:
                 return value
         except KeyError:
