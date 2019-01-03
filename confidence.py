@@ -111,6 +111,8 @@ class Configuration(Mapping):
     or attributes.
     """
 
+    _template_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
+
     def __init__(self, *sources, separator='.'):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
@@ -128,6 +130,14 @@ class Configuration(Mapping):
             if source:
                 # merge values from source into self._source, overwriting any corresponding keys
                 _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
+
+    def _resolve(self, value):
+        match = self._template_pattern.search(value)
+        while match:
+            value = value[:match.start(0)] + self._root.get(match.group('path')) + value[match.end(0):]
+            match = self._template_pattern.search(value)
+
+        return value
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
