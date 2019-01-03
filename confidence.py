@@ -121,6 +121,7 @@ class Configuration(Mapping):
             between keys
         """
         self._separator = separator
+        self._root = self
 
         self._source = {}
         for source in sources:
@@ -158,6 +159,7 @@ class Configuration(Mapping):
             elif isinstance(value, Mapping):
                 namespace = Configuration()
                 namespace._source = value
+                namespace._root = self._root
                 return namespace
             else:
                 return value
