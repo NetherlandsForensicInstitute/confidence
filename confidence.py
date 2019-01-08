@@ -18,6 +18,10 @@ class ConfigurationError(KeyError):
     pass
 
 
+class MissingReferenceError(ConfigurationError):
+    pass
+
+
 class _Conflict(IntEnum):
     overwrite = 0
     error = 1
@@ -133,11 +137,23 @@ class Configuration(Mapping):
 
     def _resolve(self, value):
         match = self._template_pattern.search(value)
-        while match:
-            value = value[:match.start(0)] + self._root.get(match.group('path')) + value[match.end(0):]
-            match = self._template_pattern.search(value)
+        try:
+            while match:
+                reference = self._root.get(match.group('path'))
+                value = '{start}{reference}{end}'.format(
+                    start=value[:match.start(0)],
+                    reference=reference,
+                    end=value[match.end(0):]
+                )
+                match = self._template_pattern.search(value)
 
-        return value
+            # TODO: auto-convert value type to mimic value getting parsed from file?
+            return value
+        except ConfigurationError as e:
+            # TODO: error should include key that includes the missing reference
+            raise MissingReferenceError(
+                'unable to resolve referenced key {reference}'.format(reference=match.group('path'))
+            ) from e
 
     def get(self, path, default=_NoDefault, as_type=None):
         """
@@ -175,6 +191,8 @@ class Configuration(Mapping):
                 return self._resolve(value)
             else:
                 return value
+        except MissingReferenceError:
+            raise  # TODO: refuse 'not configured' by referencing a missing value?
         except KeyError:
             if default is not _NoDefault:
                 return default
