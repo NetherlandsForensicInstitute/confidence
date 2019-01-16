@@ -159,6 +159,15 @@ class Configuration(Mapping):
 
                 reference = self._root.get(path, resolve_references=False)
 
+                if isinstance(reference, Configuration):
+                    if match.span(0) != (0, len(value)):
+                        raise ConfiguredReferenceError(
+                            'cannot insert namespace at {path} into referring value'.format(path=path),
+                            key=path
+                        )
+
+                    return reference
+
                 value = '{start}{reference}{end}'.format(
                     start=value[:match.start(0)],
                     reference=reference,
