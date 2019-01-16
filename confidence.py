@@ -166,7 +166,7 @@ class Configuration(Mapping):
                 key=e.key
             ) from e
 
-    def get(self, path, default=_NoDefault, as_type=None):
+    def get(self, path, default=_NoDefault, as_type=None, resolve_references=True):
         """
         Gets a value for the specified path.
 
@@ -198,7 +198,7 @@ class Configuration(Mapping):
                 namespace._source = value
                 namespace._root = self._root
                 return namespace
-            elif isinstance(value, str):
+            elif resolve_references and isinstance(value, str):
                 return self._resolve(value)
             else:
                 return value
