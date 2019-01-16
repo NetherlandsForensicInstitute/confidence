@@ -125,6 +125,7 @@ class Configuration(Mapping):
     or attributes.
     """
 
+    # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
 
     def __init__(self, *sources, separator='.'):
@@ -133,8 +134,7 @@ class Configuration(Mapping):
 
         :param sources: source mappings to base this `.Configuration` on,
             ordered from least to most significant
-        :param separator: the character (sequence) to use as the separator
-            between keys
+        :param separator: the character(s) to use as the separator between keys
         """
         self._separator = separator
         self._root = self
@@ -157,25 +157,30 @@ class Configuration(Mapping):
                         key=path
                     )
 
+                # avoid resolving references recursively (breaks reference tracking)
                 reference = self._root.get(path, resolve_references=False)
 
                 if match.span(0) != (0, len(value)):
+                    # matched a reference inside of another value (template)
                     if isinstance(reference, Configuration):
                         raise ConfiguredReferenceError(
                             'cannot insert namespace at {path} into referring value'.format(path=path),
                             key=path
                         )
 
+                    # render the template containing the referenced value
                     value = '{start}{reference}{end}'.format(
                         start=value[:match.start(0)],
                         reference=reference,
                         end=value[match.end(0):]
                     )
                 else:
+                    # value is only a reference, avoid rendering a template (keep referenced value type)
                     value = reference
 
+                # track that we've seen path
                 references.add(path)
-
+                # either keep finding references or stop resolving and return value
                 if isinstance(value, str):
                     match = self._reference_pattern.search(value)
                 else:
@@ -201,10 +206,11 @@ class Configuration(Mapping):
         :param as_type: an optional callable to apply to the value found for
             the supplied path (possibly raising exceptions of its own if the
             value can not be coerced to the expected type)
+        :param resolve_references: whether to resolve references in values
         :return: the value associated with the supplied configuration key, if
             available, or a supplied default value if the key was not found
         :raises ConfigurationError: when no value was found for *path* and
-            *default* was not provided
+            *default* was not provided or a reference could not be resolved
         """
         value = self._source
         steps_taken = []
@@ -219,14 +225,17 @@ class Configuration(Mapping):
             elif isinstance(value, Mapping):
                 namespace = Configuration()
                 namespace._source = value
+                # carry the root object from namespace to namespace, references are always resolved from root
                 namespace._root = self._root
                 return namespace
             elif resolve_references and isinstance(value, str):
+                # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
             else:
                 return value
         except ConfiguredReferenceError:
-            raise  # TODO: refuse 'not configured' by referencing a missing value?
+            # also a KeyError, but this one should bubble to caller
+            raise
         except KeyError:
             if default is not _NoDefault:
                 return default
@@ -291,7 +300,7 @@ class NotConfigured(Configuration):
 
 
 # overwrite NotConfigured as an instance of itself, a Configuration instance without any values
-NotConfigured = NotConfigured({})
+NotConfigured = NotConfigured()
 
 
 def load(*fps):
