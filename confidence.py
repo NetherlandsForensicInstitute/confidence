@@ -125,7 +125,7 @@ class Configuration(Mapping):
     or attributes.
     """
 
-    _template_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
+    _reference_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
 
     def __init__(self, *sources, separator='.'):
         """
@@ -146,7 +146,7 @@ class Configuration(Mapping):
                 _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
 
     def _resolve(self, value):
-        match = self._template_pattern.search(value)
+        match = self._reference_pattern.search(value)
         references = set()
         try:
             while match:
@@ -176,7 +176,7 @@ class Configuration(Mapping):
 
                 references.add(path)
 
-                match = self._template_pattern.search(value)
+                match = self._reference_pattern.search(value)
 
             # TODO: auto-convert value type to mimic value getting parsed from file?
             return value
