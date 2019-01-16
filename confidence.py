@@ -10,16 +10,25 @@ import yaml
 
 
 class ConfigurationError(KeyError):
-    """
-    `KeyError` raised when merge conflicts are detected during `.Configuration`
-    construction (see `.Configuration.__init__`) or retrieving an unavailable
-    configured value when no default is supplied (see `.Configuration.get`).
-    """
     pass
 
 
-class MissingReferenceError(ConfigurationError):
-    pass
+class MergeConflictError(ConfigurationError):
+    def __init__(self, *args, key):
+        super().__init__(*args)
+        self.conflict = key
+
+
+class NotConfiguredError(ConfigurationError):
+    def __init__(self, *args, key):
+        super().__init__(*args)
+        self.key = key
+
+
+class ConfiguredReferenceError(ConfigurationError):
+    def __init__(self, *args, key):
+        super().__init__(*args)
+        self.key = key
 
 
 class _Conflict(IntEnum):
@@ -50,7 +59,8 @@ def _merge(left, right, path=None, conflict=_Conflict.error):
             elif left[key] != right[key]:
                 if conflict is _Conflict.error:
                     # not both dicts we could merge, but also not the same, this doesn't work
-                    raise ConfigurationError('merge conflict at {}'.format('.'.join(path + [key])))
+                    conflict_path = '.'.join(path + [key])
+                    raise MergeConflictError('merge conflict at {}'.format(conflict_path), key=conflict_path)
                 else:
                     # overwrite left value with right value
                     left[key] = right[key]
@@ -151,8 +161,9 @@ class Configuration(Mapping):
             return value
         except ConfigurationError as e:
             # TODO: error should include key that includes the missing reference
-            raise MissingReferenceError(
-                'unable to resolve referenced key {reference}'.format(reference=match.group('path'))
+            raise ConfiguredReferenceError(
+                'unable to resolve referenced key {reference}'.format(reference=match.group('path')),
+                key=e.key
             ) from e
 
     def get(self, path, default=_NoDefault, as_type=None):
@@ -191,7 +202,7 @@ class Configuration(Mapping):
                 return self._resolve(value)
             else:
                 return value
-        except MissingReferenceError:
+        except ConfiguredReferenceError:
             raise  # TODO: refuse 'not configured' by referencing a missing value?
         except KeyError:
             if default is not _NoDefault:

@@ -1,6 +1,6 @@
 import pytest
 
-from confidence import Configuration, ConfigurationError, MissingReferenceError
+from confidence import Configuration, ConfigurationError, ConfiguredReferenceError
 
 
 def test_value_types():
@@ -83,11 +83,11 @@ def test_missing_reference():
     assert config.key == 'string'
     assert config.template.working == 'string'
 
-    with pytest.raises(MissingReferenceError) as e:
+    with pytest.raises(ConfiguredReferenceError) as e:
         assert not config.template.missing
     assert 'ns.key' in str(e.value)
 
-    with pytest.raises(MissingReferenceError) as e:
+    with pytest.raises(ConfiguredReferenceError) as e:
         assert not config.get('template.missing')
     assert 'ns.key' in str(e.value)
 
