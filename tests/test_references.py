@@ -66,11 +66,16 @@ def test_reference_ns():
     config = Configuration({
         'key': '${ns}',
         'ns.key': 'string',
+        'broken': 'no ${ns} inside',
     })
 
     assert config.ns.key == 'string'
     assert isinstance(config.key, Configuration)
     assert config.key.key == 'string'
+
+    with pytest.raises(ConfiguredReferenceError) as e:
+        assert not config.broken
+    assert 'cannot insert namespace' in str(e.value)
 
 
 def test_missing_reference():
