@@ -159,7 +159,7 @@ class Configuration(Mapping):
 
             # TODO: auto-convert value type to mimic value getting parsed from file?
             return value
-        except ConfigurationError as e:
+        except NotConfiguredError as e:
             # TODO: error should include key that includes the missing reference
             raise ConfiguredReferenceError(
                 'unable to resolve referenced key {reference}'.format(reference=match.group('path')),
@@ -208,7 +208,8 @@ class Configuration(Mapping):
             if default is not _NoDefault:
                 return default
             else:
-                raise ConfigurationError('no configuration for key {}'.format(self._separator.join(steps_taken)))
+                missing_key = self._separator.join(steps_taken)
+                raise NotConfiguredError('no configuration for key {}'.format(missing_key), key=missing_key)
 
     def __getattr__(self, attr):
         """
