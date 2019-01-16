@@ -159,26 +159,28 @@ class Configuration(Mapping):
 
                 reference = self._root.get(path, resolve_references=False)
 
-                if isinstance(reference, Configuration):
-                    if match.span(0) != (0, len(value)):
+                if match.span(0) != (0, len(value)):
+                    if isinstance(reference, Configuration):
                         raise ConfiguredReferenceError(
                             'cannot insert namespace at {path} into referring value'.format(path=path),
                             key=path
                         )
 
-                    return reference
-
-                value = '{start}{reference}{end}'.format(
-                    start=value[:match.start(0)],
-                    reference=reference,
-                    end=value[match.end(0):]
-                )
+                    value = '{start}{reference}{end}'.format(
+                        start=value[:match.start(0)],
+                        reference=reference,
+                        end=value[match.end(0):]
+                    )
+                else:
+                    value = reference
 
                 references.add(path)
 
-                match = self._reference_pattern.search(value)
+                if isinstance(value, str):
+                    match = self._reference_pattern.search(value)
+                else:
+                    match = None
 
-            # TODO: auto-convert value type to mimic value getting parsed from file?
             return value
         except NotConfiguredError as e:
             # TODO: error should include key that includes the missing reference
