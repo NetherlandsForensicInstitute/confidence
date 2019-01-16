@@ -147,14 +147,26 @@ class Configuration(Mapping):
 
     def _resolve(self, value):
         match = self._template_pattern.search(value)
+        references = set()
         try:
             while match:
-                reference = self._root.get(match.group('path'))
+                path = match.group('path')
+                if path in references:
+                    raise ConfiguredReferenceError(
+                        'cannot resolve recursive reference {path}'.format(path=path),
+                        key=path
+                    )
+
+                reference = self._root.get(path, resolve_references=False)
+
                 value = '{start}{reference}{end}'.format(
                     start=value[:match.start(0)],
                     reference=reference,
                     end=value[match.end(0):]
                 )
+
+                references.add(path)
+
                 match = self._template_pattern.search(value)
 
             # TODO: auto-convert value type to mimic value getting parsed from file?
