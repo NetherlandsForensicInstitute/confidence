@@ -70,6 +70,13 @@ defining defaults or reading from multiple files:
     # if set, load_name will take a look at environment variables like
     # APP_FOO_BAR and APP_FOO_BAZ, mixing those in as foo.bar and foo.baz
 
+    # the default load order can be overridden if necessary:
+
+    configuration = confidence.load_name('app', load_order=confidence.loaders(
+        # loading system after user makes system locations take precedence
+        confidence.Locality.user, confidence.Locality.system
+    ))
+
 While powerful, no set of convenience functions will ever satisfy
 everyone's use case. To be able to serve as wide an audience as
 possible, confidence doesn't hide away its flexible internal API.
