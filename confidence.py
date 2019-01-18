@@ -484,6 +484,13 @@ def read_envvar_dir(envvar, name, extension):
     return loadf(config_path, default=NotConfigured)
 
 
+class Locality(IntEnum):
+    system = 0
+    user = 1
+    application = 2
+    environment = 3
+
+
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
     # system-wide locations
