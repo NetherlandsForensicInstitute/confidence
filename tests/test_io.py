@@ -3,7 +3,7 @@ from os import path
 import pytest
 from unittest.mock import call, patch
 
-from confidence import Configuration, LOAD_ORDER, load, load_name, loadf, loads, NotConfigured
+from confidence import Configuration, LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
 from confidence import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
@@ -321,7 +321,7 @@ def test_load_name_overlapping_envvars():
     }
 
     with patch('confidence.environ', env):
-        subject = load_name('foo', 'bar', load_order=(read_envvar_file, read_envvars))
+        subject = load_name('foo', 'bar', load_order=loaders(Locality.environment))
 
     assert subject.key == 'bar'
     assert subject.ns.key == 'value'
