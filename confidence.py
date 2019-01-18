@@ -523,15 +523,17 @@ _LOADERS = {
 
 
 def loaders(*specifiers):
-    return tuple(chain.from_iterable(
-        _LOADERS[locality] for locality in specifiers
-    ))
+    for specifier in specifiers:
+        if isinstance(specifier, Locality):
+            yield from _LOADERS[specifier]
+        else:
+            yield specifier
 
 
-LOAD_ORDER = loaders(Locality.system,
-                     Locality.user,
-                     Locality.application,
-                     Locality.environment)
+LOAD_ORDER = tuple(loaders(Locality.system,
+                           Locality.user,
+                           Locality.application,
+                           Locality.environment))
 
 
 def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
