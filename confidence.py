@@ -529,10 +529,35 @@ _LOADERS = {
 
 
 def loaders(*specifiers):
+    """
+    Generates loaders in the specified order.
+
+    Arguments can be `.Locality` instances, producing the loader(s) available
+    for that locality, `str` instances (used as file path templates) or
+    `callable`s. These can be mixed:
+
+    .. code-block:: python
+
+        # define a load order using predefined user-local locations,
+        # an explicit path, a template and a user-defined function
+        load_order = loaders(Locality.user,
+                             '/etc/defaults/hard-coded.yaml',
+                             '/path/to/{name}.{extension}',
+                             my_loader)
+
+        # load configuration for name 'my-application' using the load order
+        # defined above
+        config = load_name('my-application', load_order=load_order)
+
+    :param specifiers:
+    :return: a `generator` of configuration loaders in the specified order
+    """
     for specifier in specifiers:
         if isinstance(specifier, Locality):
+            # localities can carry multiple loaders, flatten this
             yield from _LOADERS[specifier]
         else:
+            # something not a locality, pass along verbatim
             yield specifier
 
 
