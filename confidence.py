@@ -491,6 +491,37 @@ class Locality(IntEnum):
     environment = 3
 
 
+_LOADERS = {
+    Locality.system: (
+        # system-wide locations
+        read_xdg_config_dirs,
+        '/etc/{name}.{extension}',
+        '/Library/Preferences/{name}.{extension}',
+        partial(read_envvar_dir, 'PROGRAMDATA'),
+    ),
+
+    Locality.user: (
+        # user-local locations
+        read_xdg_config_home,
+        '~/Library/Preferences/{name}.{extension}',
+        partial(read_envvar_dir, 'APPDATA'),
+        partial(read_envvar_dir, 'LOCALAPPDATA'),
+        '~/.{name}.{extension}',
+    ),
+
+    Locality.application: (
+        # application-local locations
+        './{name}.{extension}',
+    ),
+
+    Locality.environment: (
+        # application-specific environment variables
+        read_envvar_file,
+        read_envvars,
+    )
+}
+
+
 # ordered sequence of name templates to load, in increasing significance
 LOAD_ORDER = (
     # system-wide locations
