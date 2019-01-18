@@ -485,10 +485,16 @@ def read_envvar_dir(envvar, name, extension):
 
 
 class Locality(IntEnum):
-    system = 0
-    user = 1
-    application = 2
-    environment = 3
+    """
+    Enumeration of localities defined by confidence, ranging from system-wide
+    locations for configurations (e.g. ``/etc/name.yaml``) to environment
+    variables.
+    """
+
+    system = 0  #: system-wide configuration locations
+    user = 1  #: user-local configuration locations
+    application = 2  #: application-local configuration locations (dependent on the current working directory)
+    environment = 3  #: configuration from environment variables
 
 
 _LOADERS = {
