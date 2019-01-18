@@ -545,8 +545,12 @@ LOAD_ORDER = tuple(loaders(Locality.system,
 def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
     """
     Read a `.Configuration` instance by name, trying to read from files in
-    increasing significance. System-wide configuration locations are preceded
-    by user locations, and again by local files.
+    increasing significance. The default load order is `.system`, `.user`,
+    `.application`, `.environment`.
+
+    Multiple names are combined with multiple loaders using names as the 'inner
+    loop / selector', loading ``/etc/name1.yaml`` and ``/etc/name2.yaml``
+    before ``./name1.yaml`` and ``./name2.yaml``.
 
     :param names: application or configuration set names, in increasing
         significance
