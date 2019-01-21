@@ -1,6 +1,26 @@
 import pytest
 
-from confidence import Configuration, ConfigurationError, ConfiguredReferenceError
+from confidence import Configuration, ConfigurationError, ConfiguredReferenceError, NotConfigured
+
+
+def test_reference_syntax():
+    config = Configuration({
+        'key1': '$(reference)',
+        'key2': '${reference)',
+        'key3': '${}',
+        'key4': '$ {reference}',
+        'key5': '#{reference}',
+        'key_with_space ': 'value',
+        'key6': '${key_with_space }',
+    })
+
+    assert config.reference is NotConfigured
+    assert '$' in config.key1
+    assert '$' in config.key2
+    assert '$' in config.key3
+    assert '$' in config.key4
+    assert '#' in config.key5
+    assert config.key6 == 'value'
 
 
 def test_value_types():
