@@ -198,7 +198,6 @@ class Configuration(Mapping):
 
             return value
         except NotConfiguredError as e:
-            # TODO: error should include key that includes the missing reference
             raise ConfiguredReferenceError(
                 'unable to resolve referenced key {reference}'.format(reference=match.group('path')),
                 key=e.key
