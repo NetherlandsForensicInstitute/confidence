@@ -11,7 +11,10 @@ def test_reference_syntax():
         'key4': '$ {reference}',
         'key5': '#{reference}',
         'key_with_space ': 'value',
+        'key with spaces': 'value2',
         'key6': '${key_with_space }',
+        'key7': '${key with spaces}',
+        'key8': '${key_with_space}',
     })
 
     assert config.reference is NotConfigured
@@ -21,6 +24,10 @@ def test_reference_syntax():
     assert '$' in config.key4
     assert '#' in config.key5
     assert config.key6 == 'value'
+    assert config.key7 == 'value2'
+
+    with pytest.raises(ConfiguredReferenceError):
+        assert not config.key8
 
 
 def test_value_types():
