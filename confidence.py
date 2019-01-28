@@ -561,13 +561,13 @@ def loaders(*specifiers):
             yield specifier
 
 
-LOAD_ORDER = tuple(loaders(Locality.system,
-                           Locality.user,
-                           Locality.application,
-                           Locality.environment))
+DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
+                                   Locality.user,
+                                   Locality.application,
+                                   Locality.environment))
 
 
-def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,

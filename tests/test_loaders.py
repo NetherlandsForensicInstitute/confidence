@@ -1,17 +1,17 @@
 from itertools import chain, groupby
 
-from confidence import _LOADERS, LOAD_ORDER, loaders, Locality
+from confidence import _LOADERS, DEFAULT_LOAD_ORDER, loaders, Locality
 
 
 def test_default_load_order_all_loaders():
     all_loaders = set(chain.from_iterable(_LOADERS.values()))
-    assert len(all_loaders) == len(LOAD_ORDER)
-    assert all(loader in LOAD_ORDER for loader in all_loaders)
+    assert len(all_loaders) == len(DEFAULT_LOAD_ORDER)
+    assert all(loader in DEFAULT_LOAD_ORDER for loader in all_loaders)
 
 
 def test_default_load_order_locality():
     localities = {loader: locality for locality, local_loaders in _LOADERS.items() for loader in local_loaders}
-    localities = map(localities.get, LOAD_ORDER)
+    localities = map(localities.get, DEFAULT_LOAD_ORDER)
 
     assert tuple(key for key, _ in groupby(localities)) == tuple(sorted(Locality))
 

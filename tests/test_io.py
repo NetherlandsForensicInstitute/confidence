@@ -3,7 +3,7 @@ from os import path
 import pytest
 from unittest.mock import call, patch
 
-from confidence import Configuration, LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
+from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
 from confidence import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
@@ -340,8 +340,8 @@ def test_load_name_envvar_dir():
         'APPDATA': 'D:/Users/user/AppData/Roaming'
     }
 
-    # only the envvar dir loaders are partials in LOAD_ORDER
-    load_order = [loader for loader in LOAD_ORDER if isinstance(loader, partial)]
+    # only the envvar dir loaders are partials in DEFAULT_LOAD_ORDER
+    load_order = [loader for loader in DEFAULT_LOAD_ORDER if isinstance(loader, partial)]
 
     with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', env):
         # hard-code user-expansion, unmock join
