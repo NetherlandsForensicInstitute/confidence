@@ -14,6 +14,8 @@ Given the following YAML file:
 
     foo.baz: '21 is only half the answer'
 
+    foobar: the answer is ${foo.bar}…
+
 Use it with confidence:
 
 .. code:: python
@@ -36,6 +38,9 @@ Use it with confidence:
         value = 42
     # or, similar
     value = configuration.foo.whoopsie or 42
+
+    # even references to other configured values will work
+    value = configuration.foobar  # 'the answer is 42…'
 
 Often, combining multiple sources of configuration can be useful when
 defining defaults or reading from multiple files:

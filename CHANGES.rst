@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-
+- Enable referencing keys from values
 
 0.4.1 (2018-11-26)
 ------------------
