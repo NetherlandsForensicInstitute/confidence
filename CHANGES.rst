@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.5 (2019-02-01)
+----------------
 
 - Enable referencing keys from values
 - Enable customizing load order for `load_name` through `loaders` and `Locality` (default behaviour remains unchanged)
