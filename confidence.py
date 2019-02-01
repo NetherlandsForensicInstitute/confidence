@@ -484,33 +484,98 @@ def read_envvar_dir(envvar, name, extension):
     return loadf(config_path, default=NotConfigured)
 
 
-# ordered sequence of name templates to load, in increasing significance
-LOAD_ORDER = (
-    # system-wide locations
-    read_xdg_config_dirs,
-    '/etc/{name}.{extension}',
-    '/Library/Preferences/{name}.{extension}',
-    partial(read_envvar_dir, 'PROGRAMDATA'),
+class Locality(IntEnum):
+    """
+    Enumeration of localities defined by confidence, ranging from system-wide
+    locations for configurations (e.g. ``/etc/name.yaml``) to environment
+    variables.
+    """
 
-    # user-local locations
-    read_xdg_config_home,
-    '~/Library/Preferences/{name}.{extension}',
-    partial(read_envvar_dir, 'APPDATA'),
-    partial(read_envvar_dir, 'LOCALAPPDATA'),
-    '~/.{name}.{extension}',
-
-    # application-local locations
-    './{name}.{extension}',
-    read_envvar_file,
-    read_envvars,
-)
+    system = 0  #: system-wide configuration locations
+    user = 1  #: user-local configuration locations
+    application = 2  #: application-local configuration locations (dependent on the current working directory)
+    environment = 3  #: configuration from environment variables
 
 
-def load_name(*names, load_order=LOAD_ORDER, extension='yaml'):
+_LOADERS = {
+    Locality.system: (
+        # system-wide locations
+        read_xdg_config_dirs,
+        '/etc/{name}.{extension}',
+        '/Library/Preferences/{name}.{extension}',
+        partial(read_envvar_dir, 'PROGRAMDATA'),
+    ),
+
+    Locality.user: (
+        # user-local locations
+        read_xdg_config_home,
+        '~/Library/Preferences/{name}.{extension}',
+        partial(read_envvar_dir, 'APPDATA'),
+        partial(read_envvar_dir, 'LOCALAPPDATA'),
+        '~/.{name}.{extension}',
+    ),
+
+    Locality.application: (
+        # application-local locations
+        './{name}.{extension}',
+    ),
+
+    Locality.environment: (
+        # application-specific environment variables
+        read_envvar_file,
+        read_envvars,
+    )
+}
+
+
+def loaders(*specifiers):
+    """
+    Generates loaders in the specified order.
+
+    Arguments can be `.Locality` instances, producing the loader(s) available
+    for that locality, `str` instances (used as file path templates) or
+    `callable`s. These can be mixed:
+
+    .. code-block:: python
+
+        # define a load order using predefined user-local locations,
+        # an explicit path, a template and a user-defined function
+        load_order = loaders(Locality.user,
+                             '/etc/defaults/hard-coded.yaml',
+                             '/path/to/{name}.{extension}',
+                             my_loader)
+
+        # load configuration for name 'my-application' using the load order
+        # defined above
+        config = load_name('my-application', load_order=load_order)
+
+    :param specifiers:
+    :return: a `generator` of configuration loaders in the specified order
+    """
+    for specifier in specifiers:
+        if isinstance(specifier, Locality):
+            # localities can carry multiple loaders, flatten this
+            yield from _LOADERS[specifier]
+        else:
+            # something not a locality, pass along verbatim
+            yield specifier
+
+
+DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
+                                   Locality.user,
+                                   Locality.application,
+                                   Locality.environment))
+
+
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
     """
     Read a `.Configuration` instance by name, trying to read from files in
-    increasing significance. System-wide configuration locations are preceded
-    by user locations, and again by local files.
+    increasing significance. The default load order is `.system`, `.user`,
+    `.application`, `.environment`.
+
+    Multiple names are combined with multiple loaders using names as the 'inner
+    loop / selector', loading ``/etc/name1.yaml`` and ``/etc/name2.yaml``
+    before ``./name1.yaml`` and ``./name2.yaml``.
 
     :param names: application or configuration set names, in increasing
         significance

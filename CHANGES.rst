@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Enable referencing keys from values
+- Enable customizing load order for `load_name` through `loaders` and `Locality` (default behaviour remains unchanged)
 
 0.4.1 (2018-11-26)
 ------------------
@@ -21,7 +22,7 @@ development (master)
 0.3 (2018-05-24)
 ----------------
 
-- Enable ignoring missing files in ``loadf``.
+- Enable ignoring missing files in `loadf`.
 - Fix crashes when reading empty or comment-only yaml files.
 
 0.2 (2018-03-06)
@@ -34,7 +35,7 @@ development (master)
 0.1.1 (2018-01-12)
 ------------------
 
-- Expand user dirs for arguments to ``loadf``, including values for ``EXAMPLE_CONFIG_FILE`` environment variables.
+- Expand user dirs for arguments to `loadf`, including values for ``EXAMPLE_CONFIG_FILE`` environment variables.
 
 0.1 (2017-12-18)
 ----------------
