@@ -237,7 +237,7 @@ class Configuration(Mapping):
             if as_type:
                 return as_type(value)
             elif isinstance(value, Mapping):
-                namespace = Configuration()
+                namespace = type(self)(separator=self._separator, missing=self._missing)
                 namespace._source = value
                 # carry the root object from namespace to namespace, references are always resolved from root
                 namespace._root = self._root
@@ -250,12 +250,12 @@ class Configuration(Mapping):
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
             raise
-        except KeyError:
+        except KeyError as e:
             if default is not _NoDefault:
                 return default
             else:
                 missing_key = self._separator.join(steps_taken)
-                raise NotConfiguredError('no configuration for key {}'.format(missing_key), key=missing_key)
+                raise NotConfiguredError('no configuration for key {}'.format(missing_key), key=missing_key) from e
 
     def __getattr__(self, attr):
         """
