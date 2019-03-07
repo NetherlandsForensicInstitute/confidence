@@ -138,7 +138,7 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
 
-    def __init__(self, *sources, separator='.'):
+    def __init__(self, *sources, separator='.', missing='safe'):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -147,7 +147,12 @@ class Configuration(Mapping):
         :param separator: the character(s) to use as the separator between keys
         """
         self._separator = separator
+        self._missing = missing
         self._root = self
+
+        if isinstance(self._missing, str):
+            self._missing = {'safe': NotConfigured,
+                             'raise': _NoDefault}[missing]
 
         self._source = {}
         for source in sources:
@@ -263,7 +268,10 @@ class Configuration(Mapping):
         :return: a value, as either an actual value or a `.Configuration`
             instance (`.NotConfigured` in case of an unconfigured 'step')
         """
-        return self.get(attr, default=NotConfigured)
+        try:
+            return self.get(attr, default=self._missing)
+        except NotConfiguredError as e:
+            raise AttributeError(attr) from e
 
     def __setattr__(self, name, value):
         """
