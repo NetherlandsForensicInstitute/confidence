@@ -333,7 +333,7 @@ def load(*fps):
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps))
 
 
-def loadf(*fnames, default=_NoDefault):
+def loadf(*fnames, default=_NoDefault, missing='safe'):
     """
     Read a `.Configuration` instance from named files.
 
@@ -352,10 +352,10 @@ def loadf(*fnames, default=_NoDefault):
         else:
             return default
 
-    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames))
+    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings):
+def loads(*strings, missing='safe'):
     """
     Read a `.Configuration` instance from strings.
 
@@ -363,7 +363,7 @@ def loads(*strings):
     :return: a `.Configuration` instance providing values from *strings*
     :rtype: `.Configuration`
     """
-    return Configuration(*(yaml.safe_load(string) for string in strings))
+    return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
 def read_xdg_config_dirs(name, extension):
@@ -577,7 +577,7 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
                                    Locality.environment))
 
 
-def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing='safe'):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -592,6 +592,8 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
     :param load_order: ordered list of name templates or `callable`s, in
         increasing order of significance
     :param extension: file extension to be used
+    :param missing: how to treat a missing / unconfigured key, either
+        ``'safe'`` or ``'raise'``
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
@@ -606,4 +608,4 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
                 candidate = path.expanduser(source.format(name=name, extension=extension))
                 yield loadf(candidate, default=NotConfigured)
 
-    return Configuration(*generate_sources())
+    return Configuration(*generate_sources(), missing=missing)
