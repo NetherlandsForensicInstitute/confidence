@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from enum import IntEnum
+from enum import Enum, IntEnum
 from functools import partial
 from itertools import chain, product
 from os import environ, path
@@ -44,6 +44,11 @@ class ConfiguredReferenceError(ConfigurationError):
 class _Conflict(IntEnum):
     overwrite = 0
     error = 1
+
+
+class Missing(Enum):
+    silent = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
+    error = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
 def _merge(left, right, path=None, conflict=_Conflict.error):
@@ -138,7 +143,7 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
 
-    def __init__(self, *sources, separator='.', missing='safe'):
+    def __init__(self, *sources, separator='.', missing=Missing.silent):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -150,9 +155,9 @@ class Configuration(Mapping):
         self._missing = missing
         self._root = self
 
-        if isinstance(self._missing, str):
-            self._missing = {'safe': NotConfigured,
-                             'raise': _NoDefault}[missing]
+        if isinstance(self._missing, (Missing, str)):
+            self._missing = {Missing.silent: NotConfigured,
+                             Missing.error: _NoDefault}[Missing(missing)]
 
         self._source = {}
         for source in sources:
@@ -261,7 +266,7 @@ class Configuration(Mapping):
         """
         Gets a 'single step value', as either a configured value or a
         namespace-like object in the form of a `.Configuration` instance. An
-        unconfigured value will return `.NotConfigured`, a 'safe' sentinel
+        unconfigured value will return `.NotConfigured`, a 'silent' sentinel
         value.
 
         :param attr: the 'step' (key, attribute, …) to take
@@ -333,7 +338,7 @@ def load(*fps):
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps))
 
 
-def loadf(*fnames, default=_NoDefault, missing='safe'):
+def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
     """
     Read a `.Configuration` instance from named files.
 
@@ -355,7 +360,7 @@ def loadf(*fnames, default=_NoDefault, missing='safe'):
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings, missing='safe'):
+def loads(*strings, missing=Missing.silent):
     """
     Read a `.Configuration` instance from strings.
 
@@ -577,7 +582,7 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
                                    Locality.environment))
 
 
-def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing='safe'):
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=Missing.silent):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -592,8 +597,8 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing='
     :param load_order: ordered list of name templates or `callable`s, in
         increasing order of significance
     :param extension: file extension to be used
-    :param missing: how to treat a missing / unconfigured key, either
-        ``'safe'`` or ``'raise'``
+    :param missing: how to treat a missing / unconfigured key (a `.Missing`
+        instance or a default value)
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
