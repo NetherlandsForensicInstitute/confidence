@@ -300,9 +300,6 @@ class Configuration(Mapping):
         return sorted(set(chain(super().__dir__(), self.keys())))
 
 
-_COLLIDING_KEYS = frozenset(dir(Configuration()))
-
-
 class NotConfigured(Configuration):
     """
     Sentinel value to signal there is no value for a requested key.
@@ -318,6 +315,11 @@ class NotConfigured(Configuration):
 
 # overwrite NotConfigured as an instance of itself, a Configuration instance without any values
 NotConfigured = NotConfigured()
+# NB: NotConfigured._missing refers to the NotConfigured *class* at this point, fix this after the name override
+NotConfigured._missing = NotConfigured
+
+
+_COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
 def load(*fps):
