@@ -3,9 +3,8 @@ from os import path
 import pytest
 from unittest.mock import call, patch
 
-from confidence.io import DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality
+from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
 from confidence.io import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
-from confidence.models import Configuration, NotConfigured
 
 
 test_files = path.join(path.dirname(__file__), 'files')
