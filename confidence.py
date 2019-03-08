@@ -150,6 +150,8 @@ class Configuration(Mapping):
         :param sources: source mappings to base this `.Configuration` on,
             ordered from least to most significant
         :param separator: the character(s) to use as the separator between keys
+        :param missing: policy to be used when a configured key is missing,
+            either as a `.Missing` instance or a default value
         """
         self._separator = separator
         self._missing = missing
@@ -242,6 +244,7 @@ class Configuration(Mapping):
             if as_type:
                 return as_type(value)
             elif isinstance(value, Mapping):
+                # create an instance of our current type, copying 'configured' properties / policies
                 namespace = type(self)(separator=self._separator, missing=self._missing)
                 namespace._source = value
                 # carry the root object from namespace to namespace, references are always resolved from root
@@ -327,15 +330,17 @@ NotConfigured._missing = NotConfigured
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
-def load(*fps):
+def load(*fps, missing=Missing.silent):
     """
     Read a `.Configuration` instance from file-like objects.
 
     :param fps: file-like objects (supporting ``.read()``)
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instance providing values from *fps*
     :rtype: `.Configuration`
     """
-    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps))
+    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
 def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
@@ -345,6 +350,8 @@ def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
     :param fnames: name of the files to ``open()``
     :param default: `dict` or `.Configuration` to use when a file does not
         exist (default is to raise a `FileNotFoundError`)
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
@@ -365,6 +372,8 @@ def loads(*strings, missing=Missing.silent):
     Read a `.Configuration` instance from strings.
 
     :param strings: configuration contents
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instance providing values from *strings*
     :rtype: `.Configuration`
     """
@@ -597,8 +606,8 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=M
     :param load_order: ordered list of name templates or `callable`s, in
         increasing order of significance
     :param extension: file extension to be used
-    :param missing: how to treat a missing / unconfigured key (a `.Missing`
-        instance or a default value)
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
