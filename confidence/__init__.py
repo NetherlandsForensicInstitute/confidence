@@ -4,93 +4,16 @@ from functools import partial
 from itertools import chain, product
 from os import environ, path
 import re
-import warnings
 
 import yaml
 
 from confidence.exceptions import ConfigurationError, ConfiguredReferenceError, MergeConflictError, NotConfiguredError
-
-
-class _Conflict(IntEnum):
-    overwrite = 0
-    error = 1
+from confidence.utils import _Conflict, _merge, _split_keys
 
 
 class Missing(Enum):
     silent = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
     error = 'error'  #: raise an `AttributeError` for unconfigured keys
-
-
-def _merge(left, right, path=None, conflict=_Conflict.error):
-    """
-    Merges values in place from *right* into *left*.
-
-    :param left: mapping to merge into
-    :param right: mapping to merge from
-    :param path: `list` of keys processed before (used for error reporting
-        only, should only need to be provided by recursive calls)
-    :param conflict: action to be taken on merge conflict, raising an error
-        or overwriting an existing value
-    :return: *left*, for convenience
-    """
-    path = path or []
-    conflict = _Conflict(conflict)
-
-    for key in right:
-        if key in left:
-            if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
-                # recurse, merge left and right dict values, update path for current 'step'
-                _merge(left[key], right[key], path + [key], conflict=conflict)
-            elif left[key] != right[key]:
-                if conflict is _Conflict.error:
-                    # not both dicts we could merge, but also not the same, this doesn't work
-                    conflict_path = '.'.join(path + [key])
-                    raise MergeConflictError('merge conflict at {}'.format(conflict_path), key=conflict_path)
-                else:
-                    # overwrite left value with right value
-                    left[key] = right[key]
-            # else: left[key] is already equal to right[key], no action needed
-        else:
-            # key not yet in left or not considering conflicts, simple addition of right's mapping to left
-            left[key] = right[key]
-
-    return left
-
-
-def _split_keys(mapping, separator='.'):
-    """
-    Recursively walks *mapping* to split keys that contain the separator into
-    nested mappings.
-
-    :param mapping: the mapping to process
-    :param separator: the character (sequence) to use as the separator between
-        keys
-    :return: a mapping where keys containing *separator* are split into nested
-        mappings
-    """
-    result = {}
-
-    for key, value in mapping.items():
-        if isinstance(value, Mapping):
-            # recursively split key(s) in value
-            value = _split_keys(value, separator)
-
-        if separator in key:
-            # update key to be the first part before the separator
-            key, rest = key.split(separator, 1)
-            # use rest as the new key of value, recursively split that and update value
-            value = _split_keys({rest: value}, separator)
-
-        if key in _COLLIDING_KEYS:
-            # warn about configured keys colliding with Configuration members
-            warnings.warn('key {key} collides with member of Configuration type, use get() method to retrieve the '
-                          'value for {key}'.format(key=key),
-                          UserWarning)
-
-        # merge the result so far with the (possibly updated / fixed / split) current key and value
-        _merge(result, {key: value})
-
-    return result
 
 
 class _NoDefault:
@@ -135,7 +58,9 @@ class Configuration(Mapping):
         for source in sources:
             if source:
                 # merge values from source into self._source, overwriting any corresponding keys
-                _merge(self._source, _split_keys(source, separator=self._separator), conflict=_Conflict.overwrite)
+                _merge(self._source,
+                       _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
+                       conflict=_Conflict.overwrite)
 
     def _resolve(self, value):
         match = self._reference_pattern.search(value)
