@@ -15,8 +15,8 @@ install:
   - pip install coveralls
 
 script:
-  - bandit confidence.py
-  - flake8 confidence.py
+  - bandit --recursive confidence/
+  - flake8 confidence/
   - coverage run --branch --source confidence --module py.test --strict tests/
 
 after_success:
