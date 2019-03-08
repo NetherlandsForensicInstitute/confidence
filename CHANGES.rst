@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-
+- Add `Missing` policy to control what to do with unconfigured keys on attribute access
 
 0.5 (2019-02-01)
 ----------------
