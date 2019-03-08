@@ -1,6 +1,6 @@
 from itertools import chain, groupby
 
-from confidence import _LOADERS, DEFAULT_LOAD_ORDER, loaders, Locality
+from confidence.io import _LOADERS, DEFAULT_LOAD_ORDER, loaders, Locality
 
 
 def test_default_load_order_all_loaders():
