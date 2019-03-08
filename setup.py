@@ -1,6 +1,6 @@
 import codecs
 from os import path
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 here = path.abspath(path.dirname(__file__))
@@ -33,7 +33,7 @@ setup(
     keywords='configuration',
     long_description='\n\n'.join((readme, changes)),
 
-    py_modules=['confidence'],
+    packages=find_packages(),
     install_requires=dependencies,
 
     classifiers=(
