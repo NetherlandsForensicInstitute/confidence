@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from confidence import Configuration, NotConfigured
+from confidence import Configuration, Missing, NotConfigured
 
 
 def test_empty():
@@ -34,7 +34,7 @@ def test_value_types():
 
 
 def test_not_configured():
-    subject = Configuration({'key': 'value'})
+    subject = Configuration({'key': 'value'}, missing=Missing.silent)
 
     assert subject.key == 'value'
     assert subject.does_nope_exist is NotConfigured
@@ -102,3 +102,22 @@ def test_assignments():
     with pytest.raises(AttributeError) as e:
         subject.we.must.go.deeper = True
     assert 'assignment not supported' in str(e.value) and 'deeper' in str(e.value)
+
+
+def test_missing_error():
+    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing=Missing.error)
+
+    assert subject.key1 == 'value'
+
+    with pytest.raises(AttributeError) as e:
+        assert subject.namespace.key3 is False
+        assert not subject.key3
+
+    assert 'key3' in str(e.value)
+
+
+def test_missing_default():
+    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing='just a default')
+
+    assert subject.namespace.key3 is False
+    assert subject.key3 == 'just a default'
