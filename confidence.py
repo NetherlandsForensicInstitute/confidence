@@ -157,9 +157,9 @@ class Configuration(Mapping):
         self._missing = missing
         self._root = self
 
-        if isinstance(self._missing, (Missing, str)):
+        if isinstance(self._missing, Missing):
             self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[Missing(missing)]
+                             Missing.error: _NoDefault}[missing]
 
         self._source = {}
         for source in sources:
