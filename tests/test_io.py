@@ -3,8 +3,9 @@ from os import path
 import pytest
 from unittest.mock import call, patch
 
-from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
-from confidence import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
+from confidence.io import DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality
+from confidence.io import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
+from confidence.models import Configuration, NotConfigured
 
 
 test_files = path.join(path.dirname(__file__), 'files')
@@ -98,7 +99,7 @@ def test_loadf_multiple():
 
 
 def test_loadf_home():
-    with patch('confidence.path') as mocked_path:
+    with patch('confidence.io.path') as mocked_path:
         # actual expanded home directory not under test, verify that it was called
         mocked_path.expanduser.return_value = path.join(test_files, 'config.yaml')
         _assert_values(loadf('~/config.yaml'))
@@ -107,7 +108,7 @@ def test_loadf_home():
 
 
 def test_loadf_default():
-    with patch('confidence.path') as mocked_path:
+    with patch('confidence.io.path') as mocked_path:
         mocked_path.exists.return_value = False
         mocked_path.expanduser.side_effect = _patched_expanduser
 
@@ -119,7 +120,7 @@ def test_loadf_default():
 
 
 def test_loadf_missing():
-    with patch('confidence.path') as mocked_path:
+    with patch('confidence.io.path') as mocked_path:
         mocked_path.exists.return_value = False
         mocked_path.expanduser.side_effect = _patched_expanduser
         with pytest.raises(FileNotFoundError):
@@ -170,7 +171,7 @@ def test_load_name_order():
         'LOCALAPPDATA': 'C:/Users/user/AppData/Local'
     }
 
-    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
@@ -204,7 +205,7 @@ def test_load_name_xdg_config_dirs():
         'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
     }
 
-    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
         # hard-code path separator, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
@@ -224,7 +225,7 @@ def test_load_name_xdg_config_dirs():
 
 
 def test_load_name_xdg_config_dirs_fallback():
-    with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', {}):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.loadf') as mocked_loadf, patch('confidence.io.environ', {}):
         # hard-code path separator, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
@@ -245,7 +246,7 @@ def test_load_name_xdg_config_home():
         'HOME': '/home/user'
     }
 
-    with patch('confidence.path') as mocked_path, patch('confidence.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
@@ -265,7 +266,7 @@ def test_load_name_xdg_config_home_fallback():
         'HOME': '/home/user'
     }
 
-    with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.loadf') as mocked_loadf, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
@@ -288,7 +289,7 @@ def test_load_name_envvars():
         'BAR_N__S_KEY': 'space',
     }
 
-    with patch('confidence.environ', env):
+    with patch('confidence.io.environ', env):
         subject = load_name('foo', 'bar', load_order=(read_envvars,))
 
     assert subject.key == 'bar'
@@ -302,7 +303,7 @@ def test_load_name_envvar_file():
         'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
     }
 
-    with patch('confidence.environ', env):
+    with patch('confidence.io.environ', env):
         subject = load_name('foo', 'bar', load_order=(read_envvar_file,))
 
     assert len(subject.semi.overlapping) == 2
@@ -320,7 +321,7 @@ def test_load_name_overlapping_envvars():
         'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
     }
 
-    with patch('confidence.environ', env):
+    with patch('confidence.io.environ', env):
         subject = load_name('foo', 'bar', load_order=loaders(Locality.environment))
 
     assert subject.key == 'bar'
@@ -343,7 +344,7 @@ def test_load_name_envvar_dir():
     # only the envvar dir loaders are partials in DEFAULT_LOAD_ORDER
     load_order = [loader for loader in DEFAULT_LOAD_ORDER if isinstance(loader, partial)]
 
-    with patch('confidence.path') as mocked_path, patch('confidence.loadf') as mocked_loadf, patch('confidence.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.loadf') as mocked_loadf, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join

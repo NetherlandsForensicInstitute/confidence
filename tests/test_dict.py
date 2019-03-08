@@ -2,7 +2,8 @@ from collections.abc import Mapping, Sequence
 
 import pytest
 
-from confidence import _NoDefault, Configuration, ConfigurationError
+from confidence.exceptions import ConfigurationError
+from confidence.models import _NoDefault, Configuration
 
 
 def test_empty():
