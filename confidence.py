@@ -100,7 +100,7 @@ def _split_keys(mapping, separator='.'):
             # recursively split key(s) in value
             value = _split_keys(value, separator)
 
-        if separator in key:
+        if isinstance(key, str) and separator in key:
             # update key to be the first part before the separator
             key, rest = key.split(separator, 1)
             # use rest as the new key of value, recursively split that and update value
