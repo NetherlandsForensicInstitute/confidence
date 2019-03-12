@@ -127,11 +127,13 @@ class Configuration(Mapping):
         value = self._source
         steps_taken = []
         try:
-            # walk through the values dictionary
-            for step in path.split(self._separator):
-                steps_taken.append(step)
-                value = value[step]
-
+            if isinstance(path, str):
+                # walk through the values dictionary
+                for step in path.split(self._separator):
+                    steps_taken.append(step)
+                    value = value[step]
+            elif isinstance(path, int):
+                return list(value.values())[0]
             if as_type:
                 return as_type(value)
             elif isinstance(value, Mapping):
