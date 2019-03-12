@@ -132,3 +132,25 @@ def test_split_overlap_complex():
             }
         }
     }
+
+
+def test_split_integer_keys():
+    subject = {
+        42: 'test',
+        43: {'does.it.split.afterwards': 'yes'},
+        'what': {
+            'about.when': {
+                42: {'is.in.the.middle': 'hopefully'}
+            }
+        }
+    }
+
+    separated = _split_keys(subject)
+
+    assert separated == {
+        42: 'test',
+        43: {'does': {'it': {'split': {'afterwards': 'yes'}}}},
+        'what': {'about': {'when': {42: {'is': {'in': {'the': {
+            'middle': 'hopefully'
+        }}}}}}}
+    }
