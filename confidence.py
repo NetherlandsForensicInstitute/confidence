@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from enum import IntEnum
+from enum import Enum, IntEnum
 from functools import partial
 from itertools import chain, product
 from os import environ, path
@@ -44,6 +44,11 @@ class ConfiguredReferenceError(ConfigurationError):
 class _Conflict(IntEnum):
     overwrite = 0
     error = 1
+
+
+class Missing(Enum):
+    silent = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
+    error = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
 def _merge(left, right, path=None, conflict=_Conflict.error):
@@ -138,16 +143,23 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
 
-    def __init__(self, *sources, separator='.'):
+    def __init__(self, *sources, separator='.', missing=Missing.silent):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
         :param sources: source mappings to base this `.Configuration` on,
             ordered from least to most significant
         :param separator: the character(s) to use as the separator between keys
+        :param missing: policy to be used when a configured key is missing,
+            either as a `.Missing` instance or a default value
         """
         self._separator = separator
+        self._missing = missing
         self._root = self
+
+        if isinstance(self._missing, Missing):
+            self._missing = {Missing.silent: NotConfigured,
+                             Missing.error: _NoDefault}[missing]
 
         self._source = {}
         for source in sources:
@@ -232,7 +244,8 @@ class Configuration(Mapping):
             if as_type:
                 return as_type(value)
             elif isinstance(value, Mapping):
-                namespace = Configuration()
+                # create an instance of our current type, copying 'configured' properties / policies
+                namespace = type(self)(separator=self._separator, missing=self._missing)
                 namespace._source = value
                 # carry the root object from namespace to namespace, references are always resolved from root
                 namespace._root = self._root
@@ -245,25 +258,28 @@ class Configuration(Mapping):
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
             raise
-        except KeyError:
+        except KeyError as e:
             if default is not _NoDefault:
                 return default
             else:
                 missing_key = self._separator.join(steps_taken)
-                raise NotConfiguredError('no configuration for key {}'.format(missing_key), key=missing_key)
+                raise NotConfiguredError('no configuration for key {}'.format(missing_key), key=missing_key) from e
 
     def __getattr__(self, attr):
         """
         Gets a 'single step value', as either a configured value or a
         namespace-like object in the form of a `.Configuration` instance. An
-        unconfigured value will return `.NotConfigured`, a 'safe' sentinel
+        unconfigured value will return `.NotConfigured`, a 'silent' sentinel
         value.
 
         :param attr: the 'step' (key, attribute, …) to take
         :return: a value, as either an actual value or a `.Configuration`
             instance (`.NotConfigured` in case of an unconfigured 'step')
         """
-        return self.get(attr, default=NotConfigured)
+        try:
+            return self.get(attr, default=self._missing)
+        except NotConfiguredError as e:
+            raise AttributeError(attr) from e
 
     def __setattr__(self, name, value):
         """
@@ -292,9 +308,6 @@ class Configuration(Mapping):
         return sorted(set(chain(super().__dir__(), self.keys())))
 
 
-_COLLIDING_KEYS = frozenset(dir(Configuration()))
-
-
 class NotConfigured(Configuration):
     """
     Sentinel value to signal there is no value for a requested key.
@@ -310,26 +323,35 @@ class NotConfigured(Configuration):
 
 # overwrite NotConfigured as an instance of itself, a Configuration instance without any values
 NotConfigured = NotConfigured()
+# NB: NotConfigured._missing refers to the NotConfigured *class* at this point, fix this after the name override
+NotConfigured._missing = NotConfigured
 
 
-def load(*fps):
+_COLLIDING_KEYS = frozenset(dir(Configuration()))
+
+
+def load(*fps, missing=Missing.silent):
     """
     Read a `.Configuration` instance from file-like objects.
 
     :param fps: file-like objects (supporting ``.read()``)
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instance providing values from *fps*
     :rtype: `.Configuration`
     """
-    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps))
+    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
-def loadf(*fnames, default=_NoDefault):
+def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
     """
     Read a `.Configuration` instance from named files.
 
     :param fnames: name of the files to ``open()``
     :param default: `dict` or `.Configuration` to use when a file does not
         exist (default is to raise a `FileNotFoundError`)
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
@@ -342,18 +364,20 @@ def loadf(*fnames, default=_NoDefault):
         else:
             return default
 
-    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames))
+    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings):
+def loads(*strings, missing=Missing.silent):
     """
     Read a `.Configuration` instance from strings.
 
     :param strings: configuration contents
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instance providing values from *strings*
     :rtype: `.Configuration`
     """
-    return Configuration(*(yaml.safe_load(string) for string in strings))
+    return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
 def read_xdg_config_dirs(name, extension):
@@ -567,7 +591,7 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
                                    Locality.environment))
 
 
-def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=Missing.silent):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -582,6 +606,8 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
     :param load_order: ordered list of name templates or `callable`s, in
         increasing order of significance
     :param extension: file extension to be used
+    :param missing: policy to be used when a configured key is missing, either
+        as a `.Missing` instance or a default value
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
@@ -596,4 +622,4 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml'):
                 candidate = path.expanduser(source.format(name=name, extension=extension))
                 yield loadf(candidate, default=NotConfigured)
 
-    return Configuration(*generate_sources())
+    return Configuration(*generate_sources(), missing=missing)
