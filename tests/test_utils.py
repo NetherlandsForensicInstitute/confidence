@@ -132,3 +132,25 @@ def test_split_overlap_complex():
             }
         }
     }
+
+
+def test_split_key_types():
+    subject = {
+        'ns.1234.key': 42,
+        'ns': {
+            1234: {'key2': 43},
+            True: False
+        }
+    }
+
+    separated = _split_keys(subject)
+
+    assert separated == {
+        'ns': {
+            '1234': {
+                'key': 42,
+                'key2': 43
+            },
+            'True': False
+        }
+    }
