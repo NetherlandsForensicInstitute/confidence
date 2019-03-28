@@ -51,6 +51,10 @@ def _split_keys(mapping, separator='.', colliding=None):
     Recursively walks *mapping* to split keys that contain the separator into
     nested mappings.
 
+    .. note::
+
+        All keys are coerced to `str` for use within a `.Configuration` object.
+
     :param mapping: the mapping to process
     :param separator: the character (sequence) to use as the separator between
         keys
