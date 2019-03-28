@@ -64,6 +64,9 @@ def _split_keys(mapping, separator='.', colliding=None):
             # recursively split key(s) in value
             value = _split_keys(value, separator)
 
+        # make sure the key being used is interpreted as a str to avoid issues later
+        key = str(key)
+
         if separator in key:
             # update key to be the first part before the separator
             key, rest = key.split(separator, 1)
