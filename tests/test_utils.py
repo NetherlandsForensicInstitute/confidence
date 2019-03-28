@@ -70,6 +70,18 @@ def test_merge_conflict_overwrite():
     assert merged['parent']['first'] == 4
 
 
+def test_merge_key_types():
+    left = {'parent': {1234: {1: 1}}}
+    right = {'parent': {'1234': {'2': 2}}}
+
+    merged = _merge(left, right)
+
+    assert len(merged['parent']) == 1
+    assert merged['parent']['1234'] == {'1': 1, '2': 2}
+
+    assert merged == _merge(right, left)
+
+
 def test_split_none():
     subject = {'key': 'value', 'another_key': 123}
 
