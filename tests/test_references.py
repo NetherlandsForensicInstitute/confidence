@@ -1,6 +1,11 @@
+from os import path
+
 import pytest
 
-from confidence import Configuration, ConfigurationError, ConfiguredReferenceError, NotConfigured
+from confidence import Configuration, ConfigurationError, ConfiguredReferenceError, loadf, NotConfigured
+
+
+test_files = path.join(path.dirname(__file__), 'files')
 
 
 def test_reference_syntax():
@@ -145,3 +150,12 @@ def test_loop_recursion():
         assert not config.ns.key
 
     assert 'ns.key' in str(e.value) and 'recursive' in str(e.value)
+
+
+def test_references_from_file():
+    config = loadf(path.join(test_files, 'complicated.yaml'))
+
+    assert isinstance(config.a.simple.reference, Configuration)
+    assert config.a.simple.reference.example == 'example'
+
+    assert config.a.complicated.reference == 'value with a reference in it'
