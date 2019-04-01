@@ -1,3 +1,5 @@
+import pytest
+
 from confidence.utils import _Conflict, _merge, _split_keys
 
 
@@ -70,18 +72,6 @@ def test_merge_conflict_overwrite():
     assert merged['parent']['first'] == 4
 
 
-def test_merge_key_types():
-    left = {'parent': {1234: {1: 1}}}
-    right = {'parent': {'1234': {'2': 2}}}
-
-    merged = _merge(left, right)
-
-    assert len(merged['parent']) == 1
-    assert merged['parent']['1234'] == {'1': 1, '2': 2}
-
-    assert merged == _merge(right, left)
-
-
 def test_split_none():
     subject = {'key': 'value', 'another_key': 123}
 
@@ -150,19 +140,11 @@ def test_split_key_types():
     subject = {
         'ns.1234.key': 42,
         'ns': {
-            1234: {'key2': 43},
-            True: False
+            1234: {'key2': 43}
         }
     }
 
-    separated = _split_keys(subject)
+    with pytest.raises(ValueError) as e:
+        assert not _split_keys(subject)
 
-    assert separated == {
-        'ns': {
-            '1234': {
-                'key': 42,
-                'key2': 43
-            },
-            'True': False
-        }
-    }
+    assert '1234' in str(e.value)

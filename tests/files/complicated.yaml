@@ -1,6 +1,6 @@
 a.complicated:
   example: example
-  2019:
+  '2019':
     a: 'a'
   2019.b: 'b'
 
@@ -8,4 +8,4 @@ a:
   simple:
     reference: ${a.complicated}
   complicated.reference: value with ${a.complicated.2019.a} reference in it
-  2019-03-28: 2019-03-28
+  '2019-03-28': 2019-03-28
