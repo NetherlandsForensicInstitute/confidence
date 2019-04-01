@@ -68,8 +68,10 @@ def _split_keys(mapping, separator='.', colliding=None):
             # recursively split key(s) in value
             value = _split_keys(value, separator)
 
-        # make sure the key being used is interpreted as a str to avoid issues later
-        key = str(key)
+        # reject non-str keys, avoid complicating access patterns
+        if not isinstance(key, str):
+            raise ValueError('non-str type keys ({0}, {0.__class__.__module__}.{0.__class__.__name__}) '
+                             'not supported'.format(key))
 
         if separator in key:
             # update key to be the first part before the separator
