@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from confidence.utils import _Conflict, _merge, _split_keys
@@ -148,3 +150,17 @@ def test_split_key_types():
         assert not _split_keys(subject)
 
     assert '1234' in str(e.value)
+    assert 'int' in str(e.value)
+
+    subject = {
+        'ns.2019-04-01.key': 42,
+        'ns': {
+            date(2019, 4, 1): {'key2': 43}
+        }
+    }
+
+    with pytest.raises(ValueError) as e:
+        assert not _split_keys(subject)
+
+    assert '2019-04-01' in str(e.value)
+    assert 'datetime.date' in str(e.value)
