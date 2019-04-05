@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Add `Missing` policy to control what to do with unconfigured keys on attribute access
+- Split single-file module into multi-module package (user-facing names importable from `confidence` package)
 
 0.5 (2019-02-01)
 ----------------
