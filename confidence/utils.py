@@ -53,7 +53,7 @@ def _split_keys(mapping, separator='.', colliding=None):
 
     .. note::
 
-        All keys are coerced to `str` for use within a `.Configuration` object.
+        Keys not of type `str` are not supported and will raise errors.
 
     :param mapping: the mapping to process
     :param separator: the character (sequence) to use as the separator between
