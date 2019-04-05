@@ -1,11 +1,12 @@
 Changes
 =======
 
-development (master)
---------------------
+0.6 (2019-04-05)
+----------------
 
 - Add `Missing` policy to control what to do with unconfigured keys on attribute access
 - Split single-file module into multi-module package (user-facing names importable from `confidence` package)
+- Raise errors when merging / splitting non-`str` type keys, avoiding issues with confusing and broken access patterns
 
 0.5 (2019-02-01)
 ----------------
