@@ -1,9 +1,13 @@
 from collections.abc import Mapping, Sequence
+from os import path
 
 import pytest
 
-from confidence import Configuration, ConfigurationError
+from confidence import Configuration, ConfigurationError, loadf
 from confidence.models import _NoDefault
+
+
+test_files = path.join(path.dirname(__file__), 'files')
 
 
 def test_empty():
@@ -50,3 +54,11 @@ def test_as_type():
 
 def test_no_default_doc_friendly():
     assert 'raise' in repr(_NoDefault)
+
+
+def test_key_types_from_file():
+    config = loadf(path.join(test_files, 'complicated.yaml'))
+
+    assert isinstance(config.get('a.complicated.2019'), Configuration)
+    assert config.get('a.complicated.2019.a') == 'a'
+    assert config.get('a.complicated.2019.b') == 'b'

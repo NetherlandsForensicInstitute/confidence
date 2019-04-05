@@ -51,6 +51,10 @@ def _split_keys(mapping, separator='.', colliding=None):
     Recursively walks *mapping* to split keys that contain the separator into
     nested mappings.
 
+    .. note::
+
+        Keys not of type `str` are not supported and will raise errors.
+
     :param mapping: the mapping to process
     :param separator: the character (sequence) to use as the separator between
         keys
@@ -63,6 +67,11 @@ def _split_keys(mapping, separator='.', colliding=None):
         if isinstance(value, Mapping):
             # recursively split key(s) in value
             value = _split_keys(value, separator)
+
+        # reject non-str keys, avoid complicating access patterns
+        if not isinstance(key, str):
+            raise ValueError('non-str type keys ({0}, {0.__class__.__module__}.{0.__class__.__name__}) '
+                             'not supported'.format(key))
 
         if separator in key:
             # update key to be the first part before the separator
