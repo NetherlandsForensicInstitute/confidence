@@ -159,3 +159,12 @@ def test_references_from_file():
     assert config.a.simple.reference.example == 'example'
 
     assert config.a.complicated.reference == 'value with a reference in it'
+
+
+def test_missing_reference_during_merge():
+    source1 = Configuration({'ns.key2': '${ns.key}'})  # reference should only be resolvable after merge
+    source2 = {'ns.key': 'value'}
+
+    config = Configuration(source1, source2)
+
+    assert config.ns.key == config.ns.key2 == 'value'
