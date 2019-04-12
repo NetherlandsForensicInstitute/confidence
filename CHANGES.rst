@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.6.1 (2019-04-12)
+------------------
 
 - Fix resolving references during loading when sources passed to `Configuration` are `Configuration` instances themselves.
 
