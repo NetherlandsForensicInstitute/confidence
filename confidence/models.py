@@ -53,6 +53,10 @@ class Configuration(Mapping):
         self._source = {}
         for source in sources:
             if source:
+                while isinstance(source, Configuration):
+                    # _merge will walk source.items(), using source.get(), avoid resolving references now
+                    source = source._source
+
                 # merge values from source into self._source, overwriting any corresponding keys
                 _merge(self._source,
                        _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
