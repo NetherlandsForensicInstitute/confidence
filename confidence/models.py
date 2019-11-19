@@ -202,6 +202,26 @@ class Configuration(Mapping):
     def __dir__(self):
         return sorted(set(chain(super().__dir__(), self.keys())))
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
+        #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
+        if state['_missing'] is NotConfigured:
+            state['_missing'] = Missing.silent
+        elif state['_missing'] is _NoDefault:
+            state['_missing'] = Missing.error
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__ = state
+
+        if isinstance(self._missing, Missing):
+            # reverse the Missing encoding done in __getstate__
+            self._missing = {Missing.silent: NotConfigured,
+                             Missing.error: _NoDefault}[self._missing]
+
 
 class NotConfigured(Configuration):
     """
