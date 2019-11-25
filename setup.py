@@ -24,7 +24,7 @@ dependencies = [
 
 setup(
     name='confidence',
-    version='0.6.1',
+    version='0.6.2',
     url='https://github.com/HolmesNL/confidence/',
     author='Netherlands Forensic Institute',
     author_email=codecs.encode('ubyzrfay@hfref.abercyl.tvguho.pbz', 'rot-13'),

@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.6.2 (2019-11-25)
+------------------
 
 - Make `Configuration` instances picklable.
 
