@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-
+- Restrict reference pattern to make a nested pattern work.
 
 0.6.2 (2019-11-25)
 ------------------
