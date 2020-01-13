@@ -4,4 +4,4 @@
 #
 #    pip-compile --upgrade --output-file requirements.txt setup.py
 #
-pyyaml==5.1.2
+pyyaml==5.3
