@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.6.3 (2020-01-14)
+------------------
 
 - Restrict reference pattern to make a nested pattern work.
 
