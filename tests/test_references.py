@@ -76,6 +76,18 @@ def test_multi_level_reference():
     assert config.key == 'A seemingly full, complete sentence.'
 
 
+def test_recursive_reference():
+    config = Configuration({
+        'ns': {'reference': 'final',
+               'final': 'the actual value'},
+        'wanted': '${ns.${ns.reference}}',
+    })
+
+    assert config.ns.final == 'the actual value'
+    assert config.ns.reference == 'final'
+    assert config.wanted == 'the actual value'
+
+
 def test_sub_config_reference():
     config = Configuration({
         'key': 'string',

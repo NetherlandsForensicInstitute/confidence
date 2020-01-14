@@ -30,7 +30,7 @@ class Configuration(Mapping):
     """
 
     # match a reference as ${key.to.be.resolved}
-    _reference_pattern = re.compile(r'\${(?P<path>[^}]+?)}')
+    _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
     def __init__(self, *sources, separator='.', missing=Missing.silent):
         """
