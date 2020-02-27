@@ -1,4 +1,4 @@
-|Build Status| |Coverage Status|
+|Build Status| |Coverage Status| |PyPI Version|
 
 confidence :+1:
 ===============
@@ -125,3 +125,5 @@ Installing from source can be done using ``setup.py``, or build a wheel using ``
    :target: https://travis-ci.org/HolmesNL/confidence
 .. |Coverage Status| image:: https://img.shields.io/coveralls/HolmesNL/confidence/master.svg
    :target: https://coveralls.io/r/HolmesNL/confidence?branch=master
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/confidence.svg
+   :target: https://pypi.org/project/confidence/
