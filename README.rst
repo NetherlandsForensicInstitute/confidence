@@ -103,7 +103,7 @@ possible, confidence doesn't hide away its flexible internal API.
     # make it so, no. 1
     run_app(configuration)
 
-Installing
+installing
 ----------
 
 Install confidence with confidence using ``pip``:

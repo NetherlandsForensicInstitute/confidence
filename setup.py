@@ -8,9 +8,17 @@ here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.rst'), 'r', encoding='utf-8') as readme:
     # use the contents of the readme as the long_description for the module
-    # strip the first line (no need for repo badges on PyPI)
-    readme.readline()
-    readme = readme.read()
+    def strip_readme(file):
+        line = file.readline()
+        # drop content before the first header
+        while not line.startswith('confidence'):
+            line = file.readline()
+        # drop section on installing
+        while not line.startswith('installing'):
+            yield line
+            line = file.readline()
+
+    readme = ''.join(strip_readme(readme))
 
 
 with open(path.join(here, 'CHANGES.rst'), 'r', encoding='utf-8') as changes:
