@@ -103,6 +103,24 @@ possible, confidence doesn't hide away its flexible internal API.
     # make it so, no. 1
     run_app(configuration)
 
+Installing
+----------
+
+Install confidence with confidence using ``pip``:
+
+.. code:: plain
+
+    $ pip install confidence
+
+Installing from source can be done using ``setup.py``, or build a wheel using ``tox``:
+
+.. code:: plain
+
+    $ python3 setup.py install
+
+    $ tox -e dist
+    $ pip install dist/confidence*.whl
+
 .. |Build Status| image:: https://img.shields.io/travis/HolmesNL/confidence/master.svg
    :target: https://travis-ci.org/HolmesNL/confidence
 .. |Coverage Status| image:: https://img.shields.io/coveralls/HolmesNL/confidence/master.svg
