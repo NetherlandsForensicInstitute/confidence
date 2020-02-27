@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 here = path.abspath(path.dirname(__file__))
 
 
-with open(path.join(here, 'README.rst'), 'r', encoding='utf-8') as readme:
+with open(path.join(here, 'README.md'), 'r', encoding='utf-8') as readme:
     # use the contents of the readme as the long_description for the module
     def strip_readme(file):
         line = file.readline()
@@ -21,7 +21,7 @@ with open(path.join(here, 'README.rst'), 'r', encoding='utf-8') as readme:
     readme = ''.join(strip_readme(readme))
 
 
-with open(path.join(here, 'CHANGES.rst'), 'r', encoding='utf-8') as changes:
+with open(path.join(here, 'CHANGES.md'), 'r', encoding='utf-8') as changes:
     changes = changes.read()
 
 
@@ -40,6 +40,7 @@ setup(
     description="Simple module to load and use configuration in a clean, 'pythonic' way.",
     keywords='configuration',
     long_description='\n\n'.join((readme, changes)),
+    long_description_content_type='text/markdown',
 
     packages=find_packages(),
     install_requires=dependencies,
