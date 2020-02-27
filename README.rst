@@ -1,7 +1,7 @@
 |Build Status| |Coverage Status|
 
-confidence.py :+1:
-==================
+confidence :+1:
+===============
 
 Confidence makes it easy to load one or multiple sources of
 configuration values and exposes them as a simple to use Python object.
