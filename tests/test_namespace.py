@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from unittest.mock import patch
 
 import pytest
@@ -29,7 +29,7 @@ def test_value_types():
     assert isinstance(subject.an_int, int)
     assert isinstance(subject.a_float, float)
     assert isinstance(subject.a_boolean, bool)
-    assert isinstance(subject.a_list, list)
+    assert isinstance(subject.a_list, Sequence)
     assert isinstance(subject.we_must, Mapping)
 
 
