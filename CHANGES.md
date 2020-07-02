@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-
+- Auto-wrap configured sequences to enable 'list-of-dicts' style configuration while retaining `Configuration` functionality
 
 0.6.3 (2020-01-14)
 ------------------
