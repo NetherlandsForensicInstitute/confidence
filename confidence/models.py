@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from enum import Enum
 from itertools import chain
 import re
@@ -148,6 +148,8 @@ class Configuration(Mapping):
                 return as_type(value)
             elif isinstance(value, Mapping):
                 return self._wrap(value)
+            elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+                return _ConfigurationSequence(value, self._wrap)
             elif resolve_references and isinstance(value, str):
                 # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
