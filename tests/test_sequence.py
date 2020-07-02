@@ -40,3 +40,12 @@ def test_deep_reference(complicated_config):
 
     assert isinstance(ns, Mapping)
     assert ns.sequence_with == 'a mapping inside it, with a reference (mind = blown)'
+
+
+def test_sequence_slice(complicated_config):
+    sequence = complicated_config.different.types[1:4]
+
+    assert len(sequence) == 3
+    assert sequence[0] is True
+    assert sequence[1] == 42.0
+    assert sequence[2].also == 'a mapping'
