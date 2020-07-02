@@ -243,3 +243,22 @@ NotConfigured._missing = NotConfigured
 
 
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
+
+
+class _ConfigurationSequence(Sequence):
+    def __init__(self, source, factory):
+        self._source = source
+        self._factory = factory
+
+    def __getitem__(self, item):
+        # TODO: deal with item being a slice
+        value = self._source[item]
+        if isinstance(value, Mapping):
+            return self._factory(value)
+        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            return type(self)(value, self._factory)
+        else:
+            return value
+
+    def __len__(self):
+        return len(self._source)
