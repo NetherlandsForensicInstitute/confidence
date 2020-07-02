@@ -62,6 +62,14 @@ class Configuration(Mapping):
                        _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
                        conflict=_Conflict.overwrite)
 
+    def _wrap(self, value):
+        # create an instance of our current type, copying 'configured' properties / policies
+        namespace = type(self)(separator=self._separator, missing=self._missing)
+        namespace._source = value
+        # carry the root object from namespace to namespace, references are always resolved from root
+        namespace._root = self._root
+        return namespace
+
     def _resolve(self, value):
         match = self._reference_pattern.search(value)
         references = set()
@@ -139,12 +147,7 @@ class Configuration(Mapping):
             if as_type:
                 return as_type(value)
             elif isinstance(value, Mapping):
-                # create an instance of our current type, copying 'configured' properties / policies
-                namespace = type(self)(separator=self._separator, missing=self._missing)
-                namespace._source = value
-                # carry the root object from namespace to namespace, references are always resolved from root
-                namespace._root = self._root
-                return namespace
+                return self._wrap(value)
             elif resolve_references and isinstance(value, str):
                 # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
