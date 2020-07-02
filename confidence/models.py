@@ -145,15 +145,19 @@ class Configuration(Mapping):
                 value = value[step]
 
             if as_type:
+                # explicit type conversion requested
                 return as_type(value)
             elif isinstance(value, Mapping):
+                # wrap value in a Configuration
                 return self._wrap(value)
             elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+                # wrap value in a sequence that retains Configuration functionality
                 return _ConfigurationSequence(value, self._wrap)
             elif resolve_references and isinstance(value, str):
                 # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
             else:
+                # a 'simple' value, nothing to do
                 return value
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
@@ -251,19 +255,34 @@ _COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
 class _ConfigurationSequence(Sequence):
+    """
+    A sequence of configured values, retrievable as if this were a `list`.
+    """
+
     def __init__(self, source, factory):
+        """
+        Create a new `._ConfigurationSequence`, based on a single source
+        sequence, pointing back to 'root' `Configuration` through *factory*.
+
+        :param source: a `Sequence` to wrap
+        :param factory: a `callable` to wrap `Mapping` values with
+        """
         self._source = source
         self._factory = factory
 
     def __getitem__(self, item):
-        # TODO: deal with item being a slice
+        # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
         value = self._source[item]
         if isinstance(value, Mapping):
+            # invoke the factory function (provided by Configuration) for a Mapping value
             return self._factory(value)
         if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            # wrap a sequence value with an 'instance of self'
             return type(self)(value, self._factory)
         else:
+            # a 'simple' value, nothing to do
             return value
 
     def __len__(self):
+        # emulating a simple sequence, delegate length to _source
         return len(self._source)
