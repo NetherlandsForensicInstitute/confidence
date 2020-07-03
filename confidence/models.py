@@ -152,7 +152,7 @@ class Configuration(Mapping):
                 return self._wrap(value)
             elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
                 # wrap value in a sequence that retains Configuration functionality
-                return _ConfigurationSequence(value, self._wrap)
+                return ConfigurationSequence(value, self._wrap)
             elif resolve_references and isinstance(value, str):
                 # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
@@ -254,7 +254,7 @@ NotConfigured._missing = NotConfigured
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
-class _ConfigurationSequence(Sequence):
+class ConfigurationSequence(Sequence):
     """
     A sequence of configured values, retrievable as if this were a `list`.
     """
