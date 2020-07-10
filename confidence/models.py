@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from enum import Enum
 from itertools import chain
 import re
@@ -61,6 +61,14 @@ class Configuration(Mapping):
                 _merge(self._source,
                        _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
                        conflict=_Conflict.overwrite)
+
+    def _wrap(self, value):
+        # create an instance of our current type, copying 'configured' properties / policies
+        namespace = type(self)(separator=self._separator, missing=self._missing)
+        namespace._source = value
+        # carry the root object from namespace to namespace, references are always resolved from root
+        namespace._root = self._root
+        return namespace
 
     def _resolve(self, value):
         match = self._reference_pattern.search(value)
@@ -137,18 +145,19 @@ class Configuration(Mapping):
                 value = value[step]
 
             if as_type:
+                # explicit type conversion requested
                 return as_type(value)
             elif isinstance(value, Mapping):
-                # create an instance of our current type, copying 'configured' properties / policies
-                namespace = type(self)(separator=self._separator, missing=self._missing)
-                namespace._source = value
-                # carry the root object from namespace to namespace, references are always resolved from root
-                namespace._root = self._root
-                return namespace
+                # wrap value in a Configuration
+                return self._wrap(value)
+            elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+                # wrap value in a sequence that retains Configuration functionality
+                return ConfigurationSequence(value, self._wrap)
             elif resolve_references and isinstance(value, str):
                 # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
             else:
+                # a 'simple' value, nothing to do
                 return value
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
@@ -243,3 +252,37 @@ NotConfigured._missing = NotConfigured
 
 
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
+
+
+class ConfigurationSequence(Sequence):
+    """
+    A sequence of configured values, retrievable as if this were a `list`.
+    """
+
+    def __init__(self, source, factory):
+        """
+        Create a new `._ConfigurationSequence`, based on a single source
+        sequence, pointing back to 'root' `Configuration` through *factory*.
+
+        :param source: a `Sequence` to wrap
+        :param factory: a `callable` to wrap `Mapping` values with
+        """
+        self._source = source
+        self._factory = factory
+
+    def __getitem__(self, item):
+        # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
+        value = self._source[item]
+        if isinstance(value, Mapping):
+            # invoke the factory function (provided by Configuration) for a Mapping value
+            return self._factory(value)
+        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            # wrap a sequence value with an 'instance of self'
+            return type(self)(value, self._factory)
+        else:
+            # a 'simple' value, nothing to do
+            return value
+
+    def __len__(self):
+        # emulating a simple sequence, delegate length to _source
+        return len(self._source)

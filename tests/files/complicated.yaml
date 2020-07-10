@@ -9,3 +9,16 @@ a:
     reference: ${a.complicated}
   complicated.reference: value with ${a.complicated.2019.a} reference in it
   '2019-03-28': 2019-03-28
+
+different.types:
+  - a string
+  - true
+  - 42.0
+  - also: a mapping
+    containing:
+      multiple: keys, just to make it more complicated
+      surprise:
+        - another
+        - sequence_with: a mapping inside it, with ${a.complicated.2019.a} reference (mind = blown)
+  - maybe: another mapping, for fun
+  - [1, 2, 3, 4]
