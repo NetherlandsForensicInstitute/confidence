@@ -181,21 +181,37 @@ def test_load_name_order():
 
     mocked_path.exists.assert_has_calls([
         call('/etc/xdg/foo.yaml'),
+        call('/etc/xdg/foo.yml'),
         call('/etc/xdg/bar.yaml'),
+        call('/etc/xdg/bar.yml'),
         call('/etc/foo.yaml'),
+        call('/etc/foo.yml'),
         call('/etc/bar.yaml'),
+        call('/etc/bar.yml'),
         call('/Library/Preferences/foo.yaml'),
+        call('/Library/Preferences/foo.yml'),
         call('/Library/Preferences/bar.yaml'),
+        call('/Library/Preferences/bar.yml'),
         call('/home/user/.config/foo.yaml'),
+        call('/home/user/.config/foo.yml'),
         call('/home/user/.config/bar.yaml'),
+        call('/home/user/.config/bar.yml'),
         call('/home/user/Library/Preferences/foo.yaml'),
+        call('/home/user/Library/Preferences/foo.yml'),
         call('/home/user/Library/Preferences/bar.yaml'),
+        call('/home/user/Library/Preferences/bar.yml'),
         call('C:/Users/user/AppData/Local/foo.yaml'),
+        call('C:/Users/user/AppData/Local/foo.yml'),
         call('C:/Users/user/AppData/Local/bar.yaml'),
+        call('C:/Users/user/AppData/Local/bar.yml'),
         call('/home/user/.foo.yaml'),
+        call('/home/user/.foo.yml'),
         call('/home/user/.bar.yaml'),
+        call('/home/user/.bar.yml'),
         call('./foo.yaml'),
+        call('./foo.yml'),
         call('./bar.yaml'),
+        call('./bar.yml'),
     ], any_order=False)
 
 
@@ -212,7 +228,7 @@ def test_load_name_xdg_config_dirs():
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
 
-        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
+        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,), extension='yaml')) == 0
 
     mocked_path.exists.assert_has_calls([
         # this might not be ideal (/etc/not-xdg should maybe show up twice first), but also not realistic…
@@ -231,7 +247,7 @@ def test_load_name_xdg_config_dirs_fallback():
         mocked_path.join.side_effect = path.join
         mocked_path.exists.return_value = True
 
-        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
+        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,), extension='yaml')) == 0
 
     mocked_loadf.assert_has_calls([
         call('/etc/xdg/foo.yaml', default=NotConfigured),
@@ -252,7 +268,7 @@ def test_load_name_xdg_config_home():
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
 
-        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
+        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,), extension='yaml')) == 0
 
     mocked_path.exists.assert_has_calls([
         call('/home/user/.not-config/foo.yaml'),
@@ -276,7 +292,9 @@ def test_load_name_xdg_config_home_fallback():
 
     mocked_loadf.assert_has_calls([
         call('/home/user/.config/foo.yaml', default=NotConfigured),
+        call('/home/user/.config/foo.yml', default=NotConfigured),
         call('/home/user/.config/bar.yaml', default=NotConfigured),
+        call('/home/user/.config/bar.yml', default=NotConfigured),
     ], any_order=False)
 
 
@@ -350,7 +368,7 @@ def test_load_name_envvar_dir():
         mocked_path.exists.return_value = True
         mocked_loadf.return_value = NotConfigured
 
-        assert len(load_name('foo', 'bar', load_order=load_order)) == 0
+        assert len(load_name('foo', 'bar', load_order=load_order, extension='yaml')) == 0
 
     mocked_loadf.assert_has_calls([
         call('C:/ProgramData/foo.yaml', default=NotConfigured),
