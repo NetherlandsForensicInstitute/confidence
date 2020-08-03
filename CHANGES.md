@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Enable use of multiple file extensions to look for, default to both `yaml` and `yml`.
+
 0.7 (2020-07-10)
 ----------------
 
