@@ -284,7 +284,8 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension=('yaml', 'yml'), 
         significance
     :param load_order: ordered list of name templates or `callable`s, in
         increasing order of significance
-    :param extension: file extension to be used
+    :param extension: file extension (`str`) or extensions (`tuple`, `list`) to
+        be used
     :param missing: policy to be used when a configured key is missing, either
         as a `.Missing` instance or a default value
     :return: a `.Configuration` instances providing values loaded from *names*
