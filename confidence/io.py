@@ -270,7 +270,7 @@ def loads(*strings, missing=Missing.silent):
     return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
-def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=Missing.silent):
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension=('yaml', 'yml'), missing=Missing.silent):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -290,15 +290,19 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=M
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
+    if isinstance(extension, str):
+        # ensure extension is a proper sequence, avoid creating product of a str
+        extension = (extension,)
+
     def generate_sources():
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
-        for source, name in product(load_order, names):
+        for source, name, file_extension in product(load_order, names, extension):
             if callable(source):
-                yield source(name, extension)
+                yield source(name, file_extension)
             else:
                 # expand user to turn ~/.name.yaml into /home/user/.name.yaml
-                candidate = path.expanduser(source.format(name=name, extension=extension))
+                candidate = path.expanduser(source.format(name=name, extension=file_extension))
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
