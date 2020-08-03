@@ -7,7 +7,7 @@ development (master)
 0.7 (2020-07-10)
 ----------------
 
-- Auto-wrap configured sequences to enable 'list-of-dicts' style configuration while retaining `Configuration` functionality
+- Auto-wrap configured sequences to enable 'list-of-dicts' style configuration while retaining `Configuration` functionality.
 
 0.6.3 (2020-01-14)
 ------------------
@@ -27,15 +27,15 @@ development (master)
 0.6 (2019-04-05)
 ----------------
 
-- Add `Missing` policy to control what to do with unconfigured keys on attribute access
-- Split single-file module into multi-module package (user-facing names importable from `confidence` package)
-- Raise errors when merging / splitting non-`str` type keys, avoiding issues with confusing and broken access patterns
+- Add `Missing` policy to control what to do with unconfigured keys on attribute access.
+- Split single-file module into multi-module package (user-facing names importable from `confidence` package).
+- Raise errors when merging / splitting non-`str` type keys, avoiding issues with confusing and broken access patterns.
 
 0.5 (2019-02-01)
 ----------------
 
-- Enable referencing keys from values
-- Enable customizing load order for `load_name` through `loaders` and `Locality` (default behaviour remains unchanged)
+- Enable referencing keys from values.
+- Enable customizing load order for `load_name` through `loaders` and `Locality` (default behaviour remains unchanged).
 
 0.4.1 (2018-11-26)
 ------------------
