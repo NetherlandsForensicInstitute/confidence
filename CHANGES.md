@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-- Enable use of multiple file extensions to look for, default to both `yaml` and `yml`.
+- Enable use of multiple file extensions to look for in `load_name`, default remains to load just `yaml` files.
 
 0.7 (2020-07-10)
 ----------------
