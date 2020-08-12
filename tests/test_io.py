@@ -177,7 +177,7 @@ def test_load_name_order():
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
 
-        assert len(load_name('foo', 'bar')) == 0
+        assert len(load_name('foo', 'bar', extension=('yaml', 'yml'))) == 0
 
     mocked_path.exists.assert_has_calls([
         call('/etc/xdg/foo.yaml'),
@@ -292,9 +292,7 @@ def test_load_name_xdg_config_home_fallback():
 
     mocked_loadf.assert_has_calls([
         call('/home/user/.config/foo.yaml', default=NotConfigured),
-        call('/home/user/.config/foo.yml', default=NotConfigured),
         call('/home/user/.config/bar.yaml', default=NotConfigured),
-        call('/home/user/.config/bar.yml', default=NotConfigured),
     ], any_order=False)
 
 

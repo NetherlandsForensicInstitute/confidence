@@ -270,7 +270,7 @@ def loads(*strings, missing=Missing.silent):
     return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
-def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension=('yaml', 'yml'), missing=Missing.silent):
+def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=Missing.silent):
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
