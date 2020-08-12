@@ -1,5 +1,4 @@
-[![Build Status](https://img.shields.io/travis/HolmesNL/confidence/master.svg)](https://travis-ci.org/HolmesNL/confidence)
-[![Coverage Status](https://img.shields.io/coveralls/HolmesNL/confidence/master.svg)](https://coveralls.io/r/HolmesNL/confidence?branch=master)
+[![Build Status](https://img.shields.io/github/workflow/status/HolmesNL/confidence/Test%20package)](https://github.com/HolmesNL/confidence/actions?query=workflow%3A%22Test+package%22)
 [![PyPI Version](https://img.shields.io/pypi/v/confidence.svg)](https://pypi.org/project/confidence/)
 
 confidence :+1:
