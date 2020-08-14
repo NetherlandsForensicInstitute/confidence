@@ -77,10 +77,7 @@ class Configuration(Mapping):
             while match:
                 path = match.group('path')
                 if path in references:
-                    raise ConfiguredReferenceError(
-                        'cannot resolve recursive reference {path}'.format(path=path),
-                        key=path
-                    )
+                    raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
 
                 # avoid resolving references recursively (breaks reference tracking)
                 reference = self._root.get(path, resolve_references=False)
@@ -88,10 +85,8 @@ class Configuration(Mapping):
                 if match.span(0) != (0, len(value)):
                     # matched a reference inside of another value (template)
                     if isinstance(reference, Configuration):
-                        raise ConfiguredReferenceError(
-                            'cannot insert namespace at {path} into referring value'.format(path=path),
-                            key=path
-                        )
+                        raise ConfiguredReferenceError(f'cannot insert namespace at {path} into referring value',
+                                                       key=path)
 
                     # render the template containing the referenced value
                     value = '{start}{reference}{end}'.format(
@@ -113,10 +108,7 @@ class Configuration(Mapping):
 
             return value
         except NotConfiguredError as e:
-            raise ConfiguredReferenceError(
-                'unable to resolve referenced key {reference}'.format(reference=match.group('path')),
-                key=e.key
-            ) from e
+            raise ConfiguredReferenceError(f'unable to resolve referenced key {match.group("path")}', key=e.key) from e
 
     def get(self, path, default=_NoDefault, as_type=None, resolve_references=True):
         """
@@ -167,7 +159,7 @@ class Configuration(Mapping):
                 return default
             else:
                 missing_key = self._separator.join(steps_taken)
-                raise NotConfiguredError('no configuration for key {}'.format(missing_key), key=missing_key) from e
+                raise NotConfiguredError(f'no configuration for key {missing_key}', key=missing_key) from e
 
     def __getattr__(self, attr):
         """
@@ -197,7 +189,7 @@ class Configuration(Mapping):
         if name.startswith('_'):
             super().__setattr__(name, value)
         else:
-            raise AttributeError('assignment not supported ({})'.format(name))
+            raise AttributeError(f'assignment not supported ({name})')
 
     def __len__(self):
         return len(self._source)
