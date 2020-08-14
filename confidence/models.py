@@ -203,6 +203,11 @@ class Configuration(Mapping):
     def __dir__(self):
         return sorted(set(chain(super().__dir__(), self.keys())))
 
+    def __repr__(self):
+        # even though keys should always be str, no need to crash on repr() in edge cases
+        keys = ', '.join(str(key) for key in self.keys())
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} keys=[{keys}]>'
+
     def __getstate__(self):
         state = self.__dict__.copy()
 
