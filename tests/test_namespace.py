@@ -52,8 +52,8 @@ def test_collisions():
         subject = Configuration({'key': 'value', 'keys': [1, 2], '_separator': '_'})
 
     for collision in ('keys', '_separator'):
-        warnings.warn.assert_any_call('key {key} collides with a named member, use get() method to '
-                                      'retrieve the value for {key}'.format(key=collision),
+        warnings.warn.assert_any_call(f'key {collision} collides with a named member, use get() method to '
+                                      f'retrieve the value for {collision}',
                                       UserWarning)
 
     assert subject.key == 'value'
