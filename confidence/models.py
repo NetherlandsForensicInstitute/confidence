@@ -206,7 +206,7 @@ class Configuration(Mapping):
     def __repr__(self):
         # even though keys should always be str, no need to crash on repr() in edge cases
         keys = ', '.join(str(key) for key in self.keys())
-        return f'<{self.__class__.__module__}.{self.__class__.__name__} keys=[{keys}]>'
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} keys={{{keys}}}>'
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -283,3 +283,7 @@ class ConfigurationSequence(Sequence):
     def __len__(self):
         # emulating a simple sequence, delegate length to _source
         return len(self._source)
+
+    def __repr__(self):
+        values = ', '.join(repr(value) for value in self)
+        return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'
