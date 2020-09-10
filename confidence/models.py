@@ -284,6 +284,16 @@ class ConfigurationSequence(Sequence):
         # emulating a simple sequence, delegate length to _source
         return len(self._source)
 
+    def __add__(self, other):
+        if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
+            # incompatible types, let Python resolve an action for this, like calling other.__radd__ or raising a
+            # TypeError
+            return NotImplemented
+
+        # left-hand operand is self, expect return value to be the same as left-hand operand
+        # create a new sequence with extended source, assuming self's type will retain the 'magic'
+        return type(self)(list(self._source) + list(other), factory=self._factory)
+
     def __repr__(self):
         values = ', '.join(repr(value) for value in self)
         return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'
