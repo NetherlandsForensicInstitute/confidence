@@ -294,6 +294,15 @@ class ConfigurationSequence(Sequence):
         # create a new sequence with extended source, assuming self's type will retain the 'magic'
         return type(self)(list(self._source) + list(other), factory=self._factory)
 
+    def __radd__(self, other):
+        if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
+            # incompatible types, let Python resolve an action for this
+            return NotImplemented
+
+        # left-hand operand is other, expect return value to be the same as left-hand operand
+        # list(self) ensures all mapping type values in self._source are wrapped by factory, retaining the 'magic'
+        return type(other)(list(other) + list(self))
+
     def __repr__(self):
         values = ', '.join(repr(value) for value in self)
         return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'
