@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Add human-readable `repr`s to `Configuration` and `ConfigurationSequence`
+- Make `ConfigurationSequence` more list-like by enabling addition operator (`configured_sequence + [1, 2, 3]` or `(1, 2, 3) + configured_sequence`)
 
 0.7 (2020-07-10)
 ----------------
