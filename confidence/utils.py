@@ -34,7 +34,7 @@ def _merge(left, right, path=None, conflict=_Conflict.error):
                 if conflict is _Conflict.error:
                     # not both dicts we could merge, but also not the same, this doesn't work
                     conflict_path = '.'.join(path + [key])
-                    raise MergeConflictError('merge conflict at {}'.format(conflict_path), key=conflict_path)
+                    raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
                 else:
                     # overwrite left value with right value
                     left[key] = right[key]
@@ -70,8 +70,8 @@ def _split_keys(mapping, separator='.', colliding=None):
 
         # reject non-str keys, avoid complicating access patterns
         if not isinstance(key, str):
-            raise ValueError('non-str type keys ({0}, {0.__class__.__module__}.{0.__class__.__name__}) '
-                             'not supported'.format(key))
+            raise ValueError(f'non-str type keys ({key}, {key.__class__.__module__}.{key.__class__.__name__}) '
+                             'not supported')
 
         if separator in key:
             # update key to be the first part before the separator
@@ -81,8 +81,7 @@ def _split_keys(mapping, separator='.', colliding=None):
 
         if colliding and key in colliding:
             # warn about configured keys colliding with Configuration members
-            warnings.warn('key {key} collides with a named member, use get() method to retrieve the '
-                          'value for {key}'.format(key=key),
+            warnings.warn(f'key {key} collides with a named member, use get() method to retrieve the value for {key}',
                           UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value

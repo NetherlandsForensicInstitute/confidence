@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Add human-readable `repr`s to `Configuration` and `ConfigurationSequence`
+
 0.7 (2020-07-10)
 ----------------
 

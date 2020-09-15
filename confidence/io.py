@@ -30,8 +30,7 @@ def read_xdg_config_dirs(name, extension):
         config_dirs = ['/etc/xdg']
 
     # load a file from all config dirs, default to NotConfigured
-    fname = '{name}.{extension}'.format(name=name, extension=extension)
-    return loadf(*(path.join(config_dir, fname) for config_dir in config_dirs),
+    return loadf(*(path.join(config_dir, f'{name}.{extension}') for config_dir in config_dirs),
                  default=NotConfigured)
 
 
@@ -53,8 +52,7 @@ def read_xdg_config_home(name, extension):
         config_home = path.expanduser('~/.config')
 
     # expand to full path to configuration file in XDG config path
-    return loadf(path.join(config_home, '{name}.{extension}'.format(name=name, extension=extension)),
-                 default=NotConfigured)
+    return loadf(path.join(config_home, f'{name}.{extension}'), default=NotConfigured)
 
 
 def read_envvars(name, extension):
@@ -75,9 +73,9 @@ def read_envvars(name, extension):
     :param extension: *(unused)*
     :return: a `.Configuration` instance, possibly `.NotConfigured`
     """
-    prefix = '{}_'.format(name)
+    prefix = f'{name}_'
     prefix_len = len(prefix)
-    envvar_file = '{}_config_file'.format(name)
+    envvar_file = f'{name}_config_file'
     # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
     values = {var.lower()[prefix_len:]: value
               for var, value in environ.items()
@@ -106,7 +104,7 @@ def read_envvar_file(name, extension):
     :param extension: *(unused)*
     :return: a `.Configuration`, possibly `.NotConfigured`
     """
-    envvar_file = environ.get('{}_config_file'.format(name).upper())
+    envvar_file = environ.get(f'{name}_config_file'.upper())
     if envvar_file:
         # envvar set, load value as file
         return loadf(envvar_file)
@@ -133,7 +131,7 @@ def read_envvar_dir(envvar, name, extension):
         return NotConfigured
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
-    config_path = path.join(path.expanduser(config_dir), '{name}.{extension}'.format(name=name, extension=extension))
+    config_path = path.join(path.expanduser(config_dir), f'{name}.{extension}')
     return loadf(config_path, default=NotConfigured)
 
 
