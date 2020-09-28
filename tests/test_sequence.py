@@ -49,3 +49,26 @@ def test_sequence_slice(complicated_config):
     assert sequence[0] is True
     assert sequence[1] == 42.0
     assert sequence[2].also == 'a mapping'
+
+
+def test_addition(complicated_config):
+    sequence = complicated_config.different.types
+
+    assert len(sequence + [1, 2, 3]) == 9
+    assert not isinstance(sequence + [1, 2, 3], list)
+    assert len([1, 2, 3] + sequence) == 9
+    assert isinstance([1, 2, 3] + sequence, list)
+    assert len(sequence + (1, 2, 3)) == 9
+    assert len((1, 2, 3) + sequence) == 9
+    assert isinstance((1, 2, 3) + sequence, tuple)
+
+
+def test_addition_wrap(complicated_config):
+    sequence = complicated_config.different.types
+
+    assert (sequence + [1, 2, 3])[3].containing.surprise[1].sequence_with == 'a mapping inside it, with a reference (mind = blown)'
+    assert ((1, 2, 3) + sequence)[6].containing.surprise[1].sequence_with == 'a mapping inside it, with a reference (mind = blown)'
+
+    mapping = {'a': {'mapping': 42}}
+    sequence = sequence + [1, 2, mapping, 4]
+    assert sequence[-2].a.mapping == 42
