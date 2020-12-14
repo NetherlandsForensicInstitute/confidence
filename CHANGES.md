@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.8 (2020-12-14)
+----------------
 
 - Add human-readable `repr`s to `Configuration` and `ConfigurationSequence`
 - Make `ConfigurationSequence` more list-like by enabling addition operator (`configured_sequence + [1, 2, 3]` or `(1, 2, 3) + configured_sequence`)
