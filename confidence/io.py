@@ -52,7 +52,7 @@ def read_xdg_config_home(name: str, extension: str) -> Configuration:
     return loadf(path.join(config_home, f'{name}.{extension}'), default=NotConfigured)
 
 
-def read_envvars(name: str, extension: str = None) -> Configuration:
+def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configuration:
     """
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces. Underscores can be retained as
@@ -91,7 +91,7 @@ def read_envvars(name: str, extension: str = None) -> Configuration:
     return Configuration({dotted(name): value for name, value in values.items()})
 
 
-def read_envvar_file(name: str, extension: str = None) -> Configuration:
+def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
     """
     Read values from a file provided as a environment variable
     ``NAME_CONFIG_FILE``.

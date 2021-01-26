@@ -52,7 +52,7 @@ def _merge(left: typing.MutableMapping[str, typing.Any],
 
 def _split_keys(mapping: typing.Mapping[str, typing.Any],
                 separator: str = '.',
-                colliding: typing.Container = None) -> typing.Mapping[str, typing.Any]:
+                colliding: typing.Optional[typing.Container] = None) -> typing.Mapping[str, typing.Any]:
     """
     Recursively walks *mapping* to split keys that contain the separator into
     nested mappings.
