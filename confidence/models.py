@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from enum import Enum
 from itertools import chain
 import re
+import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import _Conflict, _merge, _split_keys
@@ -20,7 +21,7 @@ class _NoDefault:
 
 
 # overwrite _NoDefault as an instance of itself
-_NoDefault = _NoDefault()
+NoDefault = _NoDefault()
 
 
 class Configuration(Mapping):
@@ -32,7 +33,10 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self, *sources, separator='.', missing=Missing.silent):
+    def __init__(self,
+                 *sources: typing.Mapping[str, typing.Any],
+                 separator: str = '.',
+                 missing: typing.Union[Missing, str] = Missing.silent):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -42,15 +46,14 @@ class Configuration(Mapping):
         :param missing: policy to be used when a configured key is missing,
             either as a `.Missing` instance or a default value
         """
-        self._separator = separator
-        self._missing = missing
-        self._root = self
+        self._separator: str = separator
+        self._missing: typing.Any = missing
+        self._root: Configuration = self
 
-        if isinstance(self._missing, Missing):
-            self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[missing]
+        if isinstance(missing, Missing):
+            self._missing = _MISSING_MAPPING[missing]
 
-        self._source = {}
+        self._source: typing.Mapping[str, typing.Any] = {}
         for source in sources:
             if source:
                 while isinstance(source, Configuration):
@@ -62,7 +65,7 @@ class Configuration(Mapping):
                        _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
                        conflict=_Conflict.overwrite)
 
-    def _wrap(self, value):
+    def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
         namespace = type(self)(separator=self._separator, missing=self._missing)
         namespace._source = value
@@ -70,7 +73,7 @@ class Configuration(Mapping):
         namespace._root = self._root
         return namespace
 
-    def _resolve(self, value):
+    def _resolve(self, value: str) -> typing.Any:
         match = self._reference_pattern.search(value)
         references = set()
         try:
@@ -108,9 +111,14 @@ class Configuration(Mapping):
 
             return value
         except NotConfiguredError as e:
-            raise ConfiguredReferenceError(f'unable to resolve referenced key {match.group("path")}', key=e.key) from e
+            missing_key = match.group('path')  # type: ignore
+            raise ConfiguredReferenceError(f'unable to resolve referenced key {missing_key}', key=e.key) from e
 
-    def get(self, path, default=_NoDefault, as_type=None, resolve_references=True):
+    def get(self,
+            path: str,
+            default: typing.Any = NoDefault,
+            as_type: typing.Optional[typing.Callable] = None,
+            resolve_references: bool = True) -> typing.Any:
         """
         Gets a value for the specified path.
 
@@ -155,13 +163,13 @@ class Configuration(Mapping):
             # also a KeyError, but this one should bubble to caller
             raise
         except KeyError as e:
-            if default is not _NoDefault:
+            if default is not NoDefault:
                 return default
             else:
                 missing_key = self._separator.join(steps_taken)
                 raise NotConfiguredError(f'no configuration for key {missing_key}', key=missing_key) from e
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> typing.Any:
         """
         Gets a 'single step value', as either a configured value or a
         namespace-like object in the form of a `.Configuration` instance. An
@@ -215,7 +223,7 @@ class Configuration(Mapping):
         #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
         if state['_missing'] is NotConfigured:
             state['_missing'] = Missing.silent
-        elif state['_missing'] is _NoDefault:
+        elif state['_missing'] is NoDefault:
             state['_missing'] = Missing.error
 
         return state
@@ -225,11 +233,10 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[self._missing]
+            self._missing = _MISSING_MAPPING[self._missing]
 
 
-class NotConfigured(Configuration):
+class _NotConfigured(Configuration):
     """
     Sentinel value to signal there is no value for a requested key.
     """
@@ -242,10 +249,19 @@ class NotConfigured(Configuration):
     __str__ = __repr__
 
 
+# TODO: can't reference NotConfigured yet here, but instantiation needs the value, maybe a cleaner solution is needed?
+_MISSING_MAPPING: typing.MutableMapping[Missing, typing.Any] = {Missing.silent: None,
+                                                                Missing.error: NoDefault}
+
+
+# FIXME: ordering of things in this file is a mess (some of it because of reasons, needs cleanup)
+
+
 # overwrite NotConfigured as an instance of itself, a Configuration instance without any values
-NotConfigured = NotConfigured()
+NotConfigured = _NotConfigured()
 # NB: NotConfigured._missing refers to the NotConfigured *class* at this point, fix this after the name override
 NotConfigured._missing = NotConfigured
+_MISSING_MAPPING[Missing.silent] = NotConfigured
 
 
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
@@ -256,7 +272,9 @@ class ConfigurationSequence(Sequence):
     A sequence of configured values, retrievable as if this were a `list`.
     """
 
-    def __init__(self, source, factory):
+    def __init__(self,
+                 source: typing.Sequence,
+                 factory: typing.Callable):
         """
         Create a new `._ConfigurationSequence`, based on a single source
         sequence, pointing back to 'root' `Configuration` through *factory*.
