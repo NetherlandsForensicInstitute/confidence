@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from enum import IntEnum
+import typing
 import warnings
 
 from confidence.exceptions import MergeConflictError
@@ -10,7 +11,10 @@ class _Conflict(IntEnum):
     error = 1
 
 
-def _merge(left, right, path=None, conflict=_Conflict.error):
+def _merge(left: typing.MutableMapping[str, typing.Any],
+           right: typing.Mapping[str, typing.Any],
+           path: typing.Optional[typing.List[str]] = None,
+           conflict=_Conflict.error) -> typing.Mapping[str, typing.Any]:
     """
     Merges values in place from *right* into *left*.
 
@@ -46,7 +50,9 @@ def _merge(left, right, path=None, conflict=_Conflict.error):
     return left
 
 
-def _split_keys(mapping, separator='.', colliding=None):
+def _split_keys(mapping: typing.Mapping[str, typing.Any],
+                separator: str = '.',
+                colliding: typing.Container = None) -> typing.Mapping[str, typing.Any]:
     """
     Recursively walks *mapping* to split keys that contain the separator into
     nested mappings.
@@ -61,7 +67,7 @@ def _split_keys(mapping, separator='.', colliding=None):
     :return: a mapping where keys containing *separator* are split into nested
         mappings
     """
-    result = {}
+    result: typing.MutableMapping[str, typing.Any] = {}
 
     for key, value in mapping.items():
         if isinstance(value, Mapping):
