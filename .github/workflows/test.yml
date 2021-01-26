@@ -21,6 +21,7 @@ jobs:
         run: |
           bandit --recursive confidence/
           flake8 confidence/
+          mypy confidence/
       - name: Run tests
         run: |
           coverage run --branch --source confidence --module py.test --strict tests/
