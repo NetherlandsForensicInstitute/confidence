@@ -1,0 +1,6 @@
+bandit
+flake8
+flake8-comprehensions
+flake8-import-order
+mypy
+pep8-naming
