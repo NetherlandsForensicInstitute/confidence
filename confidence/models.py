@@ -20,7 +20,7 @@ class _NoDefault:
     __str__ = __repr__
 
 
-# overwrite _NoDefault as an instance of itself
+# create instance to serve as a sentinel value
 NoDefault = _NoDefault()
 
 
@@ -36,7 +36,7 @@ class Configuration(Mapping):
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
                  separator: str = '.',
-                 missing: Missing = Missing.silent):
+                 missing: typing.Any = Missing.silent):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
