@@ -215,7 +215,7 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
                                    Locality.environment))
 
 
-def load(*fps: typing.IO, missing: typing.Union[str, Missing] = Missing.silent) -> Configuration:
+def load(*fps: typing.IO, missing: Missing = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from file-like objects.
 
@@ -230,7 +230,7 @@ def load(*fps: typing.IO, missing: typing.Union[str, Missing] = Missing.silent) 
 
 def loadf(*fnames: str,
           default: typing.Any = NoDefault,
-          missing: typing.Union[str, Missing] = Missing.silent) -> Configuration:
+          missing: Missing = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from named files.
 
@@ -254,7 +254,7 @@ def loadf(*fnames: str,
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings: str, missing: typing.Union[str, Missing] = Missing.silent) -> Configuration:
+def loads(*strings: str, missing: Missing = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from strings.
 
@@ -270,7 +270,7 @@ def loads(*strings: str, missing: typing.Union[str, Missing] = Missing.silent) -
 def load_name(*names: str,
               load_order: typing.Iterable[typing.Union[str, typing.Callable]] = DEFAULT_LOAD_ORDER,
               extension: str = 'yaml',
-              missing: typing.Union[str, Missing] = Missing.silent) -> Configuration:
+              missing: Missing = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,

@@ -36,7 +36,7 @@ class Configuration(Mapping):
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
                  separator: str = '.',
-                 missing: typing.Union[Missing, str] = Missing.silent):
+                 missing: Missing = Missing.silent):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -47,7 +47,7 @@ class Configuration(Mapping):
             either as a `.Missing` instance or a default value
         """
         self._separator = separator
-        self._missing: typing.Any = missing
+        self._missing = missing
         self._root = self
 
         if isinstance(missing, Missing):
@@ -260,7 +260,7 @@ _MISSING_MAPPING: typing.MutableMapping[Missing, typing.Any] = {Missing.silent: 
 # overwrite NotConfigured as an instance of itself, a Configuration instance without any values
 NotConfigured = _NotConfigured()
 # NB: NotConfigured._missing refers to the NotConfigured *class* at this point, fix this after the name override
-NotConfigured._missing = NotConfigured
+NotConfigured._missing = NotConfigured  # type: ignore
 _MISSING_MAPPING[Missing.silent] = NotConfigured
 
 
