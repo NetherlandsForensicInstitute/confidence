@@ -14,7 +14,7 @@ class Missing(Enum):
 
 
 class _NoDefault:
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '(raise)'
 
     __str__ = __repr__
@@ -46,14 +46,14 @@ class Configuration(Mapping):
         :param missing: policy to be used when a configured key is missing,
             either as a `.Missing` instance or a default value
         """
-        self._separator: str = separator
+        self._separator = separator
         self._missing: typing.Any = missing
-        self._root: Configuration = self
+        self._root = self
 
         if isinstance(missing, Missing):
             self._missing = _MISSING_MAPPING[missing]
 
-        self._source: typing.Mapping[str, typing.Any] = {}
+        self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
             if source:
                 while isinstance(source, Configuration):
@@ -65,7 +65,7 @@ class Configuration(Mapping):
                        _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
                        conflict=_Conflict.overwrite)
 
-    def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
+    def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
         namespace = type(self)(separator=self._separator, missing=self._missing)
         namespace._source = value
@@ -185,7 +185,7 @@ class Configuration(Mapping):
         except NotConfiguredError as e:
             raise AttributeError(attr) from e
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: typing.Any) -> None:
         """
         Attempts to set a named attribute to this `.Configuration` instance.
         Only protected / private style attribute names are accepted, anything
@@ -199,24 +199,24 @@ class Configuration(Mapping):
         else:
             raise AttributeError(f'assignment not supported ({name})')
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._source)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> typing.Any:
         return self.get(item)
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator[str]:
         return iter(self._source)
 
-    def __dir__(self):
+    def __dir__(self) -> typing.Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # even though keys should always be str, no need to crash on repr() in edge cases
         keys = ', '.join(str(key) for key in self.keys())
         return f'<{self.__class__.__module__}.{self.__class__.__name__} keys={{{keys}}}>'
 
-    def __getstate__(self):
+    def __getstate__(self) -> typing.Dict[str, typing.Any]:
         state = self.__dict__.copy()
 
         # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
@@ -228,7 +228,7 @@ class Configuration(Mapping):
 
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: typing.Dict[str, typing.Any]) -> None:
         self.__dict__ = state
 
         if isinstance(self._missing, Missing):
@@ -240,10 +240,10 @@ class _NotConfigured(Configuration):
     """
     Sentinel value to signal there is no value for a requested key.
     """
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '(not configured)'
 
     __str__ = __repr__
@@ -285,7 +285,7 @@ class ConfigurationSequence(Sequence):
         self._source = source
         self._factory = factory
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: typing.Union[int, slice]) -> typing.Any:
         # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
         value = self._source[item]
         if isinstance(value, Mapping):
@@ -298,11 +298,11 @@ class ConfigurationSequence(Sequence):
             # a 'simple' value, nothing to do
             return value
 
-    def __len__(self):
+    def __len__(self) -> int:
         # emulating a simple sequence, delegate length to _source
         return len(self._source)
 
-    def __add__(self, other):
+    def __add__(self, other: typing.Sequence[typing.Any]) -> 'ConfigurationSequence':
         if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
             # incompatible types, let Python resolve an action for this, like calling other.__radd__ or raising a
             # TypeError
@@ -312,15 +312,16 @@ class ConfigurationSequence(Sequence):
         # create a new sequence with extended source, assuming self's type will retain the 'magic'
         return type(self)(list(self._source) + list(other), factory=self._factory)
 
-    def __radd__(self, other):
+    def __radd__(self, other: typing.Sequence) -> typing.Sequence:
         if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
             # incompatible types, let Python resolve an action for this
             return NotImplemented
 
         # left-hand operand is other, expect return value to be the same as left-hand operand
         # list(self) ensures all mapping type values in self._source are wrapped by factory, retaining the 'magic'
-        return type(other)(list(other) + list(self))
+        # NB: assumes other's type will have a single-argument __init__ accepting a list
+        return type(other)(list(other) + list(self))  # type: ignore
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         values = ', '.join(repr(value) for value in self)
         return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'

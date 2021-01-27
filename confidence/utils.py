@@ -14,7 +14,7 @@ class _Conflict(IntEnum):
 def _merge(left: typing.MutableMapping[str, typing.Any],
            right: typing.Mapping[str, typing.Any],
            path: typing.Optional[typing.List[str]] = None,
-           conflict=_Conflict.error) -> typing.Mapping[str, typing.Any]:
+           conflict: _Conflict = _Conflict.error) -> typing.Mapping[str, typing.Any]:
     """
     Merges values in place from *right* into *left*.
 

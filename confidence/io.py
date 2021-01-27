@@ -22,9 +22,9 @@ def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
         directories
     """
     # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
-    config_dirs = environ.get('XDG_CONFIG_DIRS', '/etc/xdg').split(path.pathsep)
+    config_dirs = environ.get('XDG_CONFIG_DIRS', '/etc/xdg')
     # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
-    config_dirs = list(reversed(config_dirs))  # TODO: list() isn't needed here, except for mypy…
+    config_dirs = reversed(config_dirs.split(path.pathsep))
 
     # load a file from all config dirs, default to NotConfigured
     return loadf(*(path.join(config_dir, f'{name}.{extension}') for config_dir in config_dirs),
@@ -82,7 +82,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     if not values:
         return NotConfigured
 
-    def dotted(name):
+    def dotted(name: str) -> str:
         # replace 'regular' underscores (those between alphanumeric characters) with dots first
         name = re.sub(r'([0-9A-Za-z])_([0-9A-Za-z])', r'\1.\2', name)
         # unescape double underscores back to a single one
@@ -228,7 +228,9 @@ def load(*fps: typing.IO, missing: typing.Union[str, Missing] = Missing.silent) 
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
-def loadf(*fnames: str, default: typing.Any = NoDefault, missing: typing.Union[str, Missing] = Missing.silent):
+def loadf(*fnames: str,
+          default: typing.Any = NoDefault,
+          missing: typing.Union[str, Missing] = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from named files.
 
@@ -240,7 +242,7 @@ def loadf(*fnames: str, default: typing.Any = NoDefault, missing: typing.Union[s
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
-    def readf(fname):
+    def readf(fname: str) -> typing.Mapping[str, typing.Any]:
         if default is NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
@@ -288,7 +290,7 @@ def load_name(*names: str,
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
-    def generate_sources():
+    def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):
