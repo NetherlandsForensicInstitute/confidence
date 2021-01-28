@@ -7,7 +7,7 @@ import typing
 
 import yaml
 
-from confidence.models import Configuration, Missing, NoDefault, NotConfigured
+from confidence.models import Configuration, Missing, _NoDefault, NotConfigured
 
 
 def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
@@ -229,7 +229,7 @@ def load(*fps: typing.IO, missing: Missing = Missing.silent) -> Configuration:
 
 
 def loadf(*fnames: str,
-          default: typing.Any = NoDefault,
+          default: typing.Any = _NoDefault,
           missing: Missing = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from named files.
@@ -243,7 +243,7 @@ def loadf(*fnames: str,
     :rtype: `.Configuration`
     """
     def readf(fname: str) -> typing.Mapping[str, typing.Any]:
-        if default is NoDefault or path.exists(fname):
+        if default is _NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
                 # default to empty dict, yaml.safe_load will return None for an empty document
