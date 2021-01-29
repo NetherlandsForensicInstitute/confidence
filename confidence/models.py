@@ -13,15 +13,10 @@ class Missing(Enum):
     error = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
-class _NoDefault:
-    def __repr__(self) -> str:
-        return '(raise)'
-
-    __str__ = __repr__
-
-
-# overwrite _NoDefault as an instance of itself
-NoDefault = _NoDefault()
+NoDefault = type("NoDefault", (object,), {
+    "__repr__": lambda self: "(raise)",
+    "__str__": lambda self: "(raise)"
+})()
 
 
 class Configuration(Mapping):
@@ -51,7 +46,8 @@ class Configuration(Mapping):
         self._root = self
 
         if isinstance(missing, Missing):
-            self._missing = _MISSING_MAPPING[missing]
+            self._missing = {Missing.silent: NotConfigured,
+                             Missing.error: NoDefault}[missing]
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -233,36 +229,18 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = _MISSING_MAPPING[self._missing]
+            self._missing = {Missing.silent: NotConfigured,
+                             Missing.error: NoDefault}[self._missing]
 
 
-class _NotConfigured(Configuration):
-    """
-    Sentinel value to signal there is no value for a requested key.
-    """
-    def __bool__(self) -> bool:
-        return False
-
-    def __repr__(self) -> str:
-        return '(not configured)'
-
-    __str__ = __repr__
-
-
-# TODO: can't reference NotConfigured yet here, but instantiation needs the value, maybe a cleaner solution is needed?
-_MISSING_MAPPING: typing.MutableMapping[Missing, typing.Any] = {Missing.silent: None,
-                                                                Missing.error: NoDefault}
-
-
-# FIXME: ordering of things in this file is a mess (some of it because of reasons, needs cleanup)
-
-
-# overwrite NotConfigured as an instance of itself, a Configuration instance without any values
-NotConfigured = _NotConfigured()
-# NB: NotConfigured._missing refers to the NotConfigured *class* at this point, fix this after the name override
+NotConfigured = type("NotConfigured", (Configuration,), {
+    "__bool__": lambda self: False,
+    "__repr__": lambda self: "(not configured)",
+    "__str__": lambda self: "(not configured)",
+    "__doc__": "Sentinel value to signal there is no value for a requested key."
+})
+NotConfigured = NotConfigured()
 NotConfigured._missing = NotConfigured  # type: ignore
-_MISSING_MAPPING[Missing.silent] = NotConfigured
-
 
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
 
