@@ -13,10 +13,13 @@ class Missing(Enum):
     error = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
+# define a sentinel value to indicate there is no default value specified (None would be a valid default value)
+# as this is used as an argument default to indicate that an error should be raised when a value is not found, make
+# sure that the repr-value of NoDefault shows up as '(raise)' in documentation
 NoDefault = type('NoDefault', (object,), {
     '__repr__': lambda self: '(raise)',
     '__str__': lambda self: '(raise)'
-})()
+})()  # create instance of that new type to assign to NoDefault
 
 
 class Configuration(Mapping):
@@ -233,16 +236,22 @@ class Configuration(Mapping):
                              Missing.error: NoDefault}[self._missing]
 
 
+# define NotConfigured as a class first (using type() to keep the type checker happy)
 NotConfigured = type('NotConfigured', (Configuration,), {
     '__bool__': lambda self: False,
     '__repr__': lambda self: '(not configured)',
     '__str__': lambda self: '(not configured)',
     '__doc__': 'Sentinel value to signal there is no value for a requested key.'
 })
+# overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
+# not configured, while still acting like a Configuration object
 NotConfigured = NotConfigured()
+# NotConfigured._missing refers to the NotConfigured *type* at this point, overwrite it with the sentinel value
 NotConfigured._missing = NotConfigured  # type: ignore
 
 
+# collect the names of all defined members of a Configuration instance to be used to warn for configured keys that
+# collide with defined members (making them unavailable through attribute access)
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
