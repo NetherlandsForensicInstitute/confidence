@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Add type hints to confidence
+
 0.8 (2020-12-14)
 ----------------
 
