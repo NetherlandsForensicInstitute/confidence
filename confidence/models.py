@@ -1,8 +1,8 @@
 from collections.abc import Mapping, Sequence
-import re
-import typing
 from enum import Enum
 from itertools import chain
+import re
+import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import _Conflict, _merge, _split_keys
