@@ -229,7 +229,7 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.silent) -> Configuration
 
 
 def loadf(*fnames: str,
-          default: typing.Union[typing.Mapping[str, typing.Any]] = NoDefault,
+          default: typing.Any = NoDefault,
           missing: typing.Any = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from named files.
