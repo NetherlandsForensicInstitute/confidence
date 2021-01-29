@@ -1,6 +1,6 @@
+from collections.abc import Mapping, Sequence
 import re
 import typing
-from collections.abc import Mapping, Sequence
 from enum import Enum
 from itertools import chain
 
@@ -237,6 +237,7 @@ NotConfigured = type("NotConfigured", (Configuration,), {
     "__bool__": lambda self: False,
     "__repr__": lambda self: "(not configured)",
     "__str__": lambda self: "(not configured)",
+    "__doc__": "Sentinel value to signal there is no value for a requested key."
 })
 NotConfigured = NotConfigured()
 NotConfigured._missing = NotConfigured  # type: ignore
