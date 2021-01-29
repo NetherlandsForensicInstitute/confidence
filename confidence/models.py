@@ -13,7 +13,7 @@ class Missing(Enum):
     error = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
-_NoDefault = type("_NoDefault", (object,), {
+NoDefault = type("NoDefault", (object,), {
     "__repr__": lambda self: "(raise)",
     "__str__": lambda self: "(raise)"
 })()
@@ -47,7 +47,7 @@ class Configuration(Mapping):
 
         if isinstance(missing, Missing):
             self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[missing]
+                             Missing.error: NoDefault}[missing]
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -112,7 +112,7 @@ class Configuration(Mapping):
 
     def get(self,
             path: str,
-            default: typing.Any = _NoDefault,
+            default: typing.Any = NoDefault,
             as_type: typing.Optional[typing.Callable] = None,
             resolve_references: bool = True) -> typing.Any:
         """
@@ -159,7 +159,7 @@ class Configuration(Mapping):
             # also a KeyError, but this one should bubble to caller
             raise
         except KeyError as e:
-            if default is not _NoDefault:
+            if default is not NoDefault:
                 return default
             else:
                 missing_key = self._separator.join(steps_taken)
@@ -219,7 +219,7 @@ class Configuration(Mapping):
         #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
         if state['_missing'] is NotConfigured:
             state['_missing'] = Missing.silent
-        elif state['_missing'] is _NoDefault:
+        elif state['_missing'] is NoDefault:
             state['_missing'] = Missing.error
 
         return state
@@ -230,13 +230,13 @@ class Configuration(Mapping):
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
             self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[self._missing]
+                             Missing.error: NoDefault}[self._missing]
 
 
 NotConfigured = type("NotConfigured", (Configuration,), {
     "__bool__": lambda self: False,
-    "__repr__": lambda self: '(not configured)',
-    "__str__": lambda self: '(not configured)',
+    "__repr__": lambda self: "(not configured)",
+    "__str__": lambda self: "(not configured)",
 })
 NotConfigured = NotConfigured()
 NotConfigured._missing = NotConfigured  # type: ignore
