@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.9 (2021-02-01)
+----------------
 
 - Add type hints to confidence
 
