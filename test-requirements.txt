@@ -10,7 +10,7 @@ coverage==5.4
     # via -r test-requirements.in
 iniconfig==1.1.1
     # via pytest
-packaging==20.8
+packaging==20.9
     # via pytest
 pluggy==0.13.1
     # via pytest
