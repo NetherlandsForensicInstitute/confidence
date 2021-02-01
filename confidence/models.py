@@ -48,7 +48,7 @@ class Configuration(Mapping):
         self._missing = missing
         self._root = self
 
-        if isinstance(missing, Missing):
+        if isinstance(self._missing, Missing):
             self._missing = {Missing.silent: NotConfigured,
                              Missing.error: NoDefault}[missing]
 
