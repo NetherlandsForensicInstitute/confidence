@@ -1,7 +1,2 @@
-bandit
 coverage
-flake8
-flake8-comprehensions
-flake8-import-order
-pep8-naming
 pytest

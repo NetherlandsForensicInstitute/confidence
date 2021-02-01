@@ -4,4 +4,5 @@
 #
 #    pip-compile --upgrade --output-file requirements.txt setup.py
 #
-pyyaml==5.3.1             # via confidence (setup.py)
+pyyaml==5.4.1
+    # via confidence (setup.py)

@@ -3,6 +3,22 @@ name: Test package
 on: [push, pull_request]
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r check-requirements.txt
+      - name: Run checks
+        run: |
+          bandit --recursive confidence/
+          flake8 confidence/
+          mypy confidence/
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -17,10 +33,6 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -r test-requirements.txt
-      - name: Run checks
-        run: |
-          bandit --recursive confidence/
-          flake8 confidence/
       - name: Run tests
         run: |
           coverage run --branch --source confidence --module py.test --strict tests/

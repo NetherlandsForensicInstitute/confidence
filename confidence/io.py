@@ -3,13 +3,14 @@ from functools import partial
 from itertools import product
 from os import environ, path
 import re
+import typing
 
 import yaml
 
-from confidence.models import _NoDefault, Configuration, Missing, NotConfigured
+from confidence.models import Configuration, Missing, NoDefault, NotConfigured
 
 
-def read_xdg_config_dirs(name, extension):
+def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
     """
     Read from files found in XDG-specified system-wide configuration paths,
     defaulting to ``/etc/xdg``. Depends on ``XDG_CONFIG_DIRS`` environment
@@ -20,21 +21,17 @@ def read_xdg_config_dirs(name, extension):
     :return: a `.Configuration` instance with values read from XDG-specified
         directories
     """
-    # find optional value of ${XDG_CONFIG_DIRS}
-    config_dirs = environ.get('XDG_CONFIG_DIRS')
-    if config_dirs:
-        # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
-        config_dirs = reversed(config_dirs.split(path.pathsep))
-    else:
-        # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
-        config_dirs = ['/etc/xdg']
+    # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
+    config_dirs = environ.get('XDG_CONFIG_DIRS', '/etc/xdg')
+    # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
+    config_dirs = reversed(config_dirs.split(path.pathsep))
 
     # load a file from all config dirs, default to NotConfigured
     return loadf(*(path.join(config_dir, f'{name}.{extension}') for config_dir in config_dirs),
                  default=NotConfigured)
 
 
-def read_xdg_config_home(name, extension):
+def read_xdg_config_home(name: str, extension: str) -> Configuration:
     """
     Read from file found in XDG-specified configuration home directory,
     expanding to ``${HOME}/.config/name.extension`` by default. Depends on
@@ -55,7 +52,7 @@ def read_xdg_config_home(name, extension):
     return loadf(path.join(config_home, f'{name}.{extension}'), default=NotConfigured)
 
 
-def read_envvars(name, extension):
+def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configuration:
     """
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces. Underscores can be retained as
@@ -85,7 +82,7 @@ def read_envvars(name, extension):
     if not values:
         return NotConfigured
 
-    def dotted(name):
+    def dotted(name: str) -> str:
         # replace 'regular' underscores (those between alphanumeric characters) with dots first
         name = re.sub(r'([0-9A-Za-z])_([0-9A-Za-z])', r'\1.\2', name)
         # unescape double underscores back to a single one
@@ -94,7 +91,7 @@ def read_envvars(name, extension):
     return Configuration({dotted(name): value for name, value in values.items()})
 
 
-def read_envvar_file(name, extension):
+def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
     """
     Read values from a file provided as a environment variable
     ``NAME_CONFIG_FILE``.
@@ -113,7 +110,7 @@ def read_envvar_file(name, extension):
         return NotConfigured
 
 
-def read_envvar_dir(envvar, name, extension):
+def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
     """
     Read values from a file located in a directory specified by a particular
     environment file. ``read_envvar_dir('HOME', 'example', 'yaml')`` would
@@ -148,7 +145,7 @@ class Locality(IntEnum):
     environment = 3  #: configuration from environment variables
 
 
-_LOADERS = {
+_LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Callable]]] = {
     Locality.system: (
         # system-wide locations
         read_xdg_config_dirs,
@@ -179,7 +176,7 @@ _LOADERS = {
 }
 
 
-def loaders(*specifiers):
+def loaders(*specifiers: typing.Union[Locality, str]) -> typing.Iterable[typing.Union[str, typing.Callable]]:
     """
     Generates loaders in the specified order.
 
@@ -218,7 +215,7 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
                                    Locality.environment))
 
 
-def load(*fps, missing=Missing.silent):
+def load(*fps: typing.IO, missing: typing.Any = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from file-like objects.
 
@@ -231,7 +228,9 @@ def load(*fps, missing=Missing.silent):
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
-def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
+def loadf(*fnames: str,
+          default: typing.Any = NoDefault,
+          missing: typing.Any = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from named files.
 
@@ -243,8 +242,8 @@ def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
     :return: a `.Configuration` instance providing values from *fnames*
     :rtype: `.Configuration`
     """
-    def readf(fname):
-        if default is _NoDefault or path.exists(fname):
+    def readf(fname: str) -> typing.Mapping[str, typing.Any]:
+        if default is NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
                 # default to empty dict, yaml.safe_load will return None for an empty document
@@ -255,7 +254,7 @@ def loadf(*fnames, default=_NoDefault, missing=Missing.silent):
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings, missing=Missing.silent):
+def loads(*strings: str, missing: typing.Any = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance from strings.
 
@@ -268,7 +267,10 @@ def loads(*strings, missing=Missing.silent):
     return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
-def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=Missing.silent):
+def load_name(*names: str,
+              load_order: typing.Iterable[typing.Union[str, typing.Callable]] = DEFAULT_LOAD_ORDER,
+              extension: str = 'yaml',
+              missing: typing.Any = Missing.silent) -> Configuration:
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -288,7 +290,7 @@ def load_name(*names, load_order=DEFAULT_LOAD_ORDER, extension='yaml', missing=M
     :return: a `.Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
-    def generate_sources():
+    def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):

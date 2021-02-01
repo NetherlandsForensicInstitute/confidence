@@ -171,9 +171,10 @@ def test_load_name_order():
     }
 
     with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
-        # hard-code user-expansion, unmock join
+        # hard-code user-expansion, unmock join, unmock pathsep
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
+        mocked_path.pathsep = path.pathsep
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
 

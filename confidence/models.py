@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from enum import Enum
 from itertools import chain
 import re
+import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import _Conflict, _merge, _split_keys
@@ -12,15 +13,13 @@ class Missing(Enum):
     error = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
-class _NoDefault:
-    def __repr__(self):
-        return '(raise)'
-
-    __str__ = __repr__
-
-
-# overwrite _NoDefault as an instance of itself
-_NoDefault = _NoDefault()
+# define a sentinel value to indicate there is no default value specified (None would be a valid default value)
+# as this is used as an argument default to indicate that an error should be raised when a value is not found, make
+# sure that the repr-value of NoDefault shows up as '(raise)' in documentation
+NoDefault = type('NoDefault', (object,), {
+    '__repr__': lambda self: '(raise)',
+    '__str__': lambda self: '(raise)'
+})()  # create instance of that new type to assign to NoDefault
 
 
 class Configuration(Mapping):
@@ -32,7 +31,10 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self, *sources, separator='.', missing=Missing.silent):
+    def __init__(self,
+                 *sources: typing.Mapping[str, typing.Any],
+                 separator: str = '.',
+                 missing: typing.Any = Missing.silent):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -48,9 +50,9 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[missing]
+                             Missing.error: NoDefault}[missing]
 
-        self._source = {}
+        self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
             if source:
                 while isinstance(source, Configuration):
@@ -62,7 +64,7 @@ class Configuration(Mapping):
                        _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
                        conflict=_Conflict.overwrite)
 
-    def _wrap(self, value):
+    def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
         namespace = type(self)(separator=self._separator, missing=self._missing)
         namespace._source = value
@@ -70,7 +72,7 @@ class Configuration(Mapping):
         namespace._root = self._root
         return namespace
 
-    def _resolve(self, value):
+    def _resolve(self, value: str) -> typing.Any:
         match = self._reference_pattern.search(value)
         references = set()
         try:
@@ -108,9 +110,14 @@ class Configuration(Mapping):
 
             return value
         except NotConfiguredError as e:
-            raise ConfiguredReferenceError(f'unable to resolve referenced key {match.group("path")}', key=e.key) from e
+            missing_key = match.group('path')  # type: ignore
+            raise ConfiguredReferenceError(f'unable to resolve referenced key {missing_key}', key=e.key) from e
 
-    def get(self, path, default=_NoDefault, as_type=None, resolve_references=True):
+    def get(self,
+            path: str,
+            default: typing.Any = NoDefault,
+            as_type: typing.Optional[typing.Callable] = None,
+            resolve_references: bool = True) -> typing.Any:
         """
         Gets a value for the specified path.
 
@@ -155,13 +162,13 @@ class Configuration(Mapping):
             # also a KeyError, but this one should bubble to caller
             raise
         except KeyError as e:
-            if default is not _NoDefault:
+            if default is not NoDefault:
                 return default
             else:
                 missing_key = self._separator.join(steps_taken)
                 raise NotConfiguredError(f'no configuration for key {missing_key}', key=missing_key) from e
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> typing.Any:
         """
         Gets a 'single step value', as either a configured value or a
         namespace-like object in the form of a `.Configuration` instance. An
@@ -177,7 +184,7 @@ class Configuration(Mapping):
         except NotConfiguredError as e:
             raise AttributeError(attr) from e
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: typing.Any) -> None:
         """
         Attempts to set a named attribute to this `.Configuration` instance.
         Only protected / private style attribute names are accepted, anything
@@ -191,63 +198,60 @@ class Configuration(Mapping):
         else:
             raise AttributeError(f'assignment not supported ({name})')
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._source)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> typing.Any:
         return self.get(item)
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator[str]:
         return iter(self._source)
 
-    def __dir__(self):
+    def __dir__(self) -> typing.Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # even though keys should always be str, no need to crash on repr() in edge cases
         keys = ', '.join(str(key) for key in self.keys())
         return f'<{self.__class__.__module__}.{self.__class__.__name__} keys={{{keys}}}>'
 
-    def __getstate__(self):
+    def __getstate__(self) -> typing.Dict[str, typing.Any]:
         state = self.__dict__.copy()
 
         # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
         #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
         if state['_missing'] is NotConfigured:
             state['_missing'] = Missing.silent
-        elif state['_missing'] is _NoDefault:
+        elif state['_missing'] is NoDefault:
             state['_missing'] = Missing.error
 
         return state
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: typing.Dict[str, typing.Any]) -> None:
         self.__dict__ = state
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
             self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: _NoDefault}[self._missing]
+                             Missing.error: NoDefault}[self._missing]
 
 
-class NotConfigured(Configuration):
-    """
-    Sentinel value to signal there is no value for a requested key.
-    """
-    def __bool__(self):
-        return False
-
-    def __repr__(self):
-        return '(not configured)'
-
-    __str__ = __repr__
-
-
-# overwrite NotConfigured as an instance of itself, a Configuration instance without any values
+# define NotConfigured as a class first (using type() to keep the type checker happy)
+NotConfigured = type('NotConfigured', (Configuration,), {
+    '__bool__': lambda self: False,
+    '__repr__': lambda self: '(not configured)',
+    '__str__': lambda self: '(not configured)',
+    '__doc__': 'Sentinel value to signal there is no value for a requested key.'
+})
+# overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
+# not configured, while still acting like a Configuration object
 NotConfigured = NotConfigured()
-# NB: NotConfigured._missing refers to the NotConfigured *class* at this point, fix this after the name override
-NotConfigured._missing = NotConfigured
+# NotConfigured._missing refers to the NotConfigured *type* at this point, overwrite it with the sentinel value
+NotConfigured._missing = NotConfigured  # type: ignore
 
 
+# collect the names of all defined members of a Configuration instance to be used to warn for configured keys that
+# collide with defined members (making them unavailable through attribute access)
 _COLLIDING_KEYS = frozenset(dir(Configuration()))
 
 
@@ -256,7 +260,9 @@ class ConfigurationSequence(Sequence):
     A sequence of configured values, retrievable as if this were a `list`.
     """
 
-    def __init__(self, source, factory):
+    def __init__(self,
+                 source: typing.Sequence,
+                 factory: typing.Callable):
         """
         Create a new `._ConfigurationSequence`, based on a single source
         sequence, pointing back to 'root' `Configuration` through *factory*.
@@ -267,7 +273,7 @@ class ConfigurationSequence(Sequence):
         self._source = source
         self._factory = factory
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: typing.Union[int, slice]) -> typing.Any:
         # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
         value = self._source[item]
         if isinstance(value, Mapping):
@@ -280,11 +286,11 @@ class ConfigurationSequence(Sequence):
             # a 'simple' value, nothing to do
             return value
 
-    def __len__(self):
+    def __len__(self) -> int:
         # emulating a simple sequence, delegate length to _source
         return len(self._source)
 
-    def __add__(self, other):
+    def __add__(self, other: typing.Sequence[typing.Any]) -> 'ConfigurationSequence':
         if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
             # incompatible types, let Python resolve an action for this, like calling other.__radd__ or raising a
             # TypeError
@@ -294,15 +300,16 @@ class ConfigurationSequence(Sequence):
         # create a new sequence with extended source, assuming self's type will retain the 'magic'
         return type(self)(list(self._source) + list(other), factory=self._factory)
 
-    def __radd__(self, other):
+    def __radd__(self, other: typing.Sequence) -> typing.Sequence:
         if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
             # incompatible types, let Python resolve an action for this
             return NotImplemented
 
         # left-hand operand is other, expect return value to be the same as left-hand operand
         # list(self) ensures all mapping type values in self._source are wrapped by factory, retaining the 'magic'
-        return type(other)(list(other) + list(self))
+        # NB: assumes other's type will have a single-argument __init__ accepting a list
+        return type(other)(list(other) + list(self))  # type: ignore
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         values = ', '.join(repr(value) for value in self)
         return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'
