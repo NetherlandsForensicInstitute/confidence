@@ -111,6 +111,8 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
                           UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
-        _merge(result, {key: value})
+        # ignore all of the generated origins, we're only interested in the mere here
+        for _ in _merge(result, {key: value}):
+            pass
 
     return result
