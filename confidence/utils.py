@@ -28,8 +28,10 @@ def _origin_of(origins: typing.Mapping[str, typing.Optional[str]], path: str) ->
 
 def _merge(left: typing.MutableMapping[str, typing.Any],
            right: typing.Mapping[str, typing.Any],
+           separator: str = '.',
            path: typing.Optional[typing.List[str]] = None,
-           conflict: _Conflict = _Conflict.error) -> typing.Mapping[str, typing.Any]:
+           conflict: _Conflict = _Conflict.error,
+           origins: typing.Mapping[str, typing.Optional[str]] = None) -> typing.Iterator[typing.Tuple[str, typing.Optional[str]]]:
     """
     Merges values in place from *right* into *left*.
 
@@ -45,24 +47,27 @@ def _merge(left: typing.MutableMapping[str, typing.Any],
     conflict = _Conflict(conflict)
 
     for key in right:
+        merge_path = path + [key]
         if key in left:
             if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
-                # recurse, merge left and right dict values, update path for current 'step'
-                _merge(left[key], right[key], path + [key], conflict=conflict)
+                # recurse, merge left and right dict values
+                yield from _merge(left[key], right[key],
+                                  separator=separator, path=merge_path, conflict=conflict, origins=origins)
             elif left[key] != right[key]:
                 if conflict is _Conflict.error:
                     # not both dicts we could merge, but also not the same, this doesn't work
-                    conflict_path = '.'.join(path + [key])
+                    conflict_path = separator.join(merge_path)
                     raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
                 else:
-                    # overwrite left value with right value
+                    # key not yet in left or not considering conflicts, simple addition of right's mapping to left
                     left[key] = right[key]
+                    # TODO: document me
+                    yield separator.join(merge_path), _origin_of(origins, separator.join(merge_path))
             # else: left[key] is already equal to right[key], no action needed
         else:
-            # key not yet in left or not considering conflicts, simple addition of right's mapping to left
             left[key] = right[key]
-
-    return left
+            # TODO: document me
+            yield separator.join(merge_path), _origin_of(origins, separator.join(merge_path))
 
 
 def _split_keys(mapping: typing.Mapping[str, typing.Any],
