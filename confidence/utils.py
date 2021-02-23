@@ -11,6 +11,21 @@ class _Conflict(IntEnum):
     error = 1
 
 
+def _origin_of(origins: typing.Mapping[str, typing.Optional[str]], path: str) -> typing.Optional[str]:
+    if origins:
+        for key, origin in reversed(origins.items()):
+            if path == key:
+                # direct match
+                return origin
+            if path.startswith(key):
+                # TODO: namespace matching for key "test", path "test.key" where "test.key2" is also available,
+                #       simple substring match isn't good enough
+                return origin
+
+    # nothing pointing to any origin
+    return None
+
+
 def _merge(left: typing.MutableMapping[str, typing.Any],
            right: typing.Mapping[str, typing.Any],
            path: typing.Optional[typing.List[str]] = None,
