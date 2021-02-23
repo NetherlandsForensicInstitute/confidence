@@ -88,7 +88,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
         # unescape double underscores back to a single one
         return re.sub(r'__', '_', name)
 
-    return Configuration({dotted(name): value for name, value in values.items()})
+    return Configuration({dotted(name): value for name, value in values.items()}, origin=f'environment-variable://{name}')
 
 
 def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
@@ -247,7 +247,7 @@ def loadf(*fnames: str,
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
                 # default to empty dict, yaml.safe_load will return None for an empty document
-                return yaml.safe_load(fp.read()) or {}
+                return Configuration(yaml.safe_load(fp.read()) or {}, origin=f'file://{fname}')
         else:
             return default
 
