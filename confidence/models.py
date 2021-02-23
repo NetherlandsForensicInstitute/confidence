@@ -34,7 +34,8 @@ class Configuration(Mapping):
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
                  separator: str = '.',
-                 missing: typing.Any = Missing.silent):
+                 missing: typing.Any = Missing.silent,
+                 origin: typing.Optional[str] = None):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -53,16 +54,28 @@ class Configuration(Mapping):
                              Missing.error: NoDefault}[missing]
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
+        self._origins: typing.MutableMapping[str, str] = {}
         for source in sources:
             if source:
-                while isinstance(source, Configuration):
+                source_origins = None
+                if isinstance(source, Configuration):
+                    # current source to be merged knows of its origins,
+                    source_origins = source._origins
                     # _merge will walk source.items(), using source.get(), avoid resolving references now
                     source = source._source
 
                 # merge values from source into self._source, overwriting any corresponding keys
-                _merge(self._source,
-                       _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
-                       conflict=_Conflict.overwrite)
+                for merged_key, merged_origin in _merge(self._source,
+                                                        _split_keys(source,
+                                                                    separator=self._separator,
+                                                                    colliding=_COLLIDING_KEYS),
+                                                        conflict=_Conflict.overwrite,
+                                                        origins=source_origins):
+                    # track origin or merged key, ignore merged origin if we've been handed an explicit origin
+                    # TODO: should also copy any paths matching merged_key.* from source_origins, hides previously
+                    #       merged subkeys from source (or expand merged_key to all merged subkeys (could check
+                    #       self._source at this point for all available keys))
+                    self._origins[merged_key] = origin or merged_origin
 
     def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
