@@ -33,6 +33,7 @@ def _key_origins(value: typing.Any,
                  path: Key) -> typing.Iterator[typing.Tuple[Key, Origin]]:
     if isinstance(value, Mapping):
         for key, value in value.items():
+            # NB: only provide origins for 'leaves', not subtrees / branches
             yield from _key_origins(value, origins, path + (key,))
     else:
         yield path, _origin_of_path(origins, path)
