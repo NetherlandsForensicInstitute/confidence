@@ -37,9 +37,9 @@ def _key_origins(value: typing.Any, origins: typing.Optional[typing.Mapping[typi
 def _merge(left: typing.MutableMapping[str, typing.Any],
            right: typing.Mapping[str, typing.Any],
            separator: str = '.',
-           path: typing.Optional[typing.List[str]] = None,
+           path: typing.Tuple[str, ...] = (),
            conflict: _Conflict = _Conflict.error,
-           origins: typing.Mapping[str, typing.Optional[str]] = None) -> typing.Iterator[typing.Tuple[str, typing.Optional[str]]]:
+           origins: typing.Optional[typing.Mapping[typing.Tuple[str, ...], typing.Optional[str]]] = None) -> typing.Iterator[typing.Tuple[typing.Tuple[str, ...], typing.Optional[str]]]:
     """
     Merges values in place from *right* into *left*.
 
@@ -51,11 +51,10 @@ def _merge(left: typing.MutableMapping[str, typing.Any],
         or overwriting an existing value
     :return: *left*, for convenience
     """
-    path = path or []
     conflict = _Conflict(conflict)
 
     for key in right:
-        merge_path = path + [key]
+        merge_path = path + (key,)
         if key in left:
             if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
                 # recurse, merge left and right dict values
@@ -70,12 +69,12 @@ def _merge(left: typing.MutableMapping[str, typing.Any],
                     # key not yet in left or not considering conflicts, simple addition of right's mapping to left
                     left[key] = right[key]
                     # TODO: document me
-                    yield separator.join(merge_path), _origin_of(origins, separator.join(merge_path))
+                    yield from _key_origins(right[key], origins, path=merge_path)
             # else: left[key] is already equal to right[key], no action needed
         else:
             left[key] = right[key]
             # TODO: document me
-            yield separator.join(merge_path), _origin_of(origins, separator.join(merge_path))
+            yield from _key_origins(right[key], origins, path=merge_path)
 
 
 def _split_keys(mapping: typing.Mapping[str, typing.Any],
