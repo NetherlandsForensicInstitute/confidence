@@ -26,6 +26,14 @@ def _origin_of(origins: typing.Mapping[str, typing.Optional[str]], path: str) ->
     return None
 
 
+def _key_origins(value: typing.Any, origins: typing.Optional[typing.Mapping[typing.Tuple[str, ...], typing.Optional[str]]], path: typing.Tuple[str, ...]) -> typing.Iterator[typing.Tuple[typing.Tuple[str, ...], typing.Optional[str]]]:
+    if isinstance(value, Mapping):
+        for key, value in value.items():
+            yield from _key_origins(value, origins, path + (key,))
+    else:
+        yield path, _origin_of_path(origins, path)
+
+
 def _merge(left: typing.MutableMapping[str, typing.Any],
            right: typing.Mapping[str, typing.Any],
            separator: str = '.',
