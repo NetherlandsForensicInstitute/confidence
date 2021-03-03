@@ -5,6 +5,7 @@ import re
 import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
+from confidence.types import ConfigurationSource, KeyOrigins
 from confidence.utils import _Conflict, _merge, _split_keys
 
 
@@ -53,8 +54,8 @@ class Configuration(Mapping):
             self._missing = {Missing.silent: NotConfigured,
                              Missing.error: NoDefault}[missing]
 
-        self._source: typing.MutableMapping[str, typing.Any] = {}
-        self._origins: typing.MutableMapping[typing.Tuple[str, ...], typing.Optional[str]] = {}
+        self._source: ConfigurationSource = {}
+        self._origins: KeyOrigins = {}
         for source in sources:
             if source:
                 source_origins = None
@@ -77,7 +78,7 @@ class Configuration(Mapping):
                     #       {key -> (value, origin)} mapping?
                     self._origins[merged_key] = origin or merged_origin
 
-    def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
+    def _wrap(self, value: ConfigurationSource) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
         namespace = type(self)(separator=self._separator, missing=self._missing)
         namespace._source = value

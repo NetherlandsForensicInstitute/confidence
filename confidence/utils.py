@@ -4,6 +4,7 @@ import typing
 import warnings
 
 from confidence.exceptions import MergeConflictError
+from confidence.types import ConfigurationSource, Key, KeyOrigins, Origin
 
 
 class _Conflict(IntEnum):
@@ -11,9 +12,10 @@ class _Conflict(IntEnum):
     error = 1
 
 
-def _origin_of_path(origins: typing.Optional[typing.Mapping[typing.Tuple[str, ...], typing.Optional[str]]], path: typing.Tuple[str, ...]) -> typing.Optional[str]:
+def _origin_of_path(origins: typing.Optional[KeyOrigins], path: Key) -> Origin:
     if origins:
-        for key, origin in reversed(origins.items()):
+        # FIXME: tuple() only for mypy's sake (Mapping.items() is not marked reversible)
+        for key, origin in reversed(tuple(origins.items())):
             # TODO: insertion order and reversal is significant!
             # TODO: how come partial matches show up here / are needed after generating all keys from a subtree copy?
             if path == key:
@@ -26,7 +28,9 @@ def _origin_of_path(origins: typing.Optional[typing.Mapping[typing.Tuple[str, ..
     return None
 
 
-def _key_origins(value: typing.Any, origins: typing.Optional[typing.Mapping[typing.Tuple[str, ...], typing.Optional[str]]], path: typing.Tuple[str, ...]) -> typing.Iterator[typing.Tuple[typing.Tuple[str, ...], typing.Optional[str]]]:
+def _key_origins(value: typing.Any,
+                 origins: typing.Optional[KeyOrigins],
+                 path: Key) -> typing.Iterator[typing.Tuple[Key, Origin]]:
     if isinstance(value, Mapping):
         for key, value in value.items():
             yield from _key_origins(value, origins, path + (key,))
@@ -34,12 +38,12 @@ def _key_origins(value: typing.Any, origins: typing.Optional[typing.Mapping[typi
         yield path, _origin_of_path(origins, path)
 
 
-def _merge(left: typing.MutableMapping[str, typing.Any],
+def _merge(left: ConfigurationSource,
            right: typing.Mapping[str, typing.Any],
            separator: str = '.',
            path: typing.Tuple[str, ...] = (),
            conflict: _Conflict = _Conflict.error,
-           origins: typing.Optional[typing.Mapping[typing.Tuple[str, ...], typing.Optional[str]]] = None) -> typing.Iterator[typing.Tuple[typing.Tuple[str, ...], typing.Optional[str]]]:
+           origins: typing.Optional[KeyOrigins] = None) -> typing.Iterator[typing.Tuple[Key, Origin]]:
     """
     Merges values in place from *right* into *left*.
 
@@ -104,7 +108,7 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
         # reject non-str keys, avoid complicating access patterns
         if not isinstance(key, str):
             raise ValueError(f'non-str type keys ({key}, {key.__class__.__module__}.{key.__class__.__name__}) '
-                             'not supported')
+                             f'not supported')
 
         if separator in key:
             # update key to be the first part before the separator
