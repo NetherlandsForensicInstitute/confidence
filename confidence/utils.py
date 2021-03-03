@@ -11,18 +11,18 @@ class _Conflict(IntEnum):
     error = 1
 
 
-def _origin_of(origins: typing.Mapping[str, typing.Optional[str]], path: str) -> typing.Optional[str]:
+def _origin_of_path(origins: typing.Optional[typing.Mapping[typing.Tuple[str, ...], typing.Optional[str]]], path: typing.Tuple[str, ...]) -> typing.Optional[str]:
     if origins:
         for key, origin in reversed(origins.items()):
+            # TODO: insertion order and reversal is significant!
+            # TODO: how come partial matches show up here / are needed after generating all keys from a subtree copy?
             if path == key:
                 # direct match
                 return origin
-            if path.startswith(key):
-                # TODO: namespace matching for key "test", path "test.key" where "test.key2" is also available,
-                #       simple substring match isn't good enough
+            if len(path) >= len(key) and path[:len(key)] == key:
+                # prefix match (must be longest prefix due to order significance above)
                 return origin
 
-    # nothing pointing to any origin
     return None
 
 
