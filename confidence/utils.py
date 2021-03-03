@@ -54,7 +54,9 @@ def _merge(left: ConfigurationSource,
         only, should only need to be provided by recursive calls)
     :param conflict: action to be taken on merge conflict, raising an error
         or overwriting an existing value
-    :return: *left*, for convenience
+    :param origins: optional origins of keys in *right*
+    :return: a generator of keyed origins, in the form of
+        *((namespace, key), origin)*
     """
     conflict = _Conflict(conflict)
 

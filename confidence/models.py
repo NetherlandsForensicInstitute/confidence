@@ -45,6 +45,8 @@ class Configuration(Mapping):
         :param separator: the character(s) to use as the separator between keys
         :param missing: policy to be used when a configured key is missing,
             either as a `.Missing` instance or a default value
+        :param origin: an optional explicit origin for **all** keys merged from
+            *sources*
         """
         self._separator = separator
         self._missing = missing
