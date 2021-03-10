@@ -8,6 +8,7 @@ import typing
 import yaml
 
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured
+from confidence.types import Key, Origin
 
 
 def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
@@ -304,3 +305,23 @@ def load_name(*names: str,
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
+
+
+def why(configuration: Configuration, path: typing.Union[Key, str]) -> Origin:
+    """
+    Determine the origin of a configured key, if available.
+
+    :param configuration: a `.Configuration` instance (only roots are supported)
+    :param path: the key to look up the origin for
+    :return: the origin of a key, if available
+    """
+    if configuration._root is not configuration:
+        # NB: subtrees don't carry their prefix, we can only support this query on roots at the moment
+        raise ValueError('TODO: error message')
+
+    if isinstance(path, str):
+        # ensure path  is a Key, _origins is Key -> Origin
+        path = tuple(path.split(configuration._separator))
+
+    # TODO: this won't take references to namespaces into account, causing a potentially surprising answer...
+    return configuration._origins.get(path)
