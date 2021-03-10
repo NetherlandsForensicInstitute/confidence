@@ -317,7 +317,7 @@ def why(configuration: Configuration, path: typing.Union[Key, str]) -> Origin:
     """
     if configuration._root is not configuration:
         # NB: subtrees don't carry their prefix, we can only support this query on roots at the moment
-        raise ValueError('TODO: error message')
+        raise ValueError('can only query origins of root')
 
     if isinstance(path, str):
         # ensure path  is a Key, _origins is Key -> Origin
