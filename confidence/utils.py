@@ -12,31 +12,16 @@ class _Conflict(IntEnum):
     error = 1
 
 
-def _origin_of_path(origins: typing.Optional[KeyOrigins], path: Key) -> Origin:
-    if origins:
-        # FIXME: tuple() only for mypy's sake (Mapping.items() is not marked reversible)
-        for key, origin in reversed(tuple(origins.items())):
-            # TODO: insertion order and reversal is significant!
-            # TODO: how come partial matches show up here / are needed after generating all keys from a subtree copy?
-            if path == key:
-                # direct match
-                return origin
-            if len(path) >= len(key) and path[:len(key)] == key:
-                # prefix match (must be longest prefix due to order significance above)
-                return origin
-
-    return None
-
-
 def _key_origins(value: typing.Any,
                  origins: typing.Optional[KeyOrigins],
                  path: Key) -> typing.Iterator[typing.Tuple[Key, Origin]]:
     if isinstance(value, Mapping):
         for key, value in value.items():
-            # NB: only provide origins for 'leaves', not subtrees / branches
+            # only provide origins for 'leaves', not subtrees / branches
             yield from _key_origins(value, origins, path + (key,))
     else:
-        yield path, _origin_of_path(origins, path)
+        # leaf path, provide the explicit origin, if known
+        yield path, origins.get(path) if origins else None
 
 
 def _merge(left: ConfigurationSource,
