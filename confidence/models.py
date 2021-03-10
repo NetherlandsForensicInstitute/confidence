@@ -5,7 +5,7 @@ import re
 import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
-from confidence.types import ConfigurationSource, KeyOrigins
+from confidence.types import ConfigurationSource, KeyOrigins, Origin
 from confidence.utils import _Conflict, _merge, _split_keys
 
 
@@ -36,7 +36,7 @@ class Configuration(Mapping):
                  *sources: typing.Mapping[str, typing.Any],
                  separator: str = '.',
                  missing: typing.Any = Missing.silent,
-                 origin: typing.Optional[str] = None):
+                 origin: Origin = None):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
