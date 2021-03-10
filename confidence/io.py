@@ -8,6 +8,7 @@ import typing
 import yaml
 
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured
+from confidence.types import Key, Origin
 
 
 def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
@@ -88,7 +89,8 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
         # unescape double underscores back to a single one
         return re.sub(r'__', '_', name)
 
-    return Configuration({dotted(name): value for name, value in values.items()})
+    return Configuration({dotted(name): value for name, value in values.items()},
+                         origin=f'environment-variable://{name}')
 
 
 def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
@@ -247,7 +249,8 @@ def loadf(*fnames: str,
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
                 # default to empty dict, yaml.safe_load will return None for an empty document
-                return yaml.safe_load(fp.read()) or {}
+                return Configuration(yaml.safe_load(fp.read()) or {},
+                                     origin=f'file://{fname}')
         else:
             return default
 
@@ -302,3 +305,23 @@ def load_name(*names: str,
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
+
+
+def why(configuration: Configuration, path: typing.Union[Key, str]) -> Origin:
+    """
+    Determine the origin of a configured key, if available.
+
+    :param configuration: a `.Configuration` instance (only roots are supported)
+    :param path: the key to look up the origin for
+    :return: the origin of a key, if available
+    """
+    if configuration._root is not configuration:
+        # NB: subtrees don't carry their prefix, we can only support this query on roots at the moment
+        raise ValueError('can only query origins of root')
+
+    if isinstance(path, str):
+        # ensure path  is a Key, _origins is Key -> Origin
+        path = tuple(path.split(configuration._separator))
+
+    # TODO: this won't take references to namespaces into account, causing a potentially surprising answer...
+    return configuration._origins.get(path)

@@ -3,7 +3,7 @@ from os import path
 import pytest
 from unittest.mock import call, patch
 
-from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
+from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured, why
 from confidence.io import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
@@ -359,3 +359,26 @@ def test_load_name_envvar_dir():
         call('D:/Users/user/AppData/Roaming/foo.yaml', default=NotConfigured),
         call('D:/Users/user/AppData/Roaming/bar.yaml', default=NotConfigured),
     ], any_order=False)
+
+
+def test_why():
+    test_path = path.join(test_files, '{name}.{extension}')
+
+    # bar has precedence over foo
+    config = load_name('foo', 'fake', 'bar', load_order=(test_path,))
+
+    assert why(config, 'nope.overlapping.key').endswith('foo.yaml')
+    assert why(config, ('nope', 'overlapping', 'key')).endswith('foo.yaml')
+    assert why(config, 'semi.overlapping') is None
+    assert why(config, 'semi.overlapping.foo').endswith('foo.yaml')
+    assert why(config, 'semi.overlapping.bar').endswith('bar.yaml')
+    assert why(config, 'overlapping.fully').endswith('bar.yaml')
+
+
+def test_why_non_root():
+    config = loadf(path.join(test_files, 'config.yaml'))
+
+    with pytest.raises(ValueError) as e:
+        why(config.some, 'thing')
+
+    assert 'root' in str(e.value)

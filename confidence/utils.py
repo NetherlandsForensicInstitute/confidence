@@ -4,6 +4,7 @@ import typing
 import warnings
 
 from confidence.exceptions import MergeConflictError
+from confidence.types import ConfigurationSource, Key, KeyOrigins, Origin
 
 
 class _Conflict(IntEnum):
@@ -11,43 +12,62 @@ class _Conflict(IntEnum):
     error = 1
 
 
-def _merge(left: typing.MutableMapping[str, typing.Any],
+def _key_origins(value: typing.Any,
+                 origins: typing.Optional[KeyOrigins],
+                 path: Key) -> typing.Iterator[typing.Tuple[Key, Origin]]:
+    if isinstance(value, Mapping):
+        for key, value in value.items():
+            # only provide origins for 'leaves', not subtrees / branches
+            yield from _key_origins(value, origins, path + (key,))
+    else:
+        # leaf path, provide the explicit origin, if known
+        yield path, origins.get(path) if origins else None
+
+
+def _merge(left: ConfigurationSource,
            right: typing.Mapping[str, typing.Any],
-           path: typing.Optional[typing.List[str]] = None,
-           conflict: _Conflict = _Conflict.error) -> typing.Mapping[str, typing.Any]:
+           separator: str = '.',
+           path: typing.Tuple[str, ...] = (),
+           conflict: _Conflict = _Conflict.error,
+           origins: typing.Optional[KeyOrigins] = None) -> typing.Iterator[typing.Tuple[Key, Origin]]:
     """
     Merges values in place from *right* into *left*.
 
     :param left: mapping to merge into
     :param right: mapping to merge from
-    :param path: `list` of keys processed before (used for error reporting
-        only, should only need to be provided by recursive calls)
+    :param path: `list` of keys processed before (used for recursive calls only)
     :param conflict: action to be taken on merge conflict, raising an error
         or overwriting an existing value
-    :return: *left*, for convenience
+    :param origins: optional origins of keys in *right*
+    :return: a generator of keyed origins, in the form of
+        *((namespace, key), origin)*
     """
-    path = path or []
     conflict = _Conflict(conflict)
 
     for key in right:
+        merge_path = path + (key,)
         if key in left:
             if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
-                # recurse, merge left and right dict values, update path for current 'step'
-                _merge(left[key], right[key], path + [key], conflict=conflict)
+                # recurse, merge left and right dict values
+                yield from _merge(left[key], right[key],
+                                  separator=separator, path=merge_path, conflict=conflict, origins=origins)
             elif left[key] != right[key]:
                 if conflict is _Conflict.error:
                     # not both dicts we could merge, but also not the same, this doesn't work
-                    conflict_path = '.'.join(path + [key])
+                    conflict_path = separator.join(merge_path)
                     raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
                 else:
-                    # overwrite left value with right value
+                    # key not yet in left or not considering conflicts, simple addition of right's mapping to left
                     left[key] = right[key]
+                    # indicate that all of the keys available at right[key] have been merged, with their respective
+                    # origins
+                    yield from _key_origins(right[key], origins, path=merge_path)
             # else: left[key] is already equal to right[key], no action needed
+            # TODO: so what's the origin for key then? no action taken so no origin override?
         else:
-            # key not yet in left or not considering conflicts, simple addition of right's mapping to left
             left[key] = right[key]
-
-    return left
+            # indicate that all of the keys available at right[key] have been merged, with their respective origins
+            yield from _key_origins(right[key], origins, path=merge_path)
 
 
 def _split_keys(mapping: typing.Mapping[str, typing.Any],
@@ -77,7 +97,7 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
         # reject non-str keys, avoid complicating access patterns
         if not isinstance(key, str):
             raise ValueError(f'non-str type keys ({key}, {key.__class__.__module__}.{key.__class__.__name__}) '
-                             'not supported')
+                             f'not supported')
 
         if separator in key:
             # update key to be the first part before the separator
@@ -91,6 +111,8 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
                           UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
-        _merge(result, {key: value})
+        # ignore all of the generated origins, we're only interested in the mere here
+        for _ in _merge(result, {key: value}):
+            pass
 
     return result
