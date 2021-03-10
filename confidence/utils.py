@@ -35,8 +35,7 @@ def _merge(left: ConfigurationSource,
 
     :param left: mapping to merge into
     :param right: mapping to merge from
-    :param path: `list` of keys processed before (used for error reporting
-        only, should only need to be provided by recursive calls)
+    :param path: `list` of keys processed before (used for recursive calls only)
     :param conflict: action to be taken on merge conflict, raising an error
         or overwriting an existing value
     :param origins: optional origins of keys in *right*
@@ -60,12 +59,14 @@ def _merge(left: ConfigurationSource,
                 else:
                     # key not yet in left or not considering conflicts, simple addition of right's mapping to left
                     left[key] = right[key]
-                    # TODO: document me
+                    # indicate that all of the keys available at right[key] have been merged, with their respective
+                    # origins
                     yield from _key_origins(right[key], origins, path=merge_path)
             # else: left[key] is already equal to right[key], no action needed
+            # TODO: so what's the origin for key then? no action taken so no origin override?
         else:
             left[key] = right[key]
-            # TODO: document me
+            # indicate that all of the keys available at right[key] have been merged, with their respective origins
             yield from _key_origins(right[key], origins, path=merge_path)
 
 
