@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from confidence.utils import Conflict, merge, _split_keys
+from confidence.utils import Conflict, merge, split_keys
 
 
 def test_merge_trivial():
@@ -77,7 +77,7 @@ def test_merge_conflict_overwrite():
 def test_split_none():
     subject = {'key': 'value', 'another_key': 123}
 
-    separated = _split_keys(subject)
+    separated = split_keys(subject)
 
     assert subject == separated
 
@@ -85,7 +85,7 @@ def test_split_none():
 def test_split_trivial():
     subject = {'dotted.key': 42}
 
-    separated = _split_keys(subject)
+    separated = split_keys(subject)
 
     assert separated['dotted']['key'] == 42
 
@@ -93,7 +93,7 @@ def test_split_trivial():
 def test_split_multiple():
     subject = {'dotted.key': 123, 'another.dotted.key': 456}
 
-    separated = _split_keys(subject)
+    separated = split_keys(subject)
 
     assert len(separated) == 2
     assert separated['dotted']['key'] == 123
@@ -103,7 +103,7 @@ def test_split_multiple():
 def test_split_overlap_simple():
     subject = {'dotted.key': 123, 'dotted.something_else': 456}
 
-    separated = _split_keys(subject)
+    separated = split_keys(subject)
 
     assert len(separated) == 1
     assert len(separated['dotted']) == 2
@@ -119,7 +119,7 @@ def test_split_overlap_complex():
         'key': {'thing.another_key': 5},
     }
 
-    separated = _split_keys(subject)
+    separated = split_keys(subject)
 
     assert separated == {
         'dotted': {
@@ -147,7 +147,7 @@ def test_split_key_types():
     }
 
     with pytest.raises(ValueError) as e:
-        assert not _split_keys(subject)
+        assert not split_keys(subject)
 
     assert '1234' in str(e.value)
     assert 'int' in str(e.value)
@@ -160,7 +160,7 @@ def test_split_key_types():
     }
 
     with pytest.raises(ValueError) as e:
-        assert not _split_keys(subject)
+        assert not split_keys(subject)
 
     assert '2019-04-01' in str(e.value)
     assert 'datetime.date' in str(e.value)

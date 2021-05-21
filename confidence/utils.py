@@ -50,9 +50,9 @@ def merge(left: typing.MutableMapping[str, typing.Any],
     return left
 
 
-def _split_keys(mapping: typing.Mapping[str, typing.Any],
-                separator: str = '.',
-                colliding: typing.Optional[typing.Container] = None) -> typing.Mapping[str, typing.Any]:
+def split_keys(mapping: typing.Mapping[str, typing.Any],
+               separator: str = '.',
+               colliding: typing.Optional[typing.Container] = None) -> typing.Mapping[str, typing.Any]:
     """
     Recursively walks *mapping* to split keys that contain the separator into
     nested mappings.
@@ -72,7 +72,7 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
     for key, value in mapping.items():
         if isinstance(value, Mapping):
             # recursively split key(s) in value
-            value = _split_keys(value, separator)
+            value = split_keys(value, separator)
 
         # reject non-str keys, avoid complicating access patterns
         if not isinstance(key, str):
@@ -83,7 +83,7 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
             # update key to be the first part before the separator
             key, rest = key.split(separator, 1)
             # use rest as the new key of value, recursively split that and update value
-            value = _split_keys({rest: value}, separator)
+            value = split_keys({rest: value}, separator)
 
         if colliding and key in colliding:
             # warn about configured keys colliding with Configuration members
