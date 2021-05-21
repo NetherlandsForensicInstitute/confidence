@@ -23,7 +23,7 @@ Use it with confidence:
 # load configuration from a YAML file
 configuration = confidence.loadf('path/to/configuration.yaml')
 
-# a Configuration object is like a dict, but better
+# a Configuration object is like a read-only dict, but better
 value = configuration.get('foo.bar')
 value = configuration.get('foo.bar', default=42)
 # or even kwargs, should you want to
