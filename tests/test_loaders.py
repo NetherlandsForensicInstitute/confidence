@@ -22,9 +22,9 @@ def test_no_loaders():
 
 
 def test_locality_loaders():
-    assert tuple(loaders(Locality.user)) == _LOADERS[Locality.user]
-    assert tuple(loaders(Locality.system, Locality.application)) == tuple(chain(_LOADERS[Locality.system], _LOADERS[Locality.application]))
-    assert tuple(loaders(Locality.environment, Locality.environment)) == tuple(chain(_LOADERS[Locality.environment], _LOADERS[Locality.environment]))
+    assert tuple(loaders(Locality.USER)) == _LOADERS[Locality.USER]
+    assert tuple(loaders(Locality.SYSTEM, Locality.APPLICATION)) == tuple(chain(_LOADERS[Locality.SYSTEM], _LOADERS[Locality.APPLICATION]))
+    assert tuple(loaders(Locality.ENVIRONMENT, Locality.ENVIRONMENT)) == tuple(chain(_LOADERS[Locality.ENVIRONMENT], _LOADERS[Locality.ENVIRONMENT]))
 
 
 def test_loaders_mixed():
@@ -33,4 +33,4 @@ def test_loaders_mixed():
 
     assert tuple(loaders('just a string')) == ('just a string',)
     assert tuple(loaders('just a string', function)) == ('just a string', function)
-    assert tuple(loaders(function, Locality.environment, '{name}.{extension}')) == tuple(chain([function], _LOADERS[Locality.environment], ['{name}.{extension}']))
+    assert tuple(loaders(function, Locality.ENVIRONMENT, '{name}.{extension}')) == tuple(chain([function], _LOADERS[Locality.ENVIRONMENT], ['{name}.{extension}']))

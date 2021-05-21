@@ -322,7 +322,7 @@ def test_load_name_overlapping_envvars():
     }
 
     with patch('confidence.io.environ', env):
-        subject = load_name('foo', 'bar', load_order=loaders(Locality.environment))
+        subject = load_name('foo', 'bar', load_order=loaders(Locality.ENVIRONMENT))
 
     assert subject.key == 'bar'
     assert subject.ns.key == 'value'
