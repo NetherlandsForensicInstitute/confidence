@@ -67,7 +67,7 @@ def test_merge_conflict_overwrite():
     left = {'parent': {'first': 1, 'second': 2}}
     right = {'parent': {'third': 3, 'first': 4}}  # parent.first differs
 
-    merged = _merge(left, right, conflict=_Conflict.overwrite)
+    merged = _merge(left, right, conflict=_Conflict.OVERWRITE)
 
     assert len(merged) == 1
     assert len(merged['parent']) == 3

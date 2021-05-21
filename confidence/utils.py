@@ -7,14 +7,14 @@ from confidence.exceptions import MergeConflictError
 
 
 class _Conflict(IntEnum):
-    overwrite = 0
-    error = 1
+    OVERWRITE = 0
+    ERROR = 1
 
 
 def _merge(left: typing.MutableMapping[str, typing.Any],
            right: typing.Mapping[str, typing.Any],
            path: typing.Optional[typing.List[str]] = None,
-           conflict: _Conflict = _Conflict.error) -> typing.Mapping[str, typing.Any]:
+           conflict: _Conflict = _Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
     """
     Merges values in place from *right* into *left*.
 
@@ -35,7 +35,7 @@ def _merge(left: typing.MutableMapping[str, typing.Any],
                 # recurse, merge left and right dict values, update path for current 'step'
                 _merge(left[key], right[key], path + [key], conflict=conflict)
             elif left[key] != right[key]:
-                if conflict is _Conflict.error:
+                if conflict is _Conflict.ERROR:
                     # not both dicts we could merge, but also not the same, this doesn't work
                     conflict_path = '.'.join(path + [key])
                     raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
