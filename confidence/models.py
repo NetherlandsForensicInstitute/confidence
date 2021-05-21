@@ -5,7 +5,7 @@ import re
 import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
-from confidence.utils import Conflict, _merge, _split_keys
+from confidence.utils import Conflict, merge, _split_keys
 
 
 class Missing(Enum):
@@ -60,9 +60,9 @@ class Configuration(Mapping):
                     source = source._source
 
                 # merge values from source into self._source, overwriting any corresponding keys
-                _merge(self._source,
-                       _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
-                       conflict=Conflict.OVERWRITE)
+                merge(self._source,
+                      _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
+                      conflict=Conflict.OVERWRITE)
 
     def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies

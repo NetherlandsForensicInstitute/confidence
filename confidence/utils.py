@@ -11,10 +11,10 @@ class Conflict(IntEnum):
     ERROR = 1
 
 
-def _merge(left: typing.MutableMapping[str, typing.Any],
-           right: typing.Mapping[str, typing.Any],
-           path: typing.Optional[typing.List[str]] = None,
-           conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
+def merge(left: typing.MutableMapping[str, typing.Any],
+          right: typing.Mapping[str, typing.Any],
+          path: typing.Optional[typing.List[str]] = None,
+          conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
     """
     Merges values in place from *right* into *left*.
 
@@ -33,7 +33,7 @@ def _merge(left: typing.MutableMapping[str, typing.Any],
         if key in left:
             if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
                 # recurse, merge left and right dict values, update path for current 'step'
-                _merge(left[key], right[key], path + [key], conflict=conflict)
+                merge(left[key], right[key], path + [key], conflict=conflict)
             elif left[key] != right[key]:
                 if conflict is Conflict.ERROR:
                     # not both dicts we could merge, but also not the same, this doesn't work
@@ -91,6 +91,6 @@ def _split_keys(mapping: typing.Mapping[str, typing.Any],
                           UserWarning)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
-        _merge(result, {key: value})
+        merge(result, {key: value})
 
     return result
