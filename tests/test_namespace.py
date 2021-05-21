@@ -34,7 +34,7 @@ def test_value_types():
 
 
 def test_not_configured():
-    subject = Configuration({'key': 'value'}, missing=Missing.silent)
+    subject = Configuration({'key': 'value'}, missing=Missing.SILENT)
 
     assert subject.key == 'value'
     assert subject.does_nope_exist is NotConfigured
@@ -105,7 +105,7 @@ def test_assignments():
 
 
 def test_missing_error():
-    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing=Missing.error)
+    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing=Missing.ERROR)
 
     assert subject.key1 == 'value'
 
