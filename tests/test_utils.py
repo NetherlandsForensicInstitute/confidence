@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from confidence.utils import _Conflict, _merge, _split_keys
+from confidence.utils import Conflict, _merge, _split_keys
 
 
 def test_merge_trivial():
@@ -67,7 +67,7 @@ def test_merge_conflict_overwrite():
     left = {'parent': {'first': 1, 'second': 2}}
     right = {'parent': {'third': 3, 'first': 4}}  # parent.first differs
 
-    merged = _merge(left, right, conflict=_Conflict.OVERWRITE)
+    merged = _merge(left, right, conflict=Conflict.OVERWRITE)
 
     assert len(merged) == 1
     assert len(merged['parent']) == 3
