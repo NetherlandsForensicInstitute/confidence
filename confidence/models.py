@@ -33,18 +33,15 @@ class Configuration(Mapping):
 
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
-                 separator: str = '.',
                  missing: typing.Any = Missing.SILENT):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
         :param sources: source mappings to base this `.Configuration` on,
             ordered from least to most significant
-        :param separator: the character(s) to use as the separator between keys
         :param missing: policy to be used when a configured key is missing,
             either as a `.Missing` instance or a default value
         """
-        self._separator = separator
         self._missing = missing
         self._root = self
 
@@ -60,13 +57,11 @@ class Configuration(Mapping):
                     source = source._source
 
                 # merge values from source into self._source, overwriting any corresponding keys
-                merge(self._source,
-                      split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
-                      conflict=Conflict.OVERWRITE)
+                merge(self._source, split_keys(source, colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
 
     def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
-        namespace = type(self)(separator=self._separator, missing=self._missing)
+        namespace = type(self)(missing=self._missing)
         namespace._source = value
         # carry the root object from namespace to namespace, references are always resolved from root
         namespace._root = self._root
@@ -122,8 +117,7 @@ class Configuration(Mapping):
         Gets a value for the specified path.
 
         :param path: the configuration key to fetch a value for, steps
-            separated by the separator supplied to the constructor (default
-            ``.``)
+            separated by a dot (``.``)
         :param default: a value to return if no value is found for the
             supplied path (``None`` is allowed)
         :param as_type: an optional callable to apply to the value found for
@@ -139,7 +133,7 @@ class Configuration(Mapping):
         steps_taken = []
         try:
             # walk through the values dictionary
-            for step in path.split(self._separator):
+            for step in path.split('.'):
                 steps_taken.append(step)
                 value = value[step]
 
@@ -165,7 +159,7 @@ class Configuration(Mapping):
             if default is not NoDefault:
                 return default
             else:
-                missing_key = self._separator.join(steps_taken)
+                missing_key = '.'.join(steps_taken)
                 raise NotConfiguredError(f'no configuration for key {missing_key}', key=missing_key) from e
 
     def __getattr__(self, attr: str) -> typing.Any:

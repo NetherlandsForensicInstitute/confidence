@@ -49,16 +49,15 @@ def test_not_configured():
 
 def test_collisions():
     with patch('confidence.utils.warnings') as warnings:
-        subject = Configuration({'key': 'value', 'keys': [1, 2], '_separator': '_'})
+        subject = Configuration({'key': 'value', 'keys': [1, 2], '_missing': 'error'})
 
-    for collision in ('keys', '_separator'):
+    for collision in ('keys', '_missing'):
         warnings.warn.assert_any_call(f'key {collision} collides with a named member, use get() method to '
                                       f'retrieve the value for {collision}',
                                       UserWarning)
 
     assert subject.key == 'value'
     assert callable(subject.keys)
-    assert subject._separator == '.'
 
 
 def test_dir():
