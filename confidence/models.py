@@ -5,12 +5,12 @@ import re
 import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
-from confidence.utils import _Conflict, _merge, _split_keys
+from confidence.utils import Conflict, merge, split_keys
 
 
 class Missing(Enum):
-    silent = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
-    error = 'error'  #: raise an `AttributeError` for unconfigured keys
+    SILENT = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
+    ERROR = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
 # define a sentinel value to indicate there is no default value specified (None would be a valid default value)
@@ -34,7 +34,7 @@ class Configuration(Mapping):
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
                  separator: str = '.',
-                 missing: typing.Any = Missing.silent):
+                 missing: typing.Any = Missing.SILENT):
         """
         Create a new `.Configuration`, based on one or multiple source mappings.
 
@@ -49,8 +49,8 @@ class Configuration(Mapping):
         self._root = self
 
         if isinstance(self._missing, Missing):
-            self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: NoDefault}[missing]
+            self._missing = {Missing.SILENT: NotConfigured,
+                             Missing.ERROR: NoDefault}[missing]
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -60,9 +60,9 @@ class Configuration(Mapping):
                     source = source._source
 
                 # merge values from source into self._source, overwriting any corresponding keys
-                _merge(self._source,
-                       _split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
-                       conflict=_Conflict.overwrite)
+                merge(self._source,
+                      split_keys(source, separator=self._separator, colliding=_COLLIDING_KEYS),
+                      conflict=Conflict.OVERWRITE)
 
     def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
@@ -221,9 +221,9 @@ class Configuration(Mapping):
         # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
         #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
         if state['_missing'] is NotConfigured:
-            state['_missing'] = Missing.silent
+            state['_missing'] = Missing.SILENT
         elif state['_missing'] is NoDefault:
-            state['_missing'] = Missing.error
+            state['_missing'] = Missing.ERROR
 
         return state
 
@@ -232,8 +232,8 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = {Missing.silent: NotConfigured,
-                             Missing.error: NoDefault}[self._missing]
+            self._missing = {Missing.SILENT: NotConfigured,
+                             Missing.ERROR: NoDefault}[self._missing]
 
 
 # define NotConfigured as a class first (using type() to keep the type checker happy)

@@ -28,7 +28,7 @@ def test_simple():
 
 
 def test_missing_error():
-    subject = Configuration({'testing': 123}, missing=Missing.error)
+    subject = Configuration({'testing': 123}, missing=Missing.ERROR)
 
     reencoded = pickle.loads(pickle.dumps(subject))
 

@@ -139,14 +139,14 @@ class Locality(IntEnum):
     variables.
     """
 
-    system = 0  #: system-wide configuration locations
-    user = 1  #: user-local configuration locations
-    application = 2  #: application-local configuration locations (dependent on the current working directory)
-    environment = 3  #: configuration from environment variables
+    SYSTEM = 0  #: system-wide configuration locations
+    USER = 1  #: user-local configuration locations
+    APPLICATION = 2  #: application-local configuration locations (dependent on the current working directory)
+    ENVIRONMENT = 3  #: configuration from environment variables
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Callable]]] = {
-    Locality.system: (
+    Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
         '/etc/{name}.{extension}',
@@ -154,7 +154,7 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Call
         partial(read_envvar_dir, 'PROGRAMDATA'),
     ),
 
-    Locality.user: (
+    Locality.USER: (
         # user-local locations
         read_xdg_config_home,
         '~/Library/Preferences/{name}.{extension}',
@@ -163,12 +163,12 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Call
         '~/.{name}.{extension}',
     ),
 
-    Locality.application: (
+    Locality.APPLICATION: (
         # application-local locations
         './{name}.{extension}',
     ),
 
-    Locality.environment: (
+    Locality.ENVIRONMENT: (
         # application-specific environment variables
         read_envvar_file,
         read_envvars,
@@ -209,13 +209,13 @@ def loaders(*specifiers: typing.Union[Locality, str]) -> typing.Iterable[typing.
             yield specifier
 
 
-DEFAULT_LOAD_ORDER = tuple(loaders(Locality.system,
-                                   Locality.user,
-                                   Locality.application,
-                                   Locality.environment))
+DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM,
+                                   Locality.USER,
+                                   Locality.APPLICATION,
+                                   Locality.ENVIRONMENT))
 
 
-def load(*fps: typing.IO, missing: typing.Any = Missing.silent) -> Configuration:
+def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `.Configuration` instance from file-like objects.
 
@@ -230,7 +230,7 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.silent) -> Configuration
 
 def loadf(*fnames: str,
           default: typing.Any = NoDefault,
-          missing: typing.Any = Missing.silent) -> Configuration:
+          missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `.Configuration` instance from named files.
 
@@ -254,7 +254,7 @@ def loadf(*fnames: str,
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings: str, missing: typing.Any = Missing.silent) -> Configuration:
+def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `.Configuration` instance from strings.
 
@@ -270,7 +270,7 @@ def loads(*strings: str, missing: typing.Any = Missing.silent) -> Configuration:
 def load_name(*names: str,
               load_order: typing.Iterable[typing.Union[str, typing.Callable]] = DEFAULT_LOAD_ORDER,
               extension: str = 'yaml',
-              missing: typing.Any = Missing.silent) -> Configuration:
+              missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `.Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
