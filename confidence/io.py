@@ -302,3 +302,13 @@ def load_name(*names: str,
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
+
+
+def dumps(configuration: Configuration) -> str:
+    """
+    Serialize the configuration in *configuration* as a YAML-formatted string.
+
+    :param configuration: the `.Configuration` object to dump
+    :return: *configuration*, serialized as a `str` in YAML format
+    """
+    return yaml.safe_dump(configuration._source, default_flow_style=False)
