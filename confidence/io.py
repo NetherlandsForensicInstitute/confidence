@@ -304,6 +304,18 @@ def load_name(*names: str,
     return Configuration(*generate_sources(), missing=missing)
 
 
+def dumpf(configuration: Configuration, fname: str, encoding: str = 'utf-8') -> None:
+    """
+    Serialize the configuration in *configuration* to a YAML-formatted file.
+
+    :param configuration: the `.Configuration` object to dump
+    :param fname: name or path of the file to write to
+    :param encoding: encoding to use
+    """
+    with open(fname, 'w', encoding=encoding) as out_file:
+        out_file.write(dumps(configuration))
+
+
 def dumps(configuration: Configuration) -> str:
     """
     Serialize the configuration in *configuration* as a YAML-formatted string.
