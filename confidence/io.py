@@ -1,7 +1,7 @@
 from enum import IntEnum
 from functools import partial
 from itertools import product
-from os import environ, path
+from os import environ, path, PathLike
 import re
 import typing
 
@@ -228,7 +228,7 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
-def loadf(*fnames: str,
+def loadf(*fnames: typing.Union[str, PathLike],
           default: typing.Any = NoDefault,
           missing: typing.Any = Missing.SILENT) -> Configuration:
     """
@@ -304,7 +304,7 @@ def load_name(*names: str,
     return Configuration(*generate_sources(), missing=missing)
 
 
-def dumpf(configuration: Configuration, fname: str, encoding: str = 'utf-8') -> None:
+def dumpf(configuration: Configuration, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
     """
     Serialize the configuration in *configuration* to a YAML-formatted file.
 
