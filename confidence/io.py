@@ -304,6 +304,19 @@ def load_name(*names: str,
     return Configuration(*generate_sources(), missing=missing)
 
 
+def dump(configuration: Configuration, fp: typing.IO, encoding: str = 'utf-8') -> None:
+    """
+    Serialize the configuration in *configuration* to YAML format, writing it
+    to *fp*.
+
+    :param configuration: the `.Configuration` object to dump
+    :param fp: a file-like object to write to
+    :param encoding: encoding to use
+    """
+    # use block style output for nested collections (flow style dumps nested dicts inline)
+    yaml.safe_dump(configuration._source, stream=fp, encoding=encoding, default_flow_style=False)
+
+
 def dumpf(configuration: Configuration, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
     """
     Serialize the configuration in *configuration* to a YAML-formatted file.
@@ -312,8 +325,8 @@ def dumpf(configuration: Configuration, fname: typing.Union[str, PathLike], enco
     :param fname: name or path of the file to write to
     :param encoding: encoding to use
     """
-    with open(fname, 'w', encoding=encoding) as out_file:
-        out_file.write(dumps(configuration))
+    with open(fname, 'wb') as out_file:
+        dump(configuration, out_file, encoding=encoding)
 
 
 def dumps(configuration: Configuration) -> str:
