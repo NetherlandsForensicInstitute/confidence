@@ -1,10 +1,10 @@
 from functools import partial
 from os import path
 import pytest
-from unittest.mock import call, patch
+from unittest.mock import call, mock_open, patch
 
 from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
-from confidence.io import read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
+from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
 test_files = path.join(path.dirname(__file__), 'files')
@@ -25,6 +25,17 @@ json_str = """{
     "some.other.key": [1, 2, 3],
     "some.thing": false
 }"""
+
+
+class str_containing:
+    def __init__(self, substr):
+        self._substr = substr
+
+    def __eq__(self, other):
+        return isinstance(other, str) and self._substr in other
+
+    def __repr__(self):
+        return f'string containing "{self._substr}"'
 
 
 def _assert_values(conf):
@@ -359,3 +370,28 @@ def test_load_name_envvar_dir():
         call('D:/Users/user/AppData/Roaming/foo.yaml', default=NotConfigured),
         call('D:/Users/user/AppData/Roaming/bar.yaml', default=NotConfigured),
     ], any_order=False)
+
+
+def test_dumps():
+    subject = dumps(Configuration({'ns.key': 42}))
+
+    assert 'ns:' in subject
+    assert 'key: 42' in subject
+    assert '{' not in subject and '}' not in subject
+
+    subject = dumps(Configuration({'ns.key1': True, 'ns.key2': None}))
+
+    assert subject.count('ns') == 1
+    assert 'key1: true' in subject
+    assert 'key2: null' in subject
+    assert '{' not in subject and '}' not in subject
+
+
+def test_dumpf():
+    with patch('confidence.io.open', mock_open()) as mocked:
+        dumpf(Configuration({'ns.key1': True, 'ns.key2': None}), '/path/to/dumped.yaml')
+
+    mocked.assert_called_once_with('/path/to/dumped.yaml', 'wb')
+    write = mocked().write
+    for s in ('ns', 'key1', 'key2', 'null'):
+        write.assert_any_call(str_containing(s))

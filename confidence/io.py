@@ -1,7 +1,7 @@
 from enum import IntEnum
 from functools import partial
 from itertools import product
-from os import environ, path
+from os import environ, path, PathLike
 import re
 import typing
 
@@ -228,7 +228,7 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
-def loadf(*fnames: str,
+def loadf(*fnames: typing.Union[str, PathLike],
           default: typing.Any = NoDefault,
           missing: typing.Any = Missing.SILENT) -> Configuration:
     """
@@ -302,3 +302,39 @@ def load_name(*names: str,
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
+
+
+def dump(configuration: Configuration, fp: typing.IO, encoding: str = 'utf-8') -> None:
+    """
+    Serialize the configuration in *configuration* to YAML format, writing it
+    to *fp*.
+
+    :param configuration: the `.Configuration` object to dump
+    :param fp: a file-like object to write to
+    :param encoding: encoding to use
+    """
+    # use block style output for nested collections (flow style dumps nested dicts inline)
+    yaml.safe_dump(configuration._source, stream=fp, encoding=encoding, default_flow_style=False)
+
+
+def dumpf(configuration: Configuration, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
+    """
+    Serialize the configuration in *configuration* to a YAML-formatted file.
+
+    :param configuration: the `.Configuration` object to dump
+    :param fname: name or path of the file to write to
+    :param encoding: encoding to use
+    """
+    with open(fname, 'wb') as out_file:
+        dump(configuration, out_file, encoding=encoding)
+
+
+def dumps(configuration: Configuration) -> str:
+    """
+    Serialize the configuration in *configuration* as a YAML-formatted string.
+
+    :param configuration: the `.Configuration` object to dump
+    :return: *configuration*, serialized as a `str` in YAML format
+    """
+    # use block style output for nested collections (flow style dumps nested dicts inline)
+    return yaml.safe_dump(configuration._source, default_flow_style=False)

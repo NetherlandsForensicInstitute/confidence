@@ -4,3 +4,6 @@ flake8-comprehensions
 flake8-import-order
 mypy
 pep8-naming
+
+# dependency-specific typing information
+types-pyyaml

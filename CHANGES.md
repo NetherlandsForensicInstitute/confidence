@@ -6,17 +6,18 @@ development (master)
 
 - Remove configurable key separator, hardcode the default.
 - Rename enumeration values (like `Locality.USER`) to be upper case.
+- Add `dump`, `dumpf` and `dumps` functions to dump `Configuration` instances to YAML format.
 
 0.9 (2021-02-01)
 ----------------
 
-- Add type hints to confidence
+- Add type hints to confidence.
 
 0.8 (2020-12-14)
 ----------------
 
-- Add human-readable `repr`s to `Configuration` and `ConfigurationSequence`
-- Make `ConfigurationSequence` more list-like by enabling addition operator (`configured_sequence + [1, 2, 3]` or `(1, 2, 3) + configured_sequence`)
+- Add human-readable `repr`s to `Configuration` and `ConfigurationSequence`.
+- Make `ConfigurationSequence` more list-like by enabling addition operator (`configured_sequence + [1, 2, 3]` or `(1, 2, 3) + configured_sequence`).
 
 0.7 (2020-07-10)
 ----------------
