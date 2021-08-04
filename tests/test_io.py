@@ -34,6 +34,9 @@ class str_containing:
     def __eq__(self, other):
         return isinstance(other, str) and self._substr in other
 
+    def __repr__(self):
+        return f'string containing "{self._substr}"'
+
 
 def _assert_values(conf):
     assert conf.key == 'value'
@@ -388,5 +391,7 @@ def test_dumpf():
     with patch('confidence.io.open', mock_open()) as mocked:
         dumpf(Configuration({'ns.key1': True, 'ns.key2': None}), '/path/to/dumped.yaml')
 
-    mocked.assert_called_once_with('/path/to/dumped.yaml', 'w', encoding='utf-8')
-    mocked().write.assert_called_once_with(str_containing('key2: null'))
+    mocked.assert_called_once_with('/path/to/dumped.yaml', 'wb')
+    write = mocked().write
+    for s in ('ns', 'key1', 'key2', 'null'):
+        write.assert_any_call(str_containing(s))
