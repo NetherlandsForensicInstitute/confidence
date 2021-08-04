@@ -6,7 +6,7 @@ development (master)
 
 - Remove configurable key separator, hardcode the default.
 - Rename enumeration values (like `Locality.USER`) to be upper case.
-- Add `dumpf` and `dumps` functions to dump `Configuration` instances to YAML format.
+- Add `dump`, `dumpf` and `dumps` functions to dump `Configuration` instances to YAML format.
 
 0.9 (2021-02-01)
 ----------------
