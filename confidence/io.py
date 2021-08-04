@@ -323,4 +323,5 @@ def dumps(configuration: Configuration) -> str:
     :param configuration: the `.Configuration` object to dump
     :return: *configuration*, serialized as a `str` in YAML format
     """
+    # use block style output for nested collections (flow style dumps nested dicts inline)
     return yaml.safe_dump(configuration._source, default_flow_style=False)
