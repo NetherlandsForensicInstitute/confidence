@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.10 (2021-08-04)
+-----------------
 
 - Remove configurable key separator, hardcode the default.
 - Rename enumeration values (like `Locality.USER`) to be upper case.
