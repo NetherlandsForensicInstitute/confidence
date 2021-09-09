@@ -74,7 +74,7 @@ configuration = confidence.load_name('app')
 
 configuration = confidence.load_name('app', load_order=confidence.loaders(
     # loading system after user makes system locations take precedence
-    confidence.Locality.user, confidence.Locality.system
+    confidence.Locality.USER, confidence.Locality.SYSTEM
 ))
 ~~~~
 
