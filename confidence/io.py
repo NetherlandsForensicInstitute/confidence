@@ -89,6 +89,9 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
         # unescape double underscores back to a single one
         return re.sub(r'__', '_', name)
 
+    # include the number of variables matched for debugging purposes
+    logging.info(f'reading configuration from {len(values)} {prefix}* environment variables')
+
     return Configuration({dotted(name): value for name, value in values.items()})
 
 
