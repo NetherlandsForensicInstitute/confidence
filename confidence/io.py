@@ -1,6 +1,7 @@
 from enum import IntEnum
 from functools import partial
 from itertools import product
+import logging
 from os import environ, path, PathLike
 import re
 import typing
@@ -246,6 +247,7 @@ def loadf(*fnames: typing.Union[str, PathLike],
         if default is NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
+                logging.info(f'reading configuration from file {fname}')
                 # default to empty dict, yaml.safe_load will return None for an empty document
                 return yaml.safe_load(fp.read()) or {}
         else:
