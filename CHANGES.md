@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Add INFO-level logging of files and environment variables being used to load configuration
+
 0.10 (2021-08-04)
 -----------------
 
