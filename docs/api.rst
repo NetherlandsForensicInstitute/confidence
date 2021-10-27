@@ -9,6 +9,15 @@ Reading configuration
 .. autofunction:: confidence.loads
 .. autofunction:: confidence.load
 
+.. autofunction:: confidence.dumpf
+.. autofunction:: confidence.dumps
+.. autofunction:: confidence.dump
+
+The `.Configuration` object
+---------------------------
+
+.. autoclass:: confidence.Configuration
+
 Controlling precedence / load order
 -----------------------------------
 
