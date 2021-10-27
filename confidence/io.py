@@ -186,7 +186,7 @@ def loaders(*specifiers: typing.Union[Locality, str]) -> typing.Iterable[typing.
 
     Arguments can be `.Locality` instances, producing the loader(s) available
     for that locality, `str` instances (used as file path templates) or
-    `callable`s. These can be mixed:
+    `callable` s. These can be mixed:
 
     .. code-block:: python
 
@@ -287,7 +287,7 @@ def load_name(*names: str,
 
     :param names: application or configuration set names, in increasing
         significance
-    :param load_order: ordered list of name templates or `callable`s, in
+    :param load_order: ordered list of name templates or `callable` s, in
         increasing order of significance
     :param extension: file extension to be used
     :param missing: policy to be used when a configured key is missing, either
