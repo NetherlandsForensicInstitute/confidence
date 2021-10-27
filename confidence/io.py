@@ -63,9 +63,10 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
 
     .. note::
 
-        Environment variables are always `str`s, this function makes no effort
-        to changes this. All values read from command line variables will be
-        `str` instances.
+        An environment variable matching ``NAME_CONFIG_FILE`` (where the name
+        part matches the *name* argument) is explicitly ignored here.
+        Environment variables matching this pattern are used with
+        `.read_envvar_file`.
 
     :param name: environment variable prefix to look for (without the ``_``)
     :param extension: *(unused)*
@@ -77,7 +78,6 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
     values = {var.lower()[prefix_len:]: value
               for var, value in environ.items()
-              # TODO: document ignoring envvar_file
               if var.lower().startswith(prefix) and var.lower() != envvar_file}
     if not values:
         return NotConfigured
