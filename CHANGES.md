@@ -4,6 +4,7 @@ Changes
 development (master)
 --------------------
 
+- Parse values of environment variables as YAML values (e.g. `NAME_KEY=yes` will result in `key` being `True`)
 - Add INFO-level logging of files and environment variables being used to load configuration
 
 0.10 (2021-08-04)
