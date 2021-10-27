@@ -1,6 +1,8 @@
 Configure with confidence
 =========================
 
+``confidence`` helps loading configuration options from file into a user-friendly object at runtime.
+
 Contents
 --------
 
