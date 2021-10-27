@@ -4,22 +4,28 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+from datetime import date
+import os
+import sys
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'confidence'
-copyright = '2021, Netherlands Forensic Institute'
 author = 'Netherlands Forensic Institute'
+inception = 2017
+copyright = date.today().year
+if copyright != inception:
+    copyright = '{}–{}'.format(inception, copyright)
+copyright = '{}, {}'.format(copyright, author)
 
 
 # -- General configuration ---------------------------------------------------
