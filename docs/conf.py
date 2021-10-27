@@ -29,6 +29,7 @@ author = 'Netherlands Forensic Institute'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
 ]
 
 
@@ -44,6 +45,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 autodoc_default_options = {
     'members': True,
 }
+autodoc_class_signature = 'separated'
 autodoc_member_order = 'bysource'
 autodoc_typehints = 'description'
 autodoc_preserve_defaults = True
