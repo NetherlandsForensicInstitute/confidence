@@ -79,7 +79,6 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
               for var, value in environ.items()
               # TODO: document ignoring envvar_file
               if var.lower().startswith(prefix) and var.lower() != envvar_file}
-    # TODO: envvar values can only be str, how do we configure non-str values?
     if not values:
         return NotConfigured
 
@@ -92,7 +91,8 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     # include the number of variables matched for debugging purposes
     logging.info(f'reading configuration from {len(values)} {prefix}* environment variables')
 
-    return Configuration({dotted(name): value for name, value in values.items()})
+    # pass value to yaml.safe_load to align data type transformation with reading values from files
+    return Configuration({dotted(name): yaml.safe_load(value) for name, value in values.items()})
 
 
 def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
