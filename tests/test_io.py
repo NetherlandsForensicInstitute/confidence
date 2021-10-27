@@ -296,8 +296,10 @@ def test_load_name_envvars():
     env = {
         'FOO_KEY': 'foo',
         'FOO_NS_KEY': 'value',
+        'FOO_TYPES_NUM': '42',
         'BAR_KEY': 'bar',
         'BAR_N__S_KEY': 'space',
+        'BAR_TYPES_MAYBE': 'yes',
     }
 
     with patch('confidence.io.environ', env):
@@ -306,6 +308,8 @@ def test_load_name_envvars():
     assert subject.key == 'bar'
     assert subject.ns.key == 'value'
     assert subject.n_s.key == 'space'
+    assert subject.types.num == 42
+    assert subject.types.maybe is True
 
 
 def test_load_name_envvar_file():
