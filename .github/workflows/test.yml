@@ -17,7 +17,7 @@ jobs:
       - name: Run checks
         run: |
           bandit --recursive confidence/
-          flake8 confidence/
+          flake8 --max-line-length 120 --import-order-style google --application-import-names confidence confidence/
           mypy confidence/
   test:
     runs-on: ubuntu-latest
