@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.11 (2021-11-25)
+-----------------
 
 - Parse values of environment variables as YAML values (e.g. `NAME_KEY=yes` will result in `key` being `True`)
 - Add INFO-level logging of files and environment variables being used to load configuration
