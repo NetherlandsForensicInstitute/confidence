@@ -1,26 +1,26 @@
 attrs==21.2.0
     # via pytest
-coverage==6.0.2
+coverage==6.2
     # via -r test-requirements.in
-importlib-metadata==4.8.1
+importlib-metadata==4.8.2
     # via
     #   pluggy
     #   pytest
 iniconfig==1.1.1
     # via pytest
-packaging==21.0
+packaging==21.3
     # via pytest
 pluggy==1.0.0
     # via pytest
-py==1.10.0
+py==1.11.0
     # via pytest
-pyparsing==3.0.3
+pyparsing==3.0.6
     # via packaging
 pytest==6.2.5
     # via -r test-requirements.in
 toml==0.10.2
     # via pytest
-typing-extensions==3.10.0.2
+typing-extensions==4.0.1
     # via importlib-metadata
 zipp==3.6.0
     # via importlib-metadata

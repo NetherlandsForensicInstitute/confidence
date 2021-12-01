@@ -1,17 +1,26 @@
-bandit==1.7.0
+bandit==1.7.1
     # via -r check-requirements.in
 flake8==4.0.1
     # via
     #   -r check-requirements.in
+    #   flake8-broken-line
+    #   flake8-commas
     #   flake8-comprehensions
     #   flake8-polyfill
+    #   flake8-quotes
     #   pep8-naming
+flake8-broken-line==0.4.0
+    # via -r check-requirements.in
+flake8-commas==2.1.0
+    # via -r check-requirements.in
 flake8-comprehensions==3.7.0
     # via -r check-requirements.in
 flake8-import-order==0.18.1
     # via -r check-requirements.in
 flake8-polyfill==1.0.2
     # via pep8-naming
+flake8-quotes==3.3.1
+    # via -r check-requirements.in
 gitdb==4.0.9
     # via gitpython
 gitpython==3.1.18
@@ -27,7 +36,7 @@ mypy==0.910
     # via -r check-requirements.in
 mypy-extensions==0.4.3
     # via mypy
-pbr==5.6.0
+pbr==5.8.0
     # via stevedore
 pep8-naming==0.12.1
     # via -r check-requirements.in
@@ -39,8 +48,6 @@ pyflakes==2.4.0
     # via flake8
 pyyaml==6.0
     # via bandit
-six==1.16.0
-    # via bandit
 smmap==5.0.0
     # via gitdb
 stevedore==3.5.0
@@ -49,9 +56,9 @@ toml==0.10.2
     # via mypy
 typed-ast==1.4.3
     # via mypy
-types-pyyaml==6.0.0
+types-pyyaml==6.0.1
     # via -r check-requirements.in
-typing-extensions==3.10.0.2
+typing-extensions==4.0.1
     # via
     #   gitpython
     #   importlib-metadata
