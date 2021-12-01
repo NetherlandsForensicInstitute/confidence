@@ -176,7 +176,7 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Call
         # application-specific environment variables
         read_envvar_file,
         read_envvars,
-    )
+    ),
 }
 
 

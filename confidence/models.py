@@ -18,7 +18,7 @@ class Missing(Enum):
 # sure that the repr-value of NoDefault shows up as '(raise)' in documentation
 NoDefault = type('NoDefault', (object,), {
     '__repr__': lambda self: '(raise)',
-    '__str__': lambda self: '(raise)'
+    '__str__': lambda self: '(raise)',
 })()  # create instance of that new type to assign to NoDefault
 
 
@@ -46,8 +46,10 @@ class Configuration(Mapping):
         self._root = self
 
         if isinstance(self._missing, Missing):
-            self._missing = {Missing.SILENT: NotConfigured,
-                             Missing.ERROR: NoDefault}[missing]
+            self._missing = {
+                Missing.SILENT: NotConfigured,
+                Missing.ERROR: NoDefault,
+            }[missing]
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -89,7 +91,7 @@ class Configuration(Mapping):
                     value = '{start}{reference}{end}'.format(
                         start=value[:match.start(0)],
                         reference=reference,
-                        end=value[match.end(0):]
+                        end=value[match.end(0):],
                     )
                 else:
                     # value is only a reference, avoid rendering a template (keep referenced value type)
@@ -235,7 +237,7 @@ NotConfigured = type('NotConfigured', (Configuration,), {
     '__bool__': lambda self: False,
     '__repr__': lambda self: '(not configured)',
     '__str__': lambda self: '(not configured)',
-    '__doc__': 'Sentinel value to signal there is no value for a requested key.'
+    '__doc__': 'Sentinel value to signal there is no value for a requested key.',
 })
 # overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
 # not configured, while still acting like a Configuration object
