@@ -3,8 +3,10 @@ flake8
 flake8-broken-line
 flake8-commas
 flake8-comprehensions
+flake8-expression-complexity
 flake8-import-order
 flake8-quotes
+flake8-rst-docstrings
 mypy
 pep8-naming
 

@@ -1,13 +1,19 @@
+astpretty==2.1.0
+    # via flake8-expression-complexity
 bandit==1.7.1
     # via -r check-requirements.in
+docutils==0.18.1
+    # via restructuredtext-lint
 flake8==4.0.1
     # via
     #   -r check-requirements.in
     #   flake8-broken-line
     #   flake8-commas
     #   flake8-comprehensions
+    #   flake8-expression-complexity
     #   flake8-polyfill
     #   flake8-quotes
+    #   flake8-rst-docstrings
     #   pep8-naming
 flake8-broken-line==0.4.0
     # via -r check-requirements.in
@@ -15,11 +21,15 @@ flake8-commas==2.1.0
     # via -r check-requirements.in
 flake8-comprehensions==3.7.0
     # via -r check-requirements.in
+flake8-expression-complexity==0.0.9
+    # via -r check-requirements.in
 flake8-import-order==0.18.1
     # via -r check-requirements.in
 flake8-polyfill==1.0.2
     # via pep8-naming
 flake8-quotes==3.3.1
+    # via -r check-requirements.in
+flake8-rst-docstrings==0.2.3
     # via -r check-requirements.in
 gitdb==4.0.9
     # via gitpython
@@ -46,8 +56,12 @@ pycodestyle==2.8.0
     #   flake8-import-order
 pyflakes==2.4.0
     # via flake8
+pygments==2.10.0
+    # via flake8-rst-docstrings
 pyyaml==6.0
     # via bandit
+restructuredtext-lint==1.3.2
+    # via flake8-rst-docstrings
 smmap==5.0.0
     # via gitdb
 stevedore==3.5.0
