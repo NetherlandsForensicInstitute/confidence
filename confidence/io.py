@@ -149,7 +149,10 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-_LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Callable]]] = {
+Loadable = typing.Union[str, typing.Callable[[str, str], Configuration]]
+
+
+_LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
@@ -180,7 +183,7 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Call
 }
 
 
-def loaders(*specifiers: typing.Union[Locality, str]) -> typing.Iterable[typing.Union[str, typing.Callable]]:
+def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Loadable]:
     """
     Generates loaders in the specified order.
 
@@ -273,7 +276,7 @@ def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
 
 
 def load_name(*names: str,
-              load_order: typing.Iterable[typing.Union[str, typing.Callable]] = DEFAULT_LOAD_ORDER,
+              load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
               extension: str = 'yaml',
               missing: typing.Any = Missing.SILENT) -> Configuration:
     """
