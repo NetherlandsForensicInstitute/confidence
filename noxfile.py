@@ -19,6 +19,7 @@ def check(session):
                 '--max-line-length', '120',
                 '--import-order-style', 'google',
                 '--application-import-names', 'confidence',
+                '--docstring-style', 'sphinx',
                 'confidence/')
     session.run('mypy', 'confidence/')
 

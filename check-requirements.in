@@ -1,6 +1,8 @@
 bandit
+darglint
 flake8
 flake8-annotations-complexity
+flake8-bugbear
 flake8-broken-line
 flake8-commas
 flake8-comprehensions
