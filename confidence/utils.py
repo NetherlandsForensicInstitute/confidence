@@ -25,6 +25,8 @@ def merge(left: typing.MutableMapping[str, typing.Any],
     :param conflict: action to be taken on merge conflict, raising an error
         or overwriting an existing value
     :returns: *left*, for convenience
+    :raises MergeConflictError: when *left* and *right* both haves values for a
+        key that cannot be merged into one
     """
     path = path or []
     conflict = Conflict(conflict)
@@ -65,6 +67,7 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
         warning that they collide with other functionality
     :returns: a mapping where keys containing a dot are split into nested
         mappings
+    :raises ValueError: when a non-str type key is encountered
     """
     result: typing.MutableMapping[str, typing.Any] = {}
 
