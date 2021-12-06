@@ -126,7 +126,7 @@ class Configuration(Mapping):
             the supplied path (possibly raising exceptions of its own if the
             value can not be coerced to the expected type)
         :param resolve_references: whether to resolve references in values
-        :return: the value associated with the supplied configuration key, if
+        :returns: the value associated with the supplied configuration key, if
             available, or a supplied default value if the key was not found
         :raises ConfigurationError: when no value was found for *path* and
             *default* was not provided or a reference could not be resolved
@@ -172,7 +172,7 @@ class Configuration(Mapping):
         value.
 
         :param attr: the 'step' (key, attribute, …) to take
-        :return: a value, as either an actual value or a `.Configuration`
+        :returns: a value, as either an actual value or a `.Configuration`
             instance (`.NotConfigured` in case of an unconfigured 'step')
         """
         try:

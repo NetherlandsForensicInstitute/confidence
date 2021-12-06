@@ -24,7 +24,7 @@ def merge(left: typing.MutableMapping[str, typing.Any],
         only, should only need to be provided by recursive calls)
     :param conflict: action to be taken on merge conflict, raising an error
         or overwriting an existing value
-    :return: *left*, for convenience
+    :returns: *left*, for convenience
     """
     path = path or []
     conflict = Conflict(conflict)
@@ -63,7 +63,7 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
     :param mapping: the mapping to process
     :param colliding: a container of keys (names) that should be triggering a
         warning that they collide with other functionality
-    :return: a mapping where keys containing a dot are split into nested
+    :returns: a mapping where keys containing a dot are split into nested
         mappings
     """
     result: typing.MutableMapping[str, typing.Any] = {}
