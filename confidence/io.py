@@ -230,7 +230,6 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration
     :param missing: policy to be used when a configured key is missing, either
         as a `.Missing` instance or a default value
     :returns: a `.Configuration` instance providing values from *fps*
-    :rtype: `.Configuration`
     """
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
@@ -247,7 +246,6 @@ def loadf(*fnames: typing.Union[str, PathLike],
     :param missing: policy to be used when a configured key is missing, either
         as a `.Missing` instance or a default value
     :returns: a `.Configuration` instance providing values from *fnames*
-    :rtype: `.Configuration`
     """
     def readf(fname: str) -> typing.Mapping[str, typing.Any]:
         if default is NoDefault or path.exists(fname):
