@@ -204,7 +204,7 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
         # defined above
         config = load_name('my-application', load_order=load_order)
 
-    :param specifiers:
+    :param specifiers: loader specifiers, see description
     :yields: configuration loaders in the specified order
     """
     for specifier in specifiers:
