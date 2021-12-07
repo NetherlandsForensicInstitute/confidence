@@ -193,10 +193,10 @@ class Configuration(Mapping):
         :param value: value to be associated to *name*
         :raises AttributeError: when attempting to set a non-protected attribute
         """
-        if name.startswith('_'):
-            super().__setattr__(name, value)
-        else:
+        if not name.startswith('_'):
             raise AttributeError(f'assignment not supported ({name})')
+        else:
+            super().__setattr__(name, value)
 
     def __len__(self) -> int:
         return len(self._source)
