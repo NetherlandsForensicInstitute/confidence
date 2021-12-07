@@ -9,7 +9,7 @@ from confidence.utils import Conflict, merge, split_keys
 
 
 class Missing(Enum):
-    SILENT = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
+    SILENT = 'silent'  #: return `NotConfigured` for unconfigured keys, avoiding errors
     ERROR = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
@@ -35,12 +35,12 @@ class Configuration(Mapping):
                  *sources: typing.Mapping[str, typing.Any],
                  missing: typing.Any = Missing.SILENT):
         """
-        Create a new `.Configuration`, based on one or multiple source mappings.
+        Create a new `Configuration`, based on one or multiple source mappings.
 
-        :param sources: source mappings to base this `.Configuration` on,
+        :param sources: source mappings to base this `Configuration` on,
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
-            either as a `.Missing` instance or a default value
+            either as a `Missing` instance or a default value
         """
         self._missing = missing
         self._root = self
@@ -168,13 +168,13 @@ class Configuration(Mapping):
     def __getattr__(self, attr: str) -> typing.Any:
         """
         Gets a 'single step value', as either a configured value or a
-        namespace-like object in the form of a `.Configuration` instance. An
-        unconfigured value will return `.NotConfigured`, a 'silent' sentinel
+        namespace-like object in the form of a `Configuration` instance. An
+        unconfigured value will return `NotConfigured`, a 'silent' sentinel
         value.
 
         :param attr: the 'step' (key, attribute, …) to take
-        :returns: a value, as either an actual value or a `.Configuration`
-            instance (`.NotConfigured` in case of an unconfigured 'step')
+        :returns: a value, as either an actual value or a `Configuration`
+            instance (`NotConfigured` in case of an unconfigured 'step')
         :raises AttributeError: when *attr* is not available and *missing* is
             set to error
         """
@@ -185,7 +185,7 @@ class Configuration(Mapping):
 
     def __setattr__(self, name: str, value: typing.Any) -> None:
         """
-        Attempts to set a named attribute to this `.Configuration` instance.
+        Attempts to set a named attribute to this `Configuration` instance.
         Only protected / private style attribute names are accepted, anything
         not starting with an underscore will raise an `AttributeError`.
 
