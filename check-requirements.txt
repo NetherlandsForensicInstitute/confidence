@@ -1,3 +1,5 @@
+astor==0.8.1
+    # via flake8-simplify
 astpretty==2.1.0
     # via flake8-expression-complexity
 attrs==21.2.0
@@ -19,6 +21,7 @@ flake8==4.0.1
     #   flake8-polyfill
     #   flake8-quotes
     #   flake8-rst-docstrings
+    #   flake8-simplify
     #   pep8-naming
 flake8-annotations-complexity==0.0.6
     # via -r check-requirements.in
@@ -40,6 +43,8 @@ flake8-quotes==3.3.1
     # via -r check-requirements.in
 flake8-rst-docstrings==0.2.3
     # via -r check-requirements.in
+flake8-simplify==0.14.2
+    # via -r check-requirements.in
 gitdb==4.0.9
     # via gitpython
 gitpython==3.1.18
@@ -48,6 +53,7 @@ importlib-metadata==4.2.0
     # via
     #   flake8
     #   flake8-comprehensions
+    #   flake8-simplify
     #   stevedore
 mccabe==0.6.1
     # via flake8
