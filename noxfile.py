@@ -25,7 +25,7 @@ def check(session):
 
 
 @nox.session(python=all_supported_pythons)
-def tests(session):
+def test(session):
     session.install('-r', 'requirements.txt')
     session.install('-r', 'test-requirements.txt')
 
