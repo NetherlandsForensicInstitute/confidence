@@ -19,12 +19,13 @@ def check(session):
                 '--max-line-length', '120',
                 '--import-order-style', 'google',
                 '--application-import-names', 'confidence',
+                '--docstring-style', 'sphinx',
                 'confidence/')
     session.run('mypy', 'confidence/')
 
 
 @nox.session(python=all_supported_pythons)
-def tests(session):
+def test(session):
     session.install('-r', 'requirements.txt')
     session.install('-r', 'test-requirements.txt')
 

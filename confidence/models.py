@@ -9,7 +9,7 @@ from confidence.utils import Conflict, merge, split_keys
 
 
 class Missing(Enum):
-    SILENT = 'silent'  #: return `.NotConfigured` for unconfigured keys, avoiding errors
+    SILENT = 'silent'  #: return `NotConfigured` for unconfigured keys, avoiding errors
     ERROR = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
@@ -18,7 +18,7 @@ class Missing(Enum):
 # sure that the repr-value of NoDefault shows up as '(raise)' in documentation
 NoDefault = type('NoDefault', (object,), {
     '__repr__': lambda self: '(raise)',
-    '__str__': lambda self: '(raise)'
+    '__str__': lambda self: '(raise)',
 })()  # create instance of that new type to assign to NoDefault
 
 
@@ -35,19 +35,21 @@ class Configuration(Mapping):
                  *sources: typing.Mapping[str, typing.Any],
                  missing: typing.Any = Missing.SILENT):
         """
-        Create a new `.Configuration`, based on one or multiple source mappings.
+        Create a new `Configuration`, based on one or multiple source mappings.
 
-        :param sources: source mappings to base this `.Configuration` on,
+        :param sources: source mappings to base this `Configuration` on,
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
-            either as a `.Missing` instance or a default value
+            either as a `Missing` instance or a default value
         """
         self._missing = missing
         self._root = self
 
         if isinstance(self._missing, Missing):
-            self._missing = {Missing.SILENT: NotConfigured,
-                             Missing.ERROR: NoDefault}[missing]
+            self._missing = {
+                Missing.SILENT: NotConfigured,
+                Missing.ERROR: NoDefault,
+            }[missing]
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -89,7 +91,7 @@ class Configuration(Mapping):
                     value = '{start}{reference}{end}'.format(
                         start=value[:match.start(0)],
                         reference=reference,
-                        end=value[match.end(0):]
+                        end=value[match.end(0):],
                     )
                 else:
                     # value is only a reference, avoid rendering a template (keep referenced value type)
@@ -124,10 +126,11 @@ class Configuration(Mapping):
             the supplied path (possibly raising exceptions of its own if the
             value can not be coerced to the expected type)
         :param resolve_references: whether to resolve references in values
-        :return: the value associated with the supplied configuration key, if
+        :returns: the value associated with the supplied configuration key, if
             available, or a supplied default value if the key was not found
-        :raises ConfigurationError: when no value was found for *path* and
-            *default* was not provided or a reference could not be resolved
+        :raises NotConfiguredError: when no value was found for *path* and
+            *default* was not provided
+        :raises ConfiguredReferenceError: when a reference could not be resolved
         """
         value = self._source
         steps_taken = []
@@ -165,13 +168,15 @@ class Configuration(Mapping):
     def __getattr__(self, attr: str) -> typing.Any:
         """
         Gets a 'single step value', as either a configured value or a
-        namespace-like object in the form of a `.Configuration` instance. An
-        unconfigured value will return `.NotConfigured`, a 'silent' sentinel
+        namespace-like object in the form of a `Configuration` instance. An
+        unconfigured value will return `NotConfigured`, a 'silent' sentinel
         value.
 
         :param attr: the 'step' (key, attribute, …) to take
-        :return: a value, as either an actual value or a `.Configuration`
-            instance (`.NotConfigured` in case of an unconfigured 'step')
+        :returns: a value, as either an actual value or a `Configuration`
+            instance (`NotConfigured` in case of an unconfigured 'step')
+        :raises AttributeError: when *attr* is not available and *missing* is
+            set to error
         """
         try:
             return self.get(attr, default=self._missing)
@@ -180,17 +185,18 @@ class Configuration(Mapping):
 
     def __setattr__(self, name: str, value: typing.Any) -> None:
         """
-        Attempts to set a named attribute to this `.Configuration` instance.
+        Attempts to set a named attribute to this `Configuration` instance.
         Only protected / private style attribute names are accepted, anything
         not starting with an underscore will raise an `AttributeError`.
 
         :param name: name of the attribute to set
         :param value: value to be associated to *name*
+        :raises AttributeError: when attempting to set a non-protected attribute
         """
-        if name.startswith('_'):
-            super().__setattr__(name, value)
-        else:
+        if not name.startswith('_'):
             raise AttributeError(f'assignment not supported ({name})')
+        else:
+            super().__setattr__(name, value)
 
     def __len__(self) -> int:
         return len(self._source)
@@ -235,7 +241,7 @@ NotConfigured = type('NotConfigured', (Configuration,), {
     '__bool__': lambda self: False,
     '__repr__': lambda self: '(not configured)',
     '__str__': lambda self: '(not configured)',
-    '__doc__': 'Sentinel value to signal there is no value for a requested key.'
+    '__doc__': 'Sentinel value to signal there is no value for a requested key.',
 })
 # overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
 # not configured, while still acting like a Configuration object

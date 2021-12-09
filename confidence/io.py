@@ -19,7 +19,7 @@ def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
 
     :param name: application or configuration set name
     :param extension: file extension to look for
-    :return: a `.Configuration` instance with values read from XDG-specified
+    :returns: a `Configuration` instance with values read from XDG-specified
         directories
     """
     # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
@@ -40,7 +40,7 @@ def read_xdg_config_home(name: str, extension: str) -> Configuration:
 
     :param name: application or configuration set name
     :param extension: file extension to look for
-    :return: a `.Configuration` instance, possibly `.NotConfigured`
+    :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     # find optional value of ${XDG_CONFIG_HOME}
     config_home = environ.get('XDG_CONFIG_HOME')
@@ -58,8 +58,8 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces. Underscores can be retained as
     namespaces by doubling them up, e.g. ``NAME_SPA__CE_KEY`` would be
-    accessible in the resulting `.Configuration` as
-    ``c.spa_ce.key``, where ``c`` is the `.Configuration` instance.
+    accessible in the resulting `Configuration` as
+    ``c.spa_ce.key``, where ``c`` is the `Configuration` instance.
 
     .. note::
 
@@ -70,7 +70,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
 
     :param name: environment variable prefix to look for (without the ``_``)
     :param extension: *(unused)*
-    :return: a `.Configuration` instance, possibly `.NotConfigured`
+    :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     prefix = f'{name}_'
     prefix_len = len(prefix)
@@ -103,7 +103,7 @@ def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Confi
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
     :param extension: *(unused)*
-    :return: a `.Configuration`, possibly `.NotConfigured`
+    :returns: a `Configuration`, possibly `NotConfigured`
     """
     envvar_file = environ.get(f'{name}_config_file'.upper())
     if envvar_file:
@@ -125,7 +125,7 @@ def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
     :param envvar: the environment variable to interpret as a directory
     :param name: application or configuration set name
     :param extension: file extension to look for
-    :return: a `.Configuration`, possibly `.NotConfigured`
+    :returns: a `Configuration`, possibly `NotConfigured`
     """
     config_dir = environ.get(envvar)
     if not config_dir:
@@ -149,7 +149,10 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-_LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Callable]]] = {
+Loadable = typing.Union[str, typing.Callable[[str, str], Configuration]]
+
+
+_LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
@@ -176,15 +179,15 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[typing.Union[str, typing.Call
         # application-specific environment variables
         read_envvar_file,
         read_envvars,
-    )
+    ),
 }
 
 
-def loaders(*specifiers: typing.Union[Locality, str]) -> typing.Iterable[typing.Union[str, typing.Callable]]:
+def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Loadable]:
     """
     Generates loaders in the specified order.
 
-    Arguments can be `.Locality` instances, producing the loader(s) available
+    Arguments can be `Locality` instances, producing the loader(s) available
     for that locality, `str` instances (used as file path templates) or
     `callable` s. These can be mixed:
 
@@ -201,8 +204,8 @@ def loaders(*specifiers: typing.Union[Locality, str]) -> typing.Iterable[typing.
         # defined above
         config = load_name('my-application', load_order=load_order)
 
-    :param specifiers:
-    :return: a `generator` of configuration loaders in the specified order
+    :param specifiers: loader specifiers, see description
+    :yields: configuration loaders in the specified order
     """
     for specifier in specifiers:
         if isinstance(specifier, Locality):
@@ -221,13 +224,12 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM,
 
 def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
-    Read a `.Configuration` instance from file-like objects.
+    Read a `Configuration` instance from file-like objects.
 
     :param fps: file-like objects (supporting ``.read()``)
     :param missing: policy to be used when a configured key is missing, either
-        as a `.Missing` instance or a default value
-    :return: a `.Configuration` instance providing values from *fps*
-    :rtype: `.Configuration`
+        as a `Missing` instance or a default value
+    :returns: a `Configuration` instance providing values from *fps*
     """
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
@@ -236,15 +238,14 @@ def loadf(*fnames: typing.Union[str, PathLike],
           default: typing.Any = NoDefault,
           missing: typing.Any = Missing.SILENT) -> Configuration:
     """
-    Read a `.Configuration` instance from named files.
+    Read a `Configuration` instance from named files.
 
     :param fnames: name of the files to ``open()``
-    :param default: `dict` or `.Configuration` to use when a file does not
+    :param default: `dict` or `Configuration` to use when a file does not
         exist (default is to raise a `FileNotFoundError`)
     :param missing: policy to be used when a configured key is missing, either
-        as a `.Missing` instance or a default value
-    :return: a `.Configuration` instance providing values from *fnames*
-    :rtype: `.Configuration`
+        as a `Missing` instance or a default value
+    :returns: a `Configuration` instance providing values from *fnames*
     """
     def readf(fname: str) -> typing.Mapping[str, typing.Any]:
         if default is NoDefault or path.exists(fname):
@@ -261,23 +262,22 @@ def loadf(*fnames: typing.Union[str, PathLike],
 
 def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
-    Read a `.Configuration` instance from strings.
+    Read a `Configuration` instance from strings.
 
     :param strings: configuration contents
     :param missing: policy to be used when a configured key is missing, either
-        as a `.Missing` instance or a default value
-    :return: a `.Configuration` instance providing values from *strings*
-    :rtype: `.Configuration`
+        as a `Missing` instance or a default value
+    :returns: a `Configuration` instance providing values from *strings*
     """
     return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
 def load_name(*names: str,
-              load_order: typing.Iterable[typing.Union[str, typing.Callable]] = DEFAULT_LOAD_ORDER,
+              load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
               extension: str = 'yaml',
               missing: typing.Any = Missing.SILENT) -> Configuration:
     """
-    Read a `.Configuration` instance by name, trying to read from files in
+    Read a `Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
     `.application`, `.environment`.
 
@@ -291,8 +291,8 @@ def load_name(*names: str,
         increasing order of significance
     :param extension: file extension to be used
     :param missing: policy to be used when a configured key is missing, either
-        as a `.Missing` instance or a default value
-    :return: a `.Configuration` instances providing values loaded from *names*
+        as a `Missing` instance or a default value
+    :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
     def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
@@ -314,7 +314,7 @@ def dump(configuration: Configuration, fp: typing.IO, encoding: str = 'utf-8') -
     Serialize the configuration in *configuration* to YAML format, writing it
     to *fp*.
 
-    :param configuration: the `.Configuration` object to dump
+    :param configuration: the `Configuration` object to dump
     :param fp: a file-like object to write to
     :param encoding: encoding to use
     """
@@ -326,7 +326,7 @@ def dumpf(configuration: Configuration, fname: typing.Union[str, PathLike], enco
     """
     Serialize the configuration in *configuration* to a YAML-formatted file.
 
-    :param configuration: the `.Configuration` object to dump
+    :param configuration: the `Configuration` object to dump
     :param fname: name or path of the file to write to
     :param encoding: encoding to use
     """
@@ -338,8 +338,8 @@ def dumps(configuration: Configuration) -> str:
     """
     Serialize the configuration in *configuration* as a YAML-formatted string.
 
-    :param configuration: the `.Configuration` object to dump
-    :return: *configuration*, serialized as a `str` in YAML format
+    :param configuration: the `Configuration` object to dump
+    :returns: *configuration*, serialized as a `str` in YAML format
     """
     # use block style output for nested collections (flow style dumps nested dicts inline)
     return yaml.safe_dump(configuration._source, default_flow_style=False)
