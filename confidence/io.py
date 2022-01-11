@@ -11,6 +11,9 @@ import yaml
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured
 
 
+LOG = logging.getLogger(__name__)
+
+
 def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
     """
     Read from files found in XDG-specified system-wide configuration paths,
@@ -89,7 +92,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
         return re.sub(r'__', '_', name)
 
     # include the number of variables matched for debugging purposes
-    logging.info(f'reading configuration from {len(values)} {prefix}* environment variables')
+    LOG.info(f'reading configuration from {len(values)} {prefix}* environment variables')
 
     # pass value to yaml.safe_load to align data type transformation with reading values from files
     return Configuration({dotted(name): yaml.safe_load(value) for name, value in values.items()})
@@ -251,7 +254,7 @@ def loadf(*fnames: typing.Union[str, PathLike],
         if default is NoDefault or path.exists(fname):
             # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
             with open(fname, 'r') as fp:
-                logging.info(f'reading configuration from file {fname}')
+                LOG.info(f'reading configuration from file {fname}')
                 # default to empty dict, yaml.safe_load will return None for an empty document
                 return yaml.safe_load(fp.read()) or {}
         else:
