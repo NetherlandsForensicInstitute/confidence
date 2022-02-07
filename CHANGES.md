@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Use named loggers, default `confidence.*` loggers to silence
+
 0.11 (2021-11-25)
 -----------------
 
