@@ -2,9 +2,9 @@ astor==0.8.1
     # via flake8-simplify
 astpretty==2.1.0
     # via flake8-expression-complexity
-attrs==21.2.0
+attrs==21.4.0
     # via flake8-bugbear
-bandit==1.7.1
+bandit==1.7.2
     # via -r check-requirements.in
 darglint==1.8.1
     # via -r check-requirements.in
@@ -27,11 +27,11 @@ flake8-annotations-complexity==0.0.6
     # via -r check-requirements.in
 flake8-broken-line==0.4.0
     # via -r check-requirements.in
-flake8-bugbear==21.11.29
+flake8-bugbear==22.1.11
     # via -r check-requirements.in
 flake8-commas==2.1.0
     # via -r check-requirements.in
-flake8-comprehensions==3.7.0
+flake8-comprehensions==3.8.0
     # via -r check-requirements.in
 flake8-expression-complexity==0.0.9
     # via -r check-requirements.in
@@ -41,13 +41,13 @@ flake8-polyfill==1.0.2
     # via pep8-naming
 flake8-quotes==3.3.1
     # via -r check-requirements.in
-flake8-rst-docstrings==0.2.3
+flake8-rst-docstrings==0.2.5
     # via -r check-requirements.in
-flake8-simplify==0.14.2
+flake8-simplify==0.15.1
     # via -r check-requirements.in
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.18
+gitpython==3.1.26
     # via bandit
 importlib-metadata==4.2.0
     # via
@@ -57,11 +57,11 @@ importlib-metadata==4.2.0
     #   stevedore
 mccabe==0.6.1
     # via flake8
-mypy==0.910
+mypy==0.931
     # via -r check-requirements.in
 mypy-extensions==0.4.3
     # via mypy
-pbr==5.8.0
+pbr==5.8.1
     # via stevedore
 pep8-naming==0.12.1
     # via -r check-requirements.in
@@ -71,7 +71,7 @@ pycodestyle==2.8.0
     #   flake8-import-order
 pyflakes==2.4.0
     # via flake8
-pygments==2.10.0
+pygments==2.11.2
     # via flake8-rst-docstrings
 pyyaml==6.0
     # via bandit
@@ -81,18 +81,18 @@ smmap==5.0.0
     # via gitdb
 stevedore==3.5.0
     # via bandit
-toml==0.10.2
+tomli==2.0.0
     # via mypy
-typed-ast==1.4.3
+typed-ast==1.5.2
     # via mypy
-types-pyyaml==6.0.1
+types-pyyaml==6.0.4
     # via -r check-requirements.in
 typing-extensions==4.0.1
     # via
     #   gitpython
     #   importlib-metadata
     #   mypy
-zipp==3.6.0
+zipp==3.7.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
