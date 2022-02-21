@@ -38,12 +38,12 @@ def test(session):
 
 
 @nox.session(python=oldest_python)
-def update_deps(session):
+def update(session):
     session.install('pip-tools')
 
-    session.run('pip-compile', '--upgrade', '--no-header', '--output-file', 'requirements.txt', 'setup.py')
-    session.run('pip-compile', '--upgrade', '--no-header', '--output-file', 'check-requirements.txt', 'check-requirements.in')
-    session.run('pip-compile', '--upgrade', '--no-header', '--output-file', 'test-requirements.txt', 'test-requirements.in')
+    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--output-file', 'requirements.txt', 'setup.py')
+    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--output-file', 'check-requirements.txt', 'check-requirements.in')
+    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--output-file', 'test-requirements.txt', 'test-requirements.in')
 
 
 @nox.session(python=oldest_python)
