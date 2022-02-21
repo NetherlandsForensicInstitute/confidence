@@ -35,6 +35,15 @@ def test_nested_sequence_mapping(complicated_config):
     assert complicated_config.different.types[3].containing.surprise[0] == 'another'
 
 
+def test_sequence_reference(complicated_config):
+    seq = complicated_config.different.sequence
+
+    assert isinstance(seq, Sequence)
+    assert seq[0] == 'simple value'
+    assert seq[1] == 'example'
+    assert seq[2] == 'value with a reference in it'
+
+
 def test_deep_reference(complicated_config):
     ns = complicated_config.different.types[3].containing.surprise[1]
 
