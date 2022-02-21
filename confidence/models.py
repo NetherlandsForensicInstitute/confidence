@@ -61,10 +61,10 @@ class Configuration(Mapping):
                 # merge values from source into self._source, overwriting any corresponding keys
                 merge(self._source, split_keys(source, colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
 
-    def _wrap(self, value: typing.MutableMapping[str, typing.Any]) -> 'Configuration':
+    def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
         namespace = type(self)(missing=self._missing)
-        namespace._source = value
+        namespace._source = value  # type: ignore  # mutability isn't needed after init
         # carry the root object from namespace to namespace, references are always resolved from root
         namespace._root = self._root
         return namespace
