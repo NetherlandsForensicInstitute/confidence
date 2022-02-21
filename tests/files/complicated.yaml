@@ -26,4 +26,5 @@ different.types:
 different.sequence:
   - simple value
   - ${a.complicated.example}
-  - value with ${a.complicatedion.2019.a} reference in it
+  - value with ${a.complicated.2019.a} reference in it
+  - ${a.complicated}

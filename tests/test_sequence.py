@@ -42,6 +42,7 @@ def test_sequence_reference(complicated_config):
     assert seq[0] == 'simple value'
     assert seq[1] == 'example'
     assert seq[2] == 'value with a reference in it'
+    assert seq[3].example == 'example'
 
 
 def test_deep_reference(complicated_config):
