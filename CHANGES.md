@@ -4,13 +4,13 @@ Changes
 development (master)
 --------------------
 
-- Use named loggers, default `confidence.*` loggers to silence
+- Use named loggers, default `confidence.*` library loggers to silence as [described in the docs](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
 
 0.11 (2021-11-25)
 -----------------
 
-- Parse values of environment variables as YAML values (e.g. `NAME_KEY=yes` will result in `key` being `True`)
-- Add INFO-level logging of files and environment variables being used to load configuration
+- Parse values of environment variables as YAML values (e.g. `NAME_KEY=yes` will result in `key` being `True`).
+- Add INFO-level logging of files and environment variables being used to load configuration.
 
 0.10 (2021-08-04)
 -----------------
