@@ -43,11 +43,11 @@ flake8-quotes==3.3.1
     # via -r check-requirements.in
 flake8-rst-docstrings==0.2.5
     # via -r check-requirements.in
-flake8-simplify==0.15.1
+flake8-simplify==0.18.0
     # via -r check-requirements.in
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.26
+gitpython==3.1.27
     # via bandit
 importlib-metadata==4.2.0
     # via
@@ -81,13 +81,13 @@ smmap==5.0.0
     # via gitdb
 stevedore==3.5.0
     # via bandit
-tomli==2.0.0
+tomli==2.0.1
     # via mypy
 typed-ast==1.5.2
     # via mypy
 types-pyyaml==6.0.4
     # via -r check-requirements.in
-typing-extensions==4.0.1
+typing-extensions==4.1.1
     # via
     #   gitpython
     #   importlib-metadata
