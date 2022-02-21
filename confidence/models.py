@@ -148,7 +148,7 @@ class Configuration(Mapping):
                 return self._wrap(value)
             elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
                 # wrap value in a sequence that retains Configuration functionality
-                return ConfigurationSequence(value, self._wrap)
+                return ConfigurationSequence(value, self._root)
             elif resolve_references and isinstance(value, str):
                 # only resolve references in str-type values (the only way they can be expressed)
                 return self._resolve(value)
@@ -262,29 +262,34 @@ class ConfigurationSequence(Sequence):
 
     def __init__(self,
                  source: typing.Sequence,
-                 factory: typing.Callable):
+                 root: Configuration):
         """
-        Create a new `._ConfigurationSequence`, based on a single source
-        sequence, pointing back to 'root' `Configuration` through *factory*.
+        Create a new `.ConfigurationSequence`, based on a single source
+        sequence, pointing back to 'root' `Configuration` for reference
+        handling
 
         :param source: a `Sequence` to wrap
-        :param factory: a `callable` to wrap `Mapping` values with
+        :param root: a `.Configuration` that acts as the root for wrapping and
+            resolving of references
         """
         self._source = source
-        self._factory = factory
+        self._root = root
 
-    def __getitem__(self, item: typing.Union[int, slice]) -> typing.Any:
+    def __getitem__(self, item: typing.Union[int, slice], *, resolve_references: bool = True) -> typing.Any:
         # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
         value = self._source[item]
         if isinstance(value, Mapping):
-            # invoke the factory function (provided by Configuration) for a Mapping value
-            return self._factory(value)
+            # let root wrap the value
+            return self._root._wrap(value)
         if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
             # wrap a sequence value with an 'instance of self'
-            return type(self)(value, self._factory)
-        else:
-            # a 'simple' value, nothing to do
-            return value
+            return type(self)(value, self._root)
+        if isinstance(value, str) and resolve_references:
+            # let root resolve references in str-type values
+            return self._root._resolve(value)
+
+        # a 'simple' value, nothing to do
+        return value
 
     def __len__(self) -> int:
         # emulating a simple sequence, delegate length to _source
@@ -298,7 +303,7 @@ class ConfigurationSequence(Sequence):
 
         # left-hand operand is self, expect return value to be the same as left-hand operand
         # create a new sequence with extended source, assuming self's type will retain the 'magic'
-        return type(self)(list(self._source) + list(other), factory=self._factory)
+        return type(self)(list(self._source) + list(other), root=self._root)
 
     def __radd__(self, other: typing.Sequence) -> typing.Sequence:
         if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
