@@ -22,3 +22,9 @@ different.types:
         - sequence_with: a mapping inside it, with ${a.complicated.2019.a} reference (mind = blown)
   - maybe: another mapping, for fun
   - [1, 2, 3, 4]
+
+different.sequence:
+  - simple value
+  - ${a.complicated.example}
+  - value with ${a.complicated.2019.a} reference in it
+  - ${a.complicated}

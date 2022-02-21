@@ -1,7 +1,7 @@
 import nox
 
 
-nox.options.sessions = ('check', 'tests')
+nox.options.sessions = ('check', 'test')
 
 
 all_supported_pythons = ('3.7', '3.8', '3.9', '3.10', 'pypy3')
