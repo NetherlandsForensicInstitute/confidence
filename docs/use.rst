@@ -5,7 +5,9 @@ How to use confidence
 - loading by name
 - creating `.Configuration` objects manually
 
-Caveats
+Logging
 -------
 
-- envvars are always strings
+``confidence`` uses the logging module in the standard library for its logging needs, but the loggers are silenced by default.
+See logging's documentation to configure the logging mechanism for your needs.
+Loggers are named after the module they're defined in, e.g. ``confidence.io``.
