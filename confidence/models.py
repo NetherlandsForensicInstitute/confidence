@@ -113,6 +113,7 @@ class Configuration(Mapping):
     def get(self,
             path: str,
             default: typing.Any = NoDefault,
+            *,
             as_type: typing.Optional[typing.Callable] = None,
             resolve_references: bool = True) -> typing.Any:
         """
