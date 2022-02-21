@@ -48,13 +48,12 @@ def test_not_configured():
 
 
 def test_collisions():
-    with patch('confidence.utils.warnings') as warnings:
+    with patch('confidence.utils.LOG') as logger:
         subject = Configuration({'key': 'value', 'keys': [1, 2], '_missing': 'error'})
 
     for collision in ('keys', '_missing'):
-        warnings.warn.assert_any_call(f'key {collision} collides with a named member, use get() method to '
-                                      f'retrieve the value for {collision}',
-                                      UserWarning)
+        logger.warning.assert_any_call('key "%s" collides with a named member, use the get() method to '
+                                       'retrieve its value', collision)
 
     assert subject.key == 'value'
     assert callable(subject.keys)

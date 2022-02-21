@@ -1,9 +1,12 @@
 from collections.abc import Mapping
 from enum import IntEnum
+import logging
 import typing
-import warnings
 
 from confidence.exceptions import MergeConflictError
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Conflict(IntEnum):
@@ -89,8 +92,7 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
 
         if colliding and key in colliding:
             # warn about configured keys colliding with Configuration members
-            warnings.warn(f'key {key} collides with a named member, use get() method to retrieve the value for {key}',
-                          UserWarning)
+            LOG.warning('key "%s" collides with a named member, use the get() method to retrieve its value', key)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
         merge(result, {key: value})
