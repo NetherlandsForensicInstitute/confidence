@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Use named loggers, default `confidence.*` library loggers to silence as [described in the docs](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
+- Resolve references in sequences.
 
 0.11 (2021-11-25)
 -----------------
