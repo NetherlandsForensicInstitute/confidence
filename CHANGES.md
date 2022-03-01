@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.12 (2022-03-01)
+-----------------
 
 - Use named loggers, default `confidence.*` library loggers to silence as [described in the docs](https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library).
 - Resolve references in sequences.

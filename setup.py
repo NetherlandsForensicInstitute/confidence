@@ -32,8 +32,8 @@ dependencies = [
 
 setup(
     name='confidence',
-    version='0.11',
-    url='https://github.com/HolmesNL/confidence/',
+    version='0.12',
+    url='https://github.com/NetherlandsForensicInstitute/confidence/',
     author='Netherlands Forensic Institute',
     author_email=codecs.encode('ubyzrfay@hfref.abercyl.tvguho.pbz', 'rot-13'),
     license='Apache Software License 2.0',
@@ -45,12 +45,12 @@ setup(
     packages=find_packages(),
     install_requires=dependencies,
 
-    classifiers=(
+    classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Topic :: Utilities',
-    )
+    ]
 )
