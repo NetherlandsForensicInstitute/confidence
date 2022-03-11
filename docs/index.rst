@@ -13,12 +13,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   examples
    use
    recipes
    api
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`search`
+   glossary
