@@ -47,6 +47,14 @@ def update(session):
     session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--pip-args', f'--python-version {oldest_python}', '--output-file', 'test-requirements.txt', 'test-requirements.in')
 
 
+@nox.session(python=newest_python)
+def docs(session):
+    session.install('-r', 'requirements.txt')
+    session.install('sphinx', 'sphinx-rtd-theme')
+
+    session.run('sphinx-build', '-b', 'html', 'docs/', 'dist/docs/')
+
+
 @nox.session(python=oldest_python)
 def dist(session):
     session.install('wheel')
