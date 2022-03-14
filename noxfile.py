@@ -52,7 +52,8 @@ def docs(session):
     session.install('-r', 'requirements.txt')
     session.install('sphinx', 'sphinx-rtd-theme')
 
-    session.run('sphinx-build', '-b', 'html', 'docs/', 'dist/docs/')
+    # override setting to include todos here
+    session.run('sphinx-build', '-b', 'html', '-D', 'todo_include_todos=True', 'docs/', 'dist/docs/')
 
 
 @nox.session(python=oldest_python)

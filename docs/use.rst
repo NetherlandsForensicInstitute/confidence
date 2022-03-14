@@ -1,10 +1,12 @@
 How to use confidence
 =====================
 
-- loading files
-- loading by name
-- creating `.Configuration` objects manually
-- fail-fast: missing
+.. todo::
+
+   - loading files
+   - loading by name
+   - creating `.Configuration` objects manually
+   - fail-fast: missing
 
 Logging
 -------

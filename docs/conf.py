@@ -35,6 +35,7 @@ copyright = '{}, {}'.format(copyright, author)
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
 
@@ -55,6 +56,9 @@ autodoc_class_signature = 'separated'
 autodoc_member_order = 'bysource'
 autodoc_typehints = 'description'
 autodoc_preserve_defaults = True
+
+
+todo_include_todos = False
 
 
 default_role = 'py:obj'

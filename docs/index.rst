@@ -25,3 +25,5 @@ Changelog
 .. todo::
 
    Integrate ``CHANGES.md`` here without having to duplicate it.
+
+.. todolist::
