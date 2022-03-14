@@ -21,9 +21,29 @@ Although confidence is internally divided in a number of modules, all of the fun
    # we could treat the configured namespace "service" as a dict and pass it as such:
    connection = connect(**config.service)
 
+Wrapping a `dict` with a `Configuration` is nice, but configuration is more often found in files.
+Confidence loads configuration from file in the YAML format:
+
+.. code-block:: yaml
+
+   # suppose we'd save this as path/to/file.yaml
+   service:
+     host: example.com
+     port: 443
+   # note that we could also have expressed the two properties as
+   # service.host: ...
+   # service.port: ...
+   # dotted names are equivalent to nested ones
+
+.. code-block:: python
+
+   # loadf simply takes a path or path-like to load configuration from
+   config = confidence.loadf('path/to/file.yaml')
+   # the result is the same as the example above, we can use config.service like we would a dict
+   connection = connect(**config.service)
+
 .. todo::
 
-   - Configuration from a single file
    - Configuration from multiple files
    - Configuration from a name
    - Configuration from multiple names
