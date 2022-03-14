@@ -42,9 +42,34 @@ Confidence loads configuration from file in the YAML format:
    # the result is the same as the example above, we can use config.service like we would a dict
    connection = connect(**config.service)
 
+If you split your configuration over multiple files as they contain configuration for different things, like a service to connect to and some local paths to store data, confidence can load them both as if they were one:
+
+.. code-block:: yaml
+
+   # some system-wide configuration in /etc/paths.yaml
+   paths:
+     data: /storage/data
+     backup: /mnt/backup/data
+
+.. code-block:: yaml
+
+   # service configuration as before, stored in path/to/service.yaml
+   service.host: example.com
+   service.port: 443
+
+.. code-block:: python
+
+   # loadf can take multiple files, the contents of which are combined into a
+   # single Configuration object
+   config = confidence.loadf('/etc/paths.yaml', 'path/to/service.yaml')
+
+   # there's still something to connect to the service
+   connection = connect(**config.service)
+   # and some extra things that configure the place to backup to
+   connection.backup_to(config.paths.backup)
+
 .. todo::
 
-   - Configuration from multiple files
    - Configuration from a name
    - Configuration from multiple names
    - Configuration from reordered loaders
