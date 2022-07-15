@@ -184,7 +184,7 @@ def test_load_name_multiple():
     assert subject.overlapping.fully == 'foo'
 
 
-def test_load_name_order():
+def test_load_name_order(broken_open):
     env = {
         'HOME': '/home/user',
         'LOCALAPPDATA': 'C:/Users/user/AppData/Local'
@@ -195,7 +195,7 @@ def test_load_name_order():
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
         mocked_path.pathsep = path.pathsep
-        mocked_open.side_effect = FileNotFoundError  # TODO: raise some other errors that we might expect here
+        mocked_open.side_effect = broken_open
 
         assert len(load_name('foo', 'bar')) == 0
 
@@ -219,7 +219,7 @@ def test_load_name_order():
     ], any_order=False)
 
 
-def test_load_name_xdg_config_dirs():
+def test_load_name_xdg_config_dirs(broken_open):
     env = {
         'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
     }
@@ -231,7 +231,7 @@ def test_load_name_xdg_config_dirs():
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
-        mocked_open.side_effect = FileNotFoundError  # TODO: add some other errors
+        mocked_open.side_effect = broken_open
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
@@ -260,7 +260,7 @@ def test_load_name_xdg_config_dirs_fallback():
     ], any_order=False)
 
 
-def test_load_name_xdg_config_home():
+def test_load_name_xdg_config_home(broken_open):
     env = {
         'XDG_CONFIG_HOME': '/home/user/.not-config',
         'HOME': '/home/user'
@@ -272,7 +272,7 @@ def test_load_name_xdg_config_home():
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
-        mocked_open.side_effect = FileNotFoundError  # TODO: cycle other types or errors
+        mocked_open.side_effect = broken_open
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
