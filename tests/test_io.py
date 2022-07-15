@@ -1,5 +1,5 @@
-import random
 from functools import partial
+from itertools import cycle
 from os import path
 import pytest
 from unittest.mock import call, mock_open, patch
@@ -48,6 +48,16 @@ def _assert_values(conf):
 
 def _patched_expanduser(value):
     return value.replace('~', '/home/user')
+
+
+@pytest.fixture
+def broken_open():
+    errors = cycle((FileNotFoundError, IOError, PermissionError))
+
+    def broken(*args, **kwargs):
+        raise next(errors)
+
+    return broken
 
 
 def test_load_defaults():
