@@ -68,6 +68,26 @@ If you split your configuration over multiple files as they contain configuratio
    # and some extra things that configure the place to backup to
    connection.backup_to(config.paths.backup)
 
+If values from multiple files overlap (like if ``/etc/paths.yaml`` would contain ``service.port: 80``), things become slightly more complicated.
+Confidence uses a predictable :term:`precedence` of content here: the value that gets loaded last has the highest precedence (or 'wins').
+`loadf` will load content in the order of the arguments that get passed, so ``service.port`` would be 443, as defined in ``path/to/service.yaml``.
+You can use this behaviour to define defaults somewhere, that get overridden later:
+
+.. code-block:: yaml
+
+   # some system-wide configuration in /etc/paths.yaml
+   service.port: 80
+
+   paths:
+     data: /storage/data
+     backup: /mnt/backup/data
+
+.. code-block:: yaml
+
+   service:
+     host: example.com
+     port: 443
+
 .. todo::
 
    - Configuration from a name
