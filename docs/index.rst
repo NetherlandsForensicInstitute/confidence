@@ -7,6 +7,12 @@ confidence uses a similarly flexible, but deterministic approach to combining in
 If that sounds awfully complicated, there's no requirement that you need to use anything that feels complicated.
 See the :ref:`examples <examples>`, ranging from very simple to more complex uses of confidence' capabilities.
 
+As a quick overview, confidence contains the following features:
+
+- dict-like `Configuration` object supporting attribute access to configured values;
+- customizable loading of multiple sources (files, environment variables, …) into a single object with deterministic precedence of those sources;
+- the ability to make and resolve references to values or entire namespaces.
+
 Contents
 --------
 
@@ -18,9 +24,6 @@ Contents
    recipes
    api
    glossary
-
-Changelog
----------
 
 .. todo::
 
