@@ -190,12 +190,11 @@ def test_load_name_order(broken_open):
         'LOCALAPPDATA': 'C:/Users/user/AppData/Local'
     }
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open') as mocked_open, patch('confidence.io.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open', side_effect=broken_open) as mocked_open, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join, unmock pathsep
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
         mocked_path.pathsep = path.pathsep
-        mocked_open.side_effect = broken_open
 
         assert len(load_name('foo', 'bar')) == 0
 
@@ -224,14 +223,13 @@ def test_load_name_xdg_config_dirs(broken_open):
         'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
     }
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open') as mocked_open, patch('confidence.io.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open', side_effect=broken_open) as mocked_open, patch('confidence.io.environ', env):
         # hard-code path separator, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
-        mocked_open.side_effect = broken_open
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
@@ -266,13 +264,12 @@ def test_load_name_xdg_config_home(broken_open):
         'HOME': '/home/user'
     }
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open') as mocked_open, patch('confidence.io.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open', side_effect=broken_open) as mocked_open, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
         # avoid actually opening files that might unexpectedly exist
         mocked_path.exists.return_value = False
-        mocked_open.side_effect = broken_open
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
