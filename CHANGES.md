@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-
+- Avoid checking for existence of files, try to open them instead.
 
 0.12 (2022-03-01)
 -----------------
