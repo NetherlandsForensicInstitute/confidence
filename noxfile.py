@@ -37,13 +37,14 @@ def test(session):
                 'tests/')
 
 
-@nox.session(python=oldest_python)
+@nox.session(python=newest_python)
 def update(session):
     session.install('pip-tools')
 
-    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--output-file', 'requirements.txt', 'setup.py')
-    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--output-file', 'check-requirements.txt', 'check-requirements.in')
-    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--output-file', 'test-requirements.txt', 'test-requirements.in')
+    # compile runtime and test deps against the oldest supported python version, check deps aginst the newest
+    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--pip-args', f'--python-version {oldest_python}', '--output-file', 'requirements.txt', 'setup.py')
+    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--pip-args', f'--python-version {newest_python}', '--output-file', 'check-requirements.txt', 'check-requirements.in')
+    session.run('pip-compile', '--upgrade', '--no-header', '--no-emit-index-url', '--pip-args', f'--python-version {oldest_python}', '--output-file', 'test-requirements.txt', 'test-requirements.in')
 
 
 @nox.session(python=oldest_python)
