@@ -251,14 +251,19 @@ def loadf(*fnames: typing.Union[str, PathLike],
     :returns: a `Configuration` instance providing values from *fnames*
     """
     def readf(fname: str) -> typing.Mapping[str, typing.Any]:
-        if default is NoDefault or path.exists(fname):
-            # (attempt to) open fname if it exists OR if we're expected to raise an error on a missing file
+        try:
             with open(fname, 'r') as fp:
                 LOG.info(f'reading configuration from file {fname}')
                 # default to empty dict, yaml.safe_load will return None for an empty document
                 return yaml.safe_load(fp.read()) or {}
-        else:
-            return default
+        except IOError:
+            # file does not exist or inaccessible
+            if default is NoDefault:
+                # no explicit default provided, continue original error
+                raise
+            else:
+                LOG.debug(f'unable to read configuration from file {fname}')
+                return default
 
     return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
 

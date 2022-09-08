@@ -1,4 +1,5 @@
 from functools import partial
+from itertools import cycle
 from os import path
 import pytest
 from unittest.mock import call, mock_open, patch
@@ -47,6 +48,16 @@ def _assert_values(conf):
 
 def _patched_expanduser(value):
     return value.replace('~', '/home/user')
+
+
+@pytest.fixture
+def broken_open():
+    errors = cycle((FileNotFoundError, IOError, PermissionError))
+
+    def broken(*args, **kwargs):
+        raise next(errors)
+
+    return broken
 
 
 def test_load_defaults():
@@ -119,7 +130,6 @@ def test_loadf_home():
 
 def test_loadf_default():
     with patch('confidence.io.path') as mocked_path:
-        mocked_path.exists.return_value = False
         mocked_path.expanduser.side_effect = _patched_expanduser
 
         config = loadf('/path/to/file', default={'a': 2})
@@ -131,7 +141,6 @@ def test_loadf_default():
 
 def test_loadf_missing():
     with patch('confidence.io.path') as mocked_path:
-        mocked_path.exists.return_value = False
         mocked_path.expanduser.side_effect = _patched_expanduser
         with pytest.raises(FileNotFoundError):
             loadf('/path/to/file')
@@ -175,48 +184,46 @@ def test_load_name_multiple():
     assert subject.overlapping.fully == 'foo'
 
 
-def test_load_name_order():
+def test_load_name_order(broken_open):
     env = {
         'HOME': '/home/user',
         'LOCALAPPDATA': 'C:/Users/user/AppData/Local'
     }
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open', side_effect=broken_open) as mocked_open, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join, unmock pathsep
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
         mocked_path.pathsep = path.pathsep
-        # avoid actually opening files that might unexpectedly exist
-        mocked_path.exists.return_value = False
 
         assert len(load_name('foo', 'bar')) == 0
 
-    mocked_path.exists.assert_has_calls([
-        call('/etc/xdg/foo.yaml'),
-        call('/etc/xdg/bar.yaml'),
-        call('/etc/foo.yaml'),
-        call('/etc/bar.yaml'),
-        call('/Library/Preferences/foo.yaml'),
-        call('/Library/Preferences/bar.yaml'),
-        call('/home/user/.config/foo.yaml'),
-        call('/home/user/.config/bar.yaml'),
-        call('/home/user/Library/Preferences/foo.yaml'),
-        call('/home/user/Library/Preferences/bar.yaml'),
-        call('C:/Users/user/AppData/Local/foo.yaml'),
-        call('C:/Users/user/AppData/Local/bar.yaml'),
-        call('/home/user/.foo.yaml'),
-        call('/home/user/.bar.yaml'),
-        call('./foo.yaml'),
-        call('./bar.yaml'),
+    mocked_open.assert_has_calls([
+        call('/etc/xdg/foo.yaml', 'r'),
+        call('/etc/xdg/bar.yaml', 'r'),
+        call('/etc/foo.yaml', 'r'),
+        call('/etc/bar.yaml', 'r'),
+        call('/Library/Preferences/foo.yaml', 'r'),
+        call('/Library/Preferences/bar.yaml', 'r'),
+        call('/home/user/.config/foo.yaml', 'r'),
+        call('/home/user/.config/bar.yaml', 'r'),
+        call('/home/user/Library/Preferences/foo.yaml', 'r'),
+        call('/home/user/Library/Preferences/bar.yaml', 'r'),
+        call('C:/Users/user/AppData/Local/foo.yaml', 'r'),
+        call('C:/Users/user/AppData/Local/bar.yaml', 'r'),
+        call('/home/user/.foo.yaml', 'r'),
+        call('/home/user/.bar.yaml', 'r'),
+        call('./foo.yaml', 'r'),
+        call('./bar.yaml', 'r'),
     ], any_order=False)
 
 
-def test_load_name_xdg_config_dirs():
+def test_load_name_xdg_config_dirs(broken_open):
     env = {
         'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
     }
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open', side_effect=broken_open) as mocked_open, patch('confidence.io.environ', env):
         # hard-code path separator, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
@@ -226,12 +233,12 @@ def test_load_name_xdg_config_dirs():
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
-    mocked_path.exists.assert_has_calls([
+    mocked_open.assert_has_calls([
         # this might not be ideal (/etc/not-xdg should maybe show up twice first), but also not realistic…
-        call('/etc/not-xdg/foo.yaml'),
-        call('/etc/xdg-desktop/foo.yaml'),
-        call('/etc/not-xdg/bar.yaml'),
-        call('/etc/xdg-desktop/bar.yaml'),
+        call('/etc/not-xdg/foo.yaml', 'r'),
+        call('/etc/xdg-desktop/foo.yaml', 'r'),
+        call('/etc/not-xdg/bar.yaml', 'r'),
+        call('/etc/xdg-desktop/bar.yaml', 'r'),
     ], any_order=False)
 
 
@@ -251,13 +258,13 @@ def test_load_name_xdg_config_dirs_fallback():
     ], any_order=False)
 
 
-def test_load_name_xdg_config_home():
+def test_load_name_xdg_config_home(broken_open):
     env = {
         'XDG_CONFIG_HOME': '/home/user/.not-config',
         'HOME': '/home/user'
     }
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.environ', env):
+    with patch('confidence.io.path') as mocked_path, patch('confidence.io.open', side_effect=broken_open) as mocked_open, patch('confidence.io.environ', env):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
@@ -266,9 +273,9 @@ def test_load_name_xdg_config_home():
 
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
-    mocked_path.exists.assert_has_calls([
-        call('/home/user/.not-config/foo.yaml'),
-        call('/home/user/.not-config/bar.yaml'),
+    mocked_open.assert_has_calls([
+        call('/home/user/.not-config/foo.yaml', 'r'),
+        call('/home/user/.not-config/bar.yaml', 'r'),
     ], any_order=False)
 
 
