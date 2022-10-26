@@ -25,9 +25,9 @@ flake8==5.0.4
     #   pep8-naming
 flake8-annotations-complexity==0.0.7
     # via -r check-requirements.in
-flake8-broken-line==0.5.0
+flake8-broken-line==0.6.0
     # via -r check-requirements.in
-flake8-bugbear==22.8.23
+flake8-bugbear==22.10.25
     # via -r check-requirements.in
 flake8-commas==2.1.0
     # via -r check-requirements.in
@@ -45,15 +45,15 @@ flake8-simplify==0.19.3
     # via -r check-requirements.in
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.27
+gitpython==3.1.29
     # via bandit
 mccabe==0.7.0
     # via flake8
-mypy==0.971
+mypy==0.982
     # via -r check-requirements.in
 mypy-extensions==0.4.3
     # via mypy
-pbr==5.10.0
+pbr==5.11.0
     # via stevedore
 pep8-naming==0.13.2
     # via -r check-requirements.in
@@ -71,13 +71,11 @@ restructuredtext-lint==1.4.0
     # via flake8-rst-docstrings
 smmap==5.0.0
     # via gitdb
-stevedore==4.0.0
+stevedore==4.1.0
     # via bandit
-tomli==2.0.1
-    # via mypy
-types-pyyaml==6.0.11
+types-pyyaml==6.0.12
     # via -r check-requirements.in
-typing-extensions==4.3.0
+typing-extensions==4.4.0
     # via mypy
 
 # The following packages are considered to be unsafe in a requirements file:
