@@ -32,7 +32,7 @@ def test(session):
     session.run('coverage', 'run',
                 '--branch',
                 '--source', 'confidence',
-                '--module', 'py.test',
+                '--module', 'pytest',
                 '--strict-markers',
                 'tests/')
 
