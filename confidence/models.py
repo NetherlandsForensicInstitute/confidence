@@ -22,7 +22,7 @@ NoDefault = type('NoDefault', (object,), {
 })()  # create instance of that new type to assign to NoDefault
 
 
-_T = typing.TypeVar("_T")
+_T = typing.TypeVar('_T')
 
 
 @typing.overload
