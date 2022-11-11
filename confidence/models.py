@@ -22,19 +22,24 @@ NoDefault = type('NoDefault', (object,), {
 })()  # create instance of that new type to assign to NoDefault
 
 
-_T = typing.TypeVar('_T')
+T = typing.TypeVar('T')
+Source = typing.Mapping[str, typing.Union[T, 'Source[_T]']]
 
 
 @typing.overload
-def _unwrap(source: typing.Mapping[str, _T]) -> typing.Mapping[str, _T]: ...
+def _unwrap(source: typing.Mapping[str, Source[T]]) -> typing.Mapping[str, Source[T]]: ...
 
 
 @typing.overload
-def _unwrap(source: _T) -> _T: ...
+def _unwrap(source: typing.Mapping[str, T]) -> typing.Mapping[str, T]: ...
 
 
-def _unwrap(source: typing.Union[_T, typing.Mapping[str, typing.Any]]) \
-        -> typing.Union[_T, typing.Mapping[str, typing.Any]]:
+@typing.overload
+def _unwrap(source: T) -> T: ...
+
+
+def _unwrap(source: typing.Union[T, typing.Mapping[str, typing.Any]]) \
+        -> typing.Union[T, typing.Mapping[str, typing.Any]]:
     """
     Recursively walks *source* to turn occurrences of wrapper types into their
     simple counterparts.
