@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Avoid checking for existence of files, try to open them instead.
+- Fix dumping / serialization issues by unwrapping complex wrapper types to their simple counterparts during initialization of `Configuration`.
 
 0.12 (2022-03-01)
 -----------------
