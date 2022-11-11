@@ -22,7 +22,14 @@ NoDefault = type('NoDefault', (object,), {
 })()  # create instance of that new type to assign to NoDefault
 
 
-def _unwrap(source):
+def _unwrap(source: typing.Any) -> typing.Any:
+    """
+    Recursively walks *source* to turn occurrences of wrapper types into their
+    simple counterparts.
+
+    :param source: the object to be unwrapped
+    :return: *source*, recursively unwrapped if needed
+    """
     while isinstance(source, Configuration):
         source = source._source
 
