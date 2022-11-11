@@ -23,7 +23,7 @@ NoDefault = type('NoDefault', (object,), {
 
 
 T = typing.TypeVar('T')
-Source = typing.Mapping[str, typing.Union[T, 'Source[_T]']]
+Source = typing.Mapping[str, typing.Union[T, 'Source[T]']]
 
 
 @typing.overload
