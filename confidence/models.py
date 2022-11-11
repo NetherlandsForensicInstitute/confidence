@@ -38,8 +38,9 @@ def _unwrap(source: typing.Mapping[str, T]) -> typing.Mapping[str, T]: ...
 def _unwrap(source: T) -> T: ...
 
 
-def _unwrap(source: typing.Union[T, typing.Mapping[str, typing.Any]]) \
-        -> typing.Union[T, typing.Mapping[str, typing.Any]]:
+def _unwrap(
+        source: typing.Union[T, typing.Mapping[str, typing.Any]]
+) -> typing.Union[T, typing.Mapping[str, typing.Any]]:
     """
     Recursively walks *source* to turn occurrences of wrapper types into their
     simple counterparts.
