@@ -22,6 +22,16 @@ NoDefault = type('NoDefault', (object,), {
 })()  # create instance of that new type to assign to NoDefault
 
 
+def _unwrap(source):
+    while isinstance(source, Configuration):
+        source = source._source
+
+    if isinstance(source, Mapping):
+        return {key: _unwrap(value) for key, value in source.items()}
+    else:
+        return source
+
+
 class Configuration(Mapping):
     """
     A collection of configured values, retrievable as either `dict`-like items
