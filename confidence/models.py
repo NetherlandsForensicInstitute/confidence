@@ -31,12 +31,19 @@ def _unwrap(source: typing.Any) -> typing.Any:
     :return: *source*, recursively unwrapped if needed
     """
     while isinstance(source, Configuration):
+        # unwrap a Configuration into its source attribute
         source = source._source
 
+    if isinstance(source, ConfigurationSequence):
+        # sequence will resolve references, unwrap values in its source
+        return [_unwrap(value) for value in source._source]
+
     if isinstance(source, Mapping):
+        # mapping type can no longer be a Configuration, use .items() to unwrap values
         return {key: _unwrap(value) for key, value in source.items()}
-    else:
-        return source
+
+    # nothing needed, use value as-is
+    return source
 
 
 class Configuration(Mapping):

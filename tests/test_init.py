@@ -14,12 +14,14 @@ def test_wrapped_source():
     left = Configuration({'a': 'a', 'b': [2, 2]})
     right = Configuration({'a': [1], 'b': Configuration({'c': 42})})
 
-    subject = Configuration({'left': left, 'right': right})
+    subject = Configuration({'left': left, 'middle': right.a, 'right': right})
 
     assert not isinstance(subject._source['left'], Configuration)
+    assert not isinstance(subject._source['middle']['a'], ConfigurationSequence)
     assert not isinstance(subject._source['right']['b'], Configuration)
     assert not isinstance(subject._source['right']['a'], ConfigurationSequence)
 
     assert subject.right.b.c == 42
     assert len(left.b) == len(subject.left.b) == 2
+    assert len(right.a) == len(subject.middle.a) == 1
     assert subject._source == loads(dumps(subject))._source
