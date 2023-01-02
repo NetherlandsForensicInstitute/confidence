@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.13 (2023-01-02)
+-----------------
 
 - Avoid checking for existence of files, try to open them instead.
 - Fix dumping / serialization issues by unwrapping complex wrapper types to their simple counterparts during initialization of `Configuration`.
