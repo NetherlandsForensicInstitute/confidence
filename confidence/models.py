@@ -22,6 +22,30 @@ NoDefault = type('NoDefault', (object,), {
 })()  # create instance of that new type to assign to NoDefault
 
 
+def _unwrap(source: typing.Any) -> typing.Any:
+    """
+    Recursively walks *source* to turn occurrences of wrapper types into their
+    simple counterparts.
+
+    :param source: the object to be unwrapped
+    :return: *source*, recursively unwrapped if needed
+    """
+    while isinstance(source, Configuration):
+        # unwrap a Configuration into its source attribute
+        source = source._source
+
+    if isinstance(source, ConfigurationSequence):
+        # sequence will resolve references, unwrap values in its source
+        return [_unwrap(value) for value in source._source]
+
+    if isinstance(source, Mapping):
+        # mapping type can no longer be a Configuration, use .items() to unwrap values
+        return {key: _unwrap(value) for key, value in source.items()}
+
+    # nothing needed, use value as-is
+    return source
+
+
 class Configuration(Mapping):
     """
     A collection of configured values, retrievable as either `dict`-like items
@@ -54,12 +78,9 @@ class Configuration(Mapping):
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
             if source:
-                while isinstance(source, Configuration):
-                    # _merge will walk source.items(), using source.get(), avoid resolving references now
-                    source = source._source
-
                 # merge values from source into self._source, overwriting any corresponding keys
-                merge(self._source, split_keys(source, colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
+                # unwrap the source to make sure we're dealing with simple types
+                merge(self._source, split_keys(_unwrap(source), colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
 
     def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
