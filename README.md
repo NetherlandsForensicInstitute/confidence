@@ -113,11 +113,11 @@ Install confidence with confidence using `pip`:
 $ pip install confidence
 ~~~~
 
-Installing from source can be done using `setup.py`, or build a wheel using `tox`:
+Installing from source can be done using `setup.py`, or build a wheel using `nox`:
 
 ~~~~
 $ python3 setup.py install
 
-$ tox -e dist
+$ nox -s dist
 $ pip install dist/confidence*.whl
 ~~~~
