@@ -2,7 +2,7 @@ astor==0.8.1
     # via flake8-simplify
 astpretty==3.0.0
     # via flake8-expression-complexity
-attrs==22.1.0
+attrs==22.2.0
     # via flake8-bugbear
 bandit==1.7.4
     # via -r check-requirements.in
@@ -27,35 +27,35 @@ flake8-annotations-complexity==0.0.7
     # via -r check-requirements.in
 flake8-broken-line==0.6.0
     # via -r check-requirements.in
-flake8-bugbear==22.10.25
+flake8-bugbear==23.2.13
     # via -r check-requirements.in
 flake8-commas==2.1.0
     # via -r check-requirements.in
-flake8-comprehensions==3.10.0
+flake8-comprehensions==3.10.1
     # via -r check-requirements.in
 flake8-expression-complexity==0.0.11
     # via -r check-requirements.in
-flake8-import-order==0.18.1
+flake8-import-order==0.18.2
     # via -r check-requirements.in
-flake8-quotes==3.3.1
+flake8-quotes==3.3.2
     # via -r check-requirements.in
-flake8-rst-docstrings==0.2.7
+flake8-rst-docstrings==0.3.0
     # via -r check-requirements.in
 flake8-simplify==0.19.3
     # via -r check-requirements.in
-gitdb==4.0.9
+gitdb==4.0.10
     # via gitpython
-gitpython==3.1.29
+gitpython==3.1.31
     # via bandit
 mccabe==0.7.0
     # via flake8
-mypy==0.982
+mypy==1.0.0
     # via -r check-requirements.in
-mypy-extensions==0.4.3
+mypy-extensions==1.0.0
     # via mypy
-pbr==5.11.0
+pbr==5.11.1
     # via stevedore
-pep8-naming==0.13.2
+pep8-naming==0.13.3
     # via -r check-requirements.in
 pycodestyle==2.9.1
     # via
@@ -63,7 +63,7 @@ pycodestyle==2.9.1
     #   flake8-import-order
 pyflakes==2.5.0
     # via flake8
-pygments==2.13.0
+pygments==2.14.0
     # via flake8-rst-docstrings
 pyyaml==6.0
     # via bandit
@@ -71,11 +71,11 @@ restructuredtext-lint==1.4.0
     # via flake8-rst-docstrings
 smmap==5.0.0
     # via gitdb
-stevedore==4.1.0
+stevedore==5.0.0
     # via bandit
-types-pyyaml==6.0.12
+types-pyyaml==6.0.12.6
     # via -r check-requirements.in
-typing-extensions==4.4.0
+typing-extensions==4.5.0
     # via mypy
 
 # The following packages are considered to be unsafe in a requirements file:
