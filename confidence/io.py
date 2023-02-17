@@ -8,7 +8,7 @@ import typing
 
 import yaml
 
-from confidence.models import Configuration, Missing, NoDefault, NotConfigured
+from confidence.models import _unwrap, Configuration, Missing, NoDefault, NotConfigured
 
 
 LOG = logging.getLogger(__name__)
@@ -319,37 +319,41 @@ def load_name(*names: str,
     return Configuration(*generate_sources(), missing=missing)
 
 
-def dump(configuration: Configuration, fp: typing.IO, encoding: str = 'utf-8') -> None:
+def dump(value: typing.Any, fp: typing.IO, encoding: str = 'utf-8') -> None:
     """
-    Serialize the configuration in *configuration* to YAML format, writing it
-    to *fp*.
+    Serialize the configuration in *value* to YAML format, writing it to *fp*.
 
-    :param configuration: the `Configuration` object to dump
+    :param value: the value (like a `Configuration` object) to dump
     :param fp: a file-like object to write to
     :param encoding: encoding to use
     """
+    # recursively unwrap the value to help yaml understand what we're trying to dump
     # use block style output for nested collections (flow style dumps nested dicts inline)
-    yaml.safe_dump(configuration._source, stream=fp, encoding=encoding, default_flow_style=False)
+    yaml.safe_dump(_unwrap(value), stream=fp, encoding=encoding, default_flow_style=False)
 
 
-def dumpf(configuration: Configuration, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
+def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
     """
-    Serialize the configuration in *configuration* to a YAML-formatted file.
+    Serialize the configuration in *value* to a YAML-formatted file.
 
-    :param configuration: the `Configuration` object to dump
+    :param value: the value (like a `Configuration` object) to dump
     :param fname: name or path of the file to write to
     :param encoding: encoding to use
     """
     with open(fname, 'wb') as out_file:
-        dump(configuration, out_file, encoding=encoding)
+        dump(value, out_file, encoding=encoding)
 
 
-def dumps(configuration: Configuration) -> str:
+def dumps(value: typing.Any) -> str:
     """
-    Serialize the configuration in *configuration* as a YAML-formatted string.
+    Serialize the configuration in *value* as a YAML-formatted string.
 
-    :param configuration: the `Configuration` object to dump
+    :param value: the value (like a `Configuration` object) to dump
     :returns: *configuration*, serialized as a `str` in YAML format
     """
+    # recursively unwrap the value to help yaml understand what we're trying to dump
     # use block style output for nested collections (flow style dumps nested dicts inline)
-    return yaml.safe_dump(configuration._source, default_flow_style=False)
+    encoded = yaml.safe_dump(_unwrap(value), default_flow_style=False)
+    # omit explicit document (...) end included with simple values
+    # (to be replaced with encoded.removesuffix('\n...\n') when python requirement hits 3.9+)
+    return encoded[:-4] if encoded.endswith('...\n') else encoded
