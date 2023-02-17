@@ -4,6 +4,8 @@ from os import path
 import pytest
 from unittest.mock import call, mock_open, patch
 
+import yaml
+
 from confidence import Configuration, DEFAULT_LOAD_ORDER, load, load_name, loaders, loadf, loads, Locality, NotConfigured
 from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
@@ -410,3 +412,18 @@ def test_dumpf():
     write = mocked().write
     for s in ('ns', 'key1', 'key2', 'null'):
         write.assert_any_call(str_containing(s))
+
+
+@pytest.mark.parametrize('value', (123, 16.0, 'abc', True, False, None, [1, 2, 3], {'a': 1, 'b': 'c'}))
+def test_dumps_roundtrip(value):
+    encoded = dumps(value)
+    assert yaml.safe_load(encoded) == value
+    assert '...' not in encoded
+
+
+@pytest.mark.parametrize('value', (123, 16.0, 'abc', True, False, None, [1, 2, 3], {'a': 1, 'b': 'c'}))
+def test_dumpf_roundtrip(value, tmp_path):
+    dumpf(value, tmp_path / 'config.yaml')
+
+    with open(tmp_path / 'config.yaml', 'r') as in_file:
+        assert yaml.safe_load(in_file) == value
