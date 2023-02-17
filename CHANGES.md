@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Add system-wide `.../name/name.yaml` paths to the default load order, aiding in the use configuration *directories* (e.g. in containerized setups). 
+
 0.13 (2023-01-02)
 -----------------
 
