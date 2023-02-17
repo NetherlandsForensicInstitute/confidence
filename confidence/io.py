@@ -159,7 +159,9 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
+        '/etc/{name}/{name}.{extension}',
         '/etc/{name}.{extension}',
+        '/Library/Preferences/{name}/{name}.{extension}',
         '/Library/Preferences/{name}.{extension}',
         partial(read_envvar_dir, 'PROGRAMDATA'),
     ),
