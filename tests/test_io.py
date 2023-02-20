@@ -201,8 +201,12 @@ def test_load_name_order(broken_open):
     mocked_open.assert_has_calls([
         call('/etc/xdg/foo.yaml', 'r'),
         call('/etc/xdg/bar.yaml', 'r'),
+        call('/etc/foo/foo.yaml', 'r'),
+        call('/etc/bar/bar.yaml', 'r'),
         call('/etc/foo.yaml', 'r'),
         call('/etc/bar.yaml', 'r'),
+        call('/Library/Preferences/foo/foo.yaml', 'r'),
+        call('/Library/Preferences/bar/bar.yaml', 'r'),
         call('/Library/Preferences/foo.yaml', 'r'),
         call('/Library/Preferences/bar.yaml', 'r'),
         call('/home/user/.config/foo.yaml', 'r'),
