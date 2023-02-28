@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.14 (2023-02-28)
+-----------------
 
 - Add system-wide `.../name/name.yaml` paths to the default load order, aiding in the use configuration *directories* (e.g. in containerized setups).
 - Ensure non-confidence values can be dumped, enabling dumping of arbitrary bits of configuration.
