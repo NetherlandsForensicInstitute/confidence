@@ -22,6 +22,8 @@ def test_configured_sequence(complicated_config):
     assert complicated_config.different.types[5][0] == 1
     assert complicated_config.different.types[5][3] == 4
 
+    assert "'a string', True, 42.0" in repr(complicated_config.different.types)
+
 
 def test_sequence_mapping(complicated_config):
     assert isinstance(complicated_config.different.types[3], Mapping)
@@ -71,6 +73,12 @@ def test_addition(complicated_config):
     assert len(sequence + (1, 2, 3)) == 9
     assert len((1, 2, 3) + sequence) == 9
     assert isinstance((1, 2, 3) + sequence, tuple)
+
+    for value in ('str', 42):
+        with pytest.raises(TypeError):
+            assert sequence + value
+        with pytest.raises(TypeError):
+            assert value + sequence
 
 
 def test_addition_wrap(complicated_config):
