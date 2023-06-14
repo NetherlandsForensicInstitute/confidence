@@ -10,6 +10,7 @@ def test_empty():
     def run_test(subject):
         assert subject.key is NotConfigured
         assert subject.deeper.key is NotConfigured
+        assert 'keys={}' in repr(subject)
 
     run_test(Configuration())
     run_test(Configuration({}))
@@ -31,6 +32,10 @@ def test_value_types():
     assert isinstance(subject.a_boolean, bool)
     assert isinstance(subject.a_list, Sequence)
     assert isinstance(subject.we_must, Mapping)
+
+    assert 'a_string' in repr(subject)
+    assert 'just' not in repr(subject)
+    assert 'go_deeper' not in repr(subject)
 
 
 def test_not_configured():
