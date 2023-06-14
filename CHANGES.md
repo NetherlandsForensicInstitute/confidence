@@ -4,6 +4,8 @@ Changes
 development (master)
 --------------------
 
+- Add `unwrap` function to the public API, unwrapping a `Configuration` object into a plain `dict` (note that references are not resolved and will remain references in the result).
+
 0.14 (2023-02-28)
 -----------------
 

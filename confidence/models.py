@@ -46,10 +46,6 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
-# retain old private name, alias to be removed soon™
-_unwrap = unwrap
-
-
 class Configuration(Mapping):
     """
     A collection of configured values, retrievable as either `dict`-like items
