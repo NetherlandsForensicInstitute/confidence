@@ -8,7 +8,7 @@ import typing
 
 import yaml
 
-from confidence.models import _unwrap, Configuration, Missing, NoDefault, NotConfigured
+from confidence.models import Configuration, Missing, NoDefault, NotConfigured, unwrap
 
 
 LOG = logging.getLogger(__name__)
@@ -329,7 +329,7 @@ def dump(value: typing.Any, fp: typing.IO, encoding: str = 'utf-8') -> None:
     """
     # recursively unwrap the value to help yaml understand what we're trying to dump
     # use block style output for nested collections (flow style dumps nested dicts inline)
-    yaml.safe_dump(_unwrap(value), stream=fp, encoding=encoding, default_flow_style=False)
+    yaml.safe_dump(unwrap(value), stream=fp, encoding=encoding, default_flow_style=False)
 
 
 def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
@@ -353,7 +353,7 @@ def dumps(value: typing.Any) -> str:
     """
     # recursively unwrap the value to help yaml understand what we're trying to dump
     # use block style output for nested collections (flow style dumps nested dicts inline)
-    encoded = yaml.safe_dump(_unwrap(value), default_flow_style=False)
+    encoded = yaml.safe_dump(unwrap(value), default_flow_style=False)
     # omit explicit document end (...) included with simple values
     # (to be replaced with encoded.removesuffix('\n...\n') when python requirement hits 3.9+)
     return encoded[:-4] if encoded.endswith('...\n') else encoded

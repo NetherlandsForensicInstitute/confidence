@@ -22,7 +22,7 @@ NoDefault = type('NoDefault', (object,), {
 })()  # create instance of that new type to assign to NoDefault
 
 
-def _unwrap(source: typing.Any) -> typing.Any:
+def unwrap(source: typing.Any) -> typing.Any:
     """
     Recursively walks *source* to turn occurrences of wrapper types into their
     simple counterparts.
@@ -36,14 +36,18 @@ def _unwrap(source: typing.Any) -> typing.Any:
 
     if isinstance(source, ConfigurationSequence):
         # sequence will resolve references, unwrap values in its source
-        return [_unwrap(value) for value in source._source]
+        return [unwrap(value) for value in source._source]
 
     if isinstance(source, Mapping):
         # mapping type can no longer be a Configuration, use .items() to unwrap values
-        return {key: _unwrap(value) for key, value in source.items()}
+        return {key: unwrap(value) for key, value in source.items()}
 
     # nothing needed, use value as-is
     return source
+
+
+# retain old private name, alias to be removed soon™
+_unwrap = unwrap
 
 
 class Configuration(Mapping):
@@ -80,7 +84,7 @@ class Configuration(Mapping):
             if source:
                 # merge values from source into self._source, overwriting any corresponding keys
                 # unwrap the source to make sure we're dealing with simple types
-                merge(self._source, split_keys(_unwrap(source), colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
+                merge(self._source, split_keys(unwrap(source), colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
 
     def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
