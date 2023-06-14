@@ -338,5 +338,18 @@ class ConfigurationSequence(Sequence):
         return type(other)(list(other) + list(self))  # type: ignore
 
     def __repr__(self) -> str:
-        values = ', '.join(repr(value) for value in self)
+        # use _source to avoid wrapping and resolving values
+        values = ', '.join(_repr_value(value) for value in self._source)
         return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'
+
+
+def _repr_value(value: typing.Any) -> str:
+    if isinstance(value, Mapping):
+        # represent a mapping as just its keys
+        keys = ', '.join(str(key) for key in value.keys())
+        return f'keys={{{keys}}}'
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return '[...]'
+
+    # fall back to builtin repr
+    return repr(value)
