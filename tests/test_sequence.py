@@ -3,6 +3,7 @@ from os import path
 
 import pytest
 
+import confidence
 from confidence import loadf
 
 
@@ -90,3 +91,22 @@ def test_addition_wrap(complicated_config):
     mapping = {'a': {'mapping': 42}}
     sequence = sequence + [1, 2, mapping, 4]
     assert sequence[-2].a.mapping == 42
+
+
+def test_repr(complicated_config):
+    sequence = complicated_config.different.sequence
+
+    assert 'keys={' not in repr(sequence)
+    assert '[...]' not in repr(sequence)
+    assert '${' in repr(sequence)
+
+    assert 'keys={' in repr(sequence + [{'namespaces': 'honking great idea'}])
+    assert 'honking' not in repr(sequence + [{'namespaces': 'honking great idea'}])
+    # any mapping-like object should be represented as its keys
+    assert repr(sequence + [{'namespaces': 'honking great idea'}]) == repr(sequence + [confidence.Configuration({'namespaces': 'honking great idea'})])
+
+    assert '[...]' in repr(sequence + [[1, 2, 42]])
+    assert '42' not in repr(sequence + [[1, 2, 42]])
+    # any sequence-like object should be represented as [...]
+    # (this includes a recursive reference, even though that shouldn't happen in practice)
+    assert repr(sequence + [[1, 2, 42]]) == repr(sequence + [(2, 4, 8)]) == repr(sequence + [sequence])
