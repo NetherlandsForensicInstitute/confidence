@@ -5,6 +5,7 @@ development (master)
 --------------------
 
 - Add `unwrap` function to the public API, unwrapping a `Configuration` object into a plain `dict` (note that references are not resolved and will remain references in the result).
+- Change string-representations (result of `repr()`) of `Configuration` and `ConfigurationSequence` to be more like builtin types.
 
 0.14 (2023-02-28)
 -----------------
