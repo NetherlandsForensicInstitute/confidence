@@ -235,7 +235,7 @@ class Configuration(Mapping):
     def __repr__(self) -> str:
         # even though keys should always be str, no need to crash on repr() in edge cases
         keys = ', '.join(str(key) for key in self.keys())
-        return f'<{self.__class__.__module__}.{self.__class__.__name__} keys={{{keys}}}>'
+        return f'{self.__class__.__module__}.{self.__class__.__name__}(keys={{{keys}}})'
 
     def __getstate__(self) -> typing.Dict[str, typing.Any]:
         state = self.__dict__.copy()
@@ -340,7 +340,7 @@ class ConfigurationSequence(Sequence):
     def __repr__(self) -> str:
         # use _source to avoid wrapping and resolving values
         values = ', '.join(_repr_value(value) for value in self._source)
-        return f'<{self.__class__.__module__}.{self.__class__.__name__} [{values}]>'
+        return f'{self.__class__.__module__}.{self.__class__.__name__}([{values}])'
 
 
 def _repr_value(value: typing.Any) -> str:
