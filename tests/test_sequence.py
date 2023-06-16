@@ -3,8 +3,7 @@ from os import path
 
 import pytest
 
-import confidence
-from confidence import loadf
+from confidence import Configuration, loadf
 
 
 test_files = path.join(path.dirname(__file__), 'files')
@@ -103,7 +102,7 @@ def test_repr(complicated_config):
     assert 'keys={' in repr(sequence + [{'namespaces': 'honking great idea'}])
     assert 'honking' not in repr(sequence + [{'namespaces': 'honking great idea'}])
     # any mapping-like object should be represented as its keys
-    assert repr(sequence + [{'namespaces': 'honking great idea'}]) == repr(sequence + [confidence.Configuration({'namespaces': 'honking great idea'})])
+    assert repr(sequence + [{'namespaces': 'honking great idea'}]) == repr(sequence + [Configuration({'namespaces': 'honking great idea'})])
 
     assert '[...]' in repr(sequence + [[1, 2, 42]])
     assert '42' not in repr(sequence + [[1, 2, 42]])
