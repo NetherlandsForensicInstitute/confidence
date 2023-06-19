@@ -345,11 +345,10 @@ class ConfigurationSequence(Sequence):
 
 def _repr_value(value: typing.Any) -> str:
     if isinstance(value, Mapping):
-        # represent a mapping as just its keys
-        keys = ', '.join(str(key) for key in value.keys())
-        return f'keys={{{keys}}}'
+        keys = ', '.join(_repr_value(key) for key in value.keys())
+        return f'mapping(keys=[{keys}])'
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-        return '[...]'
+        return 'sequence([...])'
 
     # fall back to builtin repr
     return repr(value)
