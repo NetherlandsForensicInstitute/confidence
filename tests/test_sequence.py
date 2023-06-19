@@ -95,11 +95,12 @@ def test_addition_wrap(complicated_config):
 def test_repr(complicated_config):
     sequence = complicated_config.different.sequence
 
-    assert 'keys={' not in repr(sequence)
+    assert 'mapping(' not in repr(sequence)
+    assert 'keys=' not in repr(sequence)
     assert '[...]' not in repr(sequence)
     assert '${' in repr(sequence)
 
-    assert 'keys={' in repr(sequence + [{'namespaces': 'honking great idea'}])
+    assert 'mapping(keys=[' in repr(sequence + [{'namespaces': 'honking great idea'}])
     assert 'honking' not in repr(sequence + [{'namespaces': 'honking great idea'}])
     # any mapping-like object should be represented as its keys
     assert repr(sequence + [{'namespaces': 'honking great idea'}]) == repr(sequence + [Configuration({'namespaces': 'honking great idea'})])
