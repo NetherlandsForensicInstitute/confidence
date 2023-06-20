@@ -343,6 +343,12 @@ class ConfigurationSequence(Sequence):
 
 
 def _repr_value(value: typing.Any) -> str:
+    """
+    Create a `repr` for value, customizing mapping and sequence types.
+
+    :param value: an object to represent
+    :return: a string-representation of *value*
+    """
     if isinstance(value, Mapping):
         keys = ', '.join(_repr_value(key) for key in value.keys())
         return f'mapping(keys=[{keys}])'
