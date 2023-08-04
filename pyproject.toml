@@ -54,6 +54,20 @@ test = [
     "pytest",
 ]
 
+[tool.pdm.scripts]
+sec-check = {cmd = ["bandit", "--recursive", "confidence/"]}
+lint = {cmd = ["flake8", "confidence/"]}
+type-check = {cmd = ["mypy", "confidence/"]}
+check = {composite = ["sec-check", "lint", "type-check"]}
+test = {cmd = [
+    "coverage", "run",
+    "--branch",
+    "--source", "confidence",
+    "--module", "pytest",
+    "--strict-markers",
+    "tests/",
+]}
+
 [tool.flake8]
 max-line-length = 120
 import-order-style = "google"
