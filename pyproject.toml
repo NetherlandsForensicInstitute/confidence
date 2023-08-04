@@ -1,3 +1,6 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
 
 [project]
 name = "confidence"
@@ -8,6 +11,11 @@ readme = "README.md"
 authors = [
     {name = "Netherlands Forensic Institute", email = "netherlandsforensicinstitute@users.noreply.github.com"},
 ]
+dependencies = [
+    "pyyaml",
+]
+requires-python = ">=3.8"
+license = {text = "Apache Software License 2.0"}
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3.8",
@@ -16,15 +24,31 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Topic :: Utilities",
 ]
-dependencies = [
-    "pyyaml",
-]
-license = {text = "Apache Software License 2.0"}
-requires-python = ">=3.8"
 
 [project.urls]
 homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+[tool.pdm.dev-dependencies]
+lint = [
+    "bandit",
+    "darglint",
+    "flake8",
+    "flake8-annotations-complexity",
+    "flake8-bugbear",
+    "flake8-broken-line",
+    "flake8-commas",
+    "flake8-comprehensions",
+    "flake8-expression-complexity",
+    "flake8-import-order",
+    "flake8-quotes",
+    "flake8-rst-docstrings",
+    "flake8-simplify",
+    "mypy",
+    "pep8-naming",
+    # dependency-specific typing information
+    "types-pyyaml",
+]
+test = [
+    "coverage",
+    "pytest",
+]
