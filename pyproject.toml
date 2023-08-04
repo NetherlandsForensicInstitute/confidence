@@ -1,0 +1,30 @@
+
+[project]
+name = "confidence"
+version = "0.15"
+description = "Simple module to load and use configuration in a clean, 'pythonic' way."
+keywords = ["configuration"]
+readme = "README.md"
+authors = [
+    {name = "Netherlands Forensic Institute", email = "netherlandsforensicinstitute@users.noreply.github.com"},
+]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "pyyaml",
+]
+license = {text = "Apache Software License 2.0"}
+requires-python = ">=3.8"
+
+[project.urls]
+homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
