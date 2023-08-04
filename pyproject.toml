@@ -67,6 +67,7 @@ test = {cmd = [
     "--strict-markers",
     "tests/",
 ]}
+all = {composite = ["check", "test"]}
 
 [tool.flake8]
 max-line-length = 120
