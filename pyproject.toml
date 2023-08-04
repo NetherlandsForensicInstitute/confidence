@@ -67,6 +67,6 @@ allow_redefinition = true
 allow_incomplete_defs = false
 allow_untyped_defs = false
 # be strict about optional types
-strict_optional = false
+strict_optional = true
 # warn about lines in this file that make no sense to mypy
-warn_unused_configs = false
+warn_unused_configs = true
