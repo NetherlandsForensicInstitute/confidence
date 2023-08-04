@@ -40,6 +40,7 @@ lint = [
     "flake8-comprehensions",
     "flake8-expression-complexity",
     "flake8-import-order",
+    "flake8-pyproject",
     "flake8-quotes",
     "flake8-rst-docstrings",
     "flake8-simplify",
@@ -52,3 +53,9 @@ test = [
     "coverage",
     "pytest",
 ]
+
+[tool.flake8]
+max-line-length = 120
+import-order-style = "google"
+application-import-names = "confidence"
+docstring-style = "sphinx"
