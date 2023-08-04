@@ -2,11 +2,11 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "test", "lint"]
+groups = ["default", "check", "test"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:c3eae98121d9aadf2ff609d91887a7fca2835a15ef4a00b0d98ac25a6b276455"
+content_hash = "sha256:3ac67aca91b06e498a73daf0fbd8c8589b997cf9bdcde2026e085096bb918f82"
 
 [[package]]
 name = "astor"

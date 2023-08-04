@@ -12,6 +12,8 @@ jobs:
           python-version: '3.11'
       - name: Install PDM
         run: pip install pdm
+      - name: Install check dependencies
+        run: pdm install --group check
       - name: Run checks
         run: pdm run check
   test:
@@ -26,5 +28,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install PDM
         run: pip install pdm
+      - name: Install test dependencies
+        run: pdm install --group test
       - name: Run tests
         run: pdm run test

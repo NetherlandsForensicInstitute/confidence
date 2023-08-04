@@ -29,7 +29,7 @@ classifiers = [
 homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 
 [tool.pdm.dev-dependencies]
-lint = [
+check = [
     "bandit",
     "darglint",
     "flake8",
