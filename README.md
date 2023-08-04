@@ -103,21 +103,3 @@ configuration = confidence.Configuration(app_defaults,
 # make it so, no. 1
 run_app(configuration)
 ~~~~
-
-installing
-----------
-
-Install confidence with confidence using `pip`:
-
-~~~~
-$ pip install confidence
-~~~~
-
-Installing from source can be done using `setup.py`, or build a wheel using `nox`:
-
-~~~~
-$ python3 setup.py install
-
-$ nox -s dist
-$ pip install dist/confidence*.whl
-~~~~
