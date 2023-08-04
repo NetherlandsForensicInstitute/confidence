@@ -59,3 +59,14 @@ max-line-length = 120
 import-order-style = "google"
 application-import-names = "confidence"
 docstring-style = "sphinx"
+
+[tool.mypy]
+# allow redefinition of inferred / assigned types
+allow_redefinition = true
+# require all defined functions to be fully typed
+allow_incomplete_defs = false
+allow_untyped_defs = false
+# be strict about optional types
+strict_optional = false
+# warn about lines in this file that make no sense to mypy
+warn_unused_configs = false
