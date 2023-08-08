@@ -58,6 +58,18 @@ test = [
 ]
 
 [tool.pdm.scripts]
+# pre_build hook: create README.md from README.md (omitting the badges) and CHANGES.md
+pre_build = {shell ="""
+    mv README.md README.md.orig &&
+    tail --lines=+3 README.md.orig > README.md &&
+    cat CHANGES.md >> README.md
+"""}
+# post_build hook: reinstate original README.md
+post_build = {shell = """
+    mv README.md.orig README.md
+"""}
+
+# development scripts
 sec-check = {cmd = ["bandit", "--recursive", "confidence/"]}
 lint = {cmd = ["flake8", "confidence/"]}
 type-check = {cmd = ["mypy", "confidence/"]}
