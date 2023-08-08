@@ -3,8 +3,8 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project]
+dynamic = ["version"]  # determined from source control, see tool.pdm.version below
 name = "confidence"
-version = "0.15"
 description = "Simple module to load and use configuration in a clean, 'pythonic' way."
 keywords = ["configuration"]
 readme = "README.md"
@@ -27,6 +27,9 @@ classifiers = [
 
 [project.urls]
 homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
+
+[tool.pdm]
+version = {source = "scm"}
 
 [tool.pdm.dev-dependencies]
 check = [
