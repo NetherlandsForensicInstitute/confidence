@@ -27,7 +27,7 @@ configuration = confidence.loadf('path/to/configuration.yaml')
 value = configuration.get('foo.bar')
 value = configuration.get('foo.bar', default=42)
 # or even kwargs, should you want to
-# (passing bar=42 and foo='21 is only half the answer')
+# (passing bar=42 and baz='21 is only half the answer')
 function(**configuration.foo)
 
 # namespaces are one honking great idea -- let's do more of those!
