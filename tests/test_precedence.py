@@ -87,10 +87,10 @@ def test_union_settings():
 
     assert union(source, source)._missing is NotConfigured
     assert union(source, source, missing=Missing.SILENT)._missing is NotConfigured
-    assert (silent | source)._missing is union(silent, source)._missing is NotConfigured
+    assert union(silent, source)._missing is (silent | source)._missing is NotConfigured
     assert union(silent, error, value, missing=Missing.ERROR)._missing is NoDefault
-    assert (error | source)._missing is union(error, source)._missing is NoDefault
-    assert (value | source)._missing == union(value,source)._missing == 5
+    assert union(error, source)._missing is (error | source)._missing is NoDefault
+    assert union(value, source)._missing == (value | source)._missing == 5
 
     with pytest.raises(ValueError):
         assert not union(source, silent, error)
