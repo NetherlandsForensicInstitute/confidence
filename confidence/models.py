@@ -47,6 +47,16 @@ def unwrap(source: typing.Any) -> typing.Any:
 
 
 def union(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
+    """
+    Merges *sources* into a union, keeping right-side precedence.
+
+    :param sources: source mappings to base the union on, ordered from least to
+        most significance
+    :param missing: policy for the resulting `Configuration` (defaults to
+        `Missing.SILENT`)
+    :return: a `Configuration` instance that encompasses all of the keys and
+        values in *sources*
+    """
     if missing is None:
         # no explicit missing setting, collect settings from arguments, should be either nothing if sources are not
         # Configuration instances, or a single overlapping value, refuse union otherwise
