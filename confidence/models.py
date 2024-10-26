@@ -288,6 +288,7 @@ NotConfigured = type('NotConfigured', (Configuration,), {
     '__repr__': lambda self: '(not configured)',
     '__str__': lambda self: '(not configured)',
     '__doc__': 'Sentinel value to signal there is no value for a requested key.',
+    '__hash__': lambda self: hash((type(self), None)),
 })
 # overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
 # not configured, while still acting like a Configuration object
