@@ -1,4 +1,7 @@
-from confidence import Configuration
+import pytest
+
+from confidence import Configuration, Missing, NotConfigured, union
+from confidence.models import NoDefault
 
 
 def test_multiple_sources():
@@ -43,6 +46,19 @@ def test_multiple_overwrite():
     assert subject.namespace.key3 == 3
 
 
+def test_overwrite_multiple_union():
+    subject = original = Configuration({'key1': 1, 'namespace.key1': 1, 'namespace.key2': 2, 'key2': 2})
+    subject |= {'key3': 6, 'namespace.key3': 3}
+
+    # |= should imply an in-place update
+    assert subject is not original
+
+    subject = subject | {'key2': 4, 'key3': 3, 'namespace.key1': 1}
+
+    assert set(subject.keys()) == {'key1', 'namespace', 'key2', 'key3'}
+    assert subject == (original | subject) == union(original, original, subject, subject)
+
+
 def test_overwrite_namespace_with_value():
     subject = Configuration({'key1': 1, 'namespace.key1': 1},
                             {'key2': 2, 'namespace': 'namespace'})
@@ -61,3 +77,24 @@ def test_overwrite_value_with_namespace():
     assert subject.key1 == 1
     assert subject.key2 == 2
     assert subject.namespace.key1 == 1
+
+
+def test_union_settings():
+    source = {'key1': 42, 'key2': True}
+    silent = Configuration(source, missing=Missing.SILENT)
+    error = Configuration(source, missing=Missing.ERROR)
+    value = Configuration(source, missing=5)
+
+    assert union(source, source)._missing is NotConfigured
+    assert union(source, source, missing=Missing.SILENT)._missing is NotConfigured
+    assert (silent | source)._missing is union(silent, source)._missing is NotConfigured
+    assert union(silent, error, value, missing=Missing.ERROR)._missing is NoDefault
+    assert (error | source)._missing is union(error, source)._missing is NoDefault
+    assert (value | source)._missing == union(value,source)._missing == 5
+
+    with pytest.raises(ValueError):
+        assert not union(source, silent, error)
+    with pytest.raises(ValueError):
+        assert not silent | error
+    with pytest.raises(ValueError):
+        assert not value | error
