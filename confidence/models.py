@@ -56,6 +56,7 @@ def union(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None)
         `Missing.SILENT`)
     :return: a `Configuration` instance that encompasses all of the keys and
         values in *sources*
+    :raises ValueError: when the missing policies of *source* cannot be aligned
     """
     if missing is None:
         # no explicit missing setting, collect settings from arguments, should be either nothing if sources are not
