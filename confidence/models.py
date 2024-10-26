@@ -46,6 +46,29 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
+def union(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
+    """
+    Merges *sources* into a union, keeping right-side precedence.
+
+    :param sources: source mappings to base the union on, ordered from least to
+        most significance
+    :param missing: policy for the resulting `Configuration` (defaults to
+        `Missing.SILENT`)
+    :return: a `Configuration` instance that encompasses all of the keys and
+        values in *sources*
+    :raises ValueError: when the missing policies of *source* cannot be aligned
+    """
+    if missing is None:
+        # no explicit missing setting, collect settings from arguments, should be either nothing if sources are not
+        # Configuration instances, or a single overlapping value, refuse union otherwise
+        if len(missing := {source._missing for source in sources if isinstance(source, Configuration)}) > 1:
+            raise ValueError(f'no union for incompatible instances: {missing}')
+        # use the one remaining missing setting, or default to Missing.SILENT
+        missing = missing.pop() if missing else Missing.SILENT
+
+    return Configuration(*sources, missing=missing)
+
+
 class Configuration(Mapping):
     """
     A collection of configured values, retrievable as either `dict`-like items
@@ -229,6 +252,9 @@ class Configuration(Mapping):
     def __iter__(self) -> typing.Iterator[str]:
         return iter(self._source)
 
+    def __or__(self, other: typing.Mapping[str, typing.Any]) -> 'Configuration':
+        return union(self, other)
+
     def __dir__(self) -> typing.Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
 
@@ -263,6 +289,7 @@ NotConfigured = type('NotConfigured', (Configuration,), {
     '__repr__': lambda self: '(not configured)',
     '__str__': lambda self: '(not configured)',
     '__doc__': 'Sentinel value to signal there is no value for a requested key.',
+    '__hash__': lambda self: hash((type(self), None)),
 })
 # overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
 # not configured, while still acting like a Configuration object
