@@ -1,6 +1,9 @@
 name: Test package
 
-on: [push, pull_request]
+on:
+  push:
+    branches: ['main']
+  pull_request:
 
 jobs:
   check:
@@ -9,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: true
       - name: Install check dependencies
         run: pdm install --group check
@@ -19,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', 'pypy-3.8', 'pypy-3.9', 'pypy-3.10']
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
