@@ -241,6 +241,9 @@ class Configuration(Mapping):
     def __iter__(self) -> typing.Iterator[str]:
         return iter(self._source)
 
+    def __or__(self, other: 'Configuration') -> 'Configuration':
+        return union(self, other)
+
     def __dir__(self) -> typing.Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
 
