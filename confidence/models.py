@@ -46,6 +46,18 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
+def union(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
+    if missing is None:
+        # no explicit missing setting, collect settings from arguments, should be either nothing if sources are not
+        # Configuration instances, or a single overlapping value, refuse union otherwise
+        if len(missing := {source._missing for source in sources if isinstance(source, Configuration)}) > 1:
+            raise ValueError(f'no union for incompatible instances: {missing}')
+        # use the one remaining missing setting, or default to Missing.SILENT
+        missing = missing.pop() if missing else Missing.SILENT
+
+    return Configuration(*sources, missing=missing)
+
+
 class Configuration(Mapping):
     """
     A collection of configured values, retrievable as either `dict`-like items
