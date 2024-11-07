@@ -46,7 +46,7 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
-def union(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
+def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
     """
     Merges *sources* into a union, keeping right-side precedence.
 
@@ -253,7 +253,7 @@ class Configuration(Mapping):
         return iter(self._source)
 
     def __or__(self, other: typing.Mapping[str, typing.Any]) -> 'Configuration':
-        return union(self, other)
+        return merge(self, other)
 
     def __dir__(self) -> typing.Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
