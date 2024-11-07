@@ -4,7 +4,7 @@ Changes
 development (master)
 --------------------
 
-- Add `union` function to combine multiple mappings into a single `Configuration`.
+- Add `merge` function to combine multiple mappings into a single `Configuration`.
 - Enable the use of the binary or / union operator on `Configuration` instances, analogous to a builtin `dict` (e.g. `config = defaults | overrides`).
 
 0.15 (2023-06-26)
