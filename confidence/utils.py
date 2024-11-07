@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from enum import IntEnum
 import logging
 import typing
+import warnings
 
 from confidence.exceptions import MergeConflictError
 
@@ -98,3 +99,17 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
         merge_into(result, {key: value})
 
     return result
+
+
+# retained to compatibility only (warn about the rename, though)
+def merge(left: typing.MutableMapping[str, typing.Any],
+          right: typing.Mapping[str, typing.Any],
+          path: typing.Optional[typing.List[str]] = None,
+          conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
+    warnings.warn(
+        'confidence.utils.merge has been renamed to confidence.utils.merge_into '
+        'and will be removed in a future version',
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return merge_into(left, right, path, conflict)
