@@ -1,8 +1,9 @@
 from datetime import date
+import warnings
 
 import pytest
 
-from confidence.utils import Conflict, merge_into, split_keys
+from confidence.utils import Conflict, merge, merge_into, split_keys
 
 
 def test_merge_trivial():
@@ -164,3 +165,12 @@ def test_split_key_types():
 
     assert '2019-04-01' in str(e.value)
     assert 'datetime.date' in str(e.value)
+
+
+def test_merge_deprecation():
+    with warnings.catch_warnings(record=True) as warned:
+        assert merge({}, {'a': 5}) == {'a': 5}
+
+    assert len(warned) == 1
+    assert issubclass(warned[0].category, DeprecationWarning)
+    assert 'renamed' in str(warned[0].message)
