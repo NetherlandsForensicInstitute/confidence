@@ -3,10 +3,12 @@
 
 [metadata]
 groups = ["default", "check", "test"]
-cross_platform = true
-static_urls = false
-lock_version = "4.3"
-content_hash = "sha256:3ac67aca91b06e498a73daf0fbd8c8589b997cf9bdcde2026e085096bb918f82"
+strategy = ["cross_platform"]
+lock_version = "4.5.0"
+content_hash = "sha256:79f64e653ba4a84e1becafb3ce3772c985fd06c18afb1c7a4d8067a712b243fd"
+
+[[metadata.targets]]
+requires_python = ">=3.8"
 
 [[package]]
 name = "astor"
@@ -33,6 +35,9 @@ name = "attrs"
 version = "24.2.0"
 requires_python = ">=3.7"
 summary = "Classes Without Boilerplate"
+dependencies = [
+    "importlib-metadata; python_version < \"3.8\"",
+]
 files = [
     {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
     {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
@@ -180,6 +185,7 @@ version = "5.0.4"
 requires_python = ">=3.6.1"
 summary = "the modular source code checker: pep8 pyflakes and co"
 dependencies = [
+    "importlib-metadata<4.3,>=1.1.0; python_version < \"3.8\"",
     "mccabe<0.8.0,>=0.7.0",
     "pycodestyle<2.10.0,>=2.9.0",
     "pyflakes<2.6.0,>=2.5.0",
@@ -274,6 +280,7 @@ name = "flake8-import-order"
 version = "0.18.2"
 summary = "Flake8 and pylama plugin that checks the ordering of import statements."
 dependencies = [
+    "enum34; python_version <= \"2.7\"",
     "pycodestyle",
     "setuptools",
 ]
@@ -290,6 +297,7 @@ summary = "Flake8 plug-in loading the configuration from pyproject.toml"
 dependencies = [
     "Flake8>=5",
     "TOMLi; python_version < \"3.11\"",
+    "TOMLi<2; python_version < \"3.7\"",
 ]
 files = [
     {file = "flake8_pyproject-1.2.3-py3-none-any.whl", hash = "sha256:6249fe53545205af5e76837644dc80b4c10037e73a0e5db87ff562d75fb5bd4a"},
@@ -330,6 +338,7 @@ summary = "flake8 plugin which checks for code that can be simplified"
 dependencies = [
     "astor>=0.1",
     "flake8>=3.7",
+    "importlib-metadata>=0.9; python_version < \"3.8\"",
 ]
 files = [
     {file = "flake8_simplify-0.21.0-py3-none-any.whl", hash = "sha256:439391e762a9370b371208add0b5c5c40c3d25a98e1f5421d263215d08194183"},
