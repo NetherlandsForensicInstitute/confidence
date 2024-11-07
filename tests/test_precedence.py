@@ -46,11 +46,11 @@ def test_multiple_overwrite():
     assert subject.namespace.key3 == 3
 
 
-def test_overwrite_multiple_union():
+def test_overwrite_multiple_merge():
     subject = original = Configuration({'key1': 1, 'namespace.key1': 1, 'namespace.key2': 2, 'key2': 2})
     subject |= {'key3': 6, 'namespace.key3': 3}
 
-    # |= should imply an in-place update
+    # |= should *not* imply an in-place update
     assert subject is not original
 
     subject = subject | {'key2': 4, 'key3': 3, 'namespace.key1': 1}
@@ -79,7 +79,7 @@ def test_overwrite_value_with_namespace():
     assert subject.namespace.key1 == 1
 
 
-def test_union_settings():
+def test_merge_settings():
     source = {'key1': 42, 'key2': True}
     silent = Configuration(source, missing=Missing.SILENT)
     error = Configuration(source, missing=Missing.ERROR)
