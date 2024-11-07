@@ -3,19 +3,16 @@
 
 [metadata]
 groups = ["default", "check", "test"]
-strategy = ["inherit_metadata"]
-lock_version = "4.5.0"
-content_hash = "sha256:79f64e653ba4a84e1becafb3ce3772c985fd06c18afb1c7a4d8067a712b243fd"
-
-[[metadata.targets]]
-requires_python = ">=3.8"
+cross_platform = true
+static_urls = false
+lock_version = "4.3"
+content_hash = "sha256:3ac67aca91b06e498a73daf0fbd8c8589b997cf9bdcde2026e085096bb918f82"
 
 [[package]]
 name = "astor"
 version = "0.8.1"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
 summary = "Read/rewrite/write Python ASTs"
-groups = ["check"]
 files = [
     {file = "astor-0.8.1-py2.py3-none-any.whl", hash = "sha256:070a54e890cefb5b3739d19f30f5a5ec840ffc9c50ffa7d23cc9fc1a38ebbfc5"},
     {file = "astor-0.8.1.tar.gz", hash = "sha256:6a6effda93f4e1ce9f618779b2dd1d9d84f1e32812c23a29b3fff6fd7f63fa5e"},
@@ -26,7 +23,6 @@ name = "astpretty"
 version = "3.0.0"
 requires_python = ">=3.8"
 summary = "Pretty print the output of python stdlib `ast.parse`."
-groups = ["check"]
 files = [
     {file = "astpretty-3.0.0-py2.py3-none-any.whl", hash = "sha256:15bfd47593667169485a1fa7938b8de9445b11057d6f2b6e214b2f70667f94b6"},
     {file = "astpretty-3.0.0.tar.gz", hash = "sha256:b08c95f32e5994454ea99882ff3c4a0afc8254c38998a0ed4b479dba448dc581"},
@@ -37,10 +33,6 @@ name = "attrs"
 version = "24.2.0"
 requires_python = ">=3.7"
 summary = "Classes Without Boilerplate"
-groups = ["check"]
-dependencies = [
-    "importlib-metadata; python_version < \"3.8\"",
-]
 files = [
     {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
     {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
@@ -51,7 +43,6 @@ name = "bandit"
 version = "1.7.10"
 requires_python = ">=3.8"
 summary = "Security oriented static analyser for python code."
-groups = ["check"]
 dependencies = [
     "PyYAML>=5.3.1",
     "colorama>=0.3.9; platform_system == \"Windows\"",
@@ -68,8 +59,6 @@ name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
-groups = ["check", "test"]
-marker = "platform_system == \"Windows\" or sys_platform == \"win32\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -80,7 +69,6 @@ name = "coverage"
 version = "7.6.1"
 requires_python = ">=3.8"
 summary = "Code coverage measurement for Python"
-groups = ["test"]
 files = [
     {file = "coverage-7.6.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b06079abebbc0e89e6163b8e8f0e16270124c154dc6e4a47b413dd538859af16"},
     {file = "coverage-7.6.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:cf4b19715bccd7ee27b6b120e7e9dd56037b9c0681dcc1adc9ba9db3d417fa36"},
@@ -161,7 +149,6 @@ name = "darglint"
 version = "1.8.1"
 requires_python = ">=3.6,<4.0"
 summary = "A utility for ensuring Google-style docstrings stay up to date with the source code."
-groups = ["check"]
 files = [
     {file = "darglint-1.8.1-py3-none-any.whl", hash = "sha256:5ae11c259c17b0701618a20c3da343a3eb98b3bc4b5a83d31cdd94f5ebdced8d"},
     {file = "darglint-1.8.1.tar.gz", hash = "sha256:080d5106df149b199822e7ee7deb9c012b49891538f14a11be681044f0bb20da"},
@@ -172,7 +159,6 @@ name = "docutils"
 version = "0.20.1"
 requires_python = ">=3.7"
 summary = "Docutils -- Python Documentation Utilities"
-groups = ["check"]
 files = [
     {file = "docutils-0.20.1-py3-none-any.whl", hash = "sha256:96f387a2c5562db4476f09f13bbab2192e764cac08ebbf3a34a95d9b1e4a59d6"},
     {file = "docutils-0.20.1.tar.gz", hash = "sha256:f08a4e276c3a1583a86dce3e34aba3fe04d02bba2dd51ed16106244e8a923e3b"},
@@ -183,8 +169,6 @@ name = "exceptiongroup"
 version = "1.2.2"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
-groups = ["test"]
-marker = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
@@ -195,9 +179,7 @@ name = "flake8"
 version = "5.0.4"
 requires_python = ">=3.6.1"
 summary = "the modular source code checker: pep8 pyflakes and co"
-groups = ["check"]
 dependencies = [
-    "importlib-metadata<4.3,>=1.1.0; python_version < \"3.8\"",
     "mccabe<0.8.0,>=0.7.0",
     "pycodestyle<2.10.0,>=2.9.0",
     "pyflakes<2.6.0,>=2.5.0",
@@ -212,7 +194,6 @@ name = "flake8-annotations-complexity"
 version = "0.0.8"
 requires_python = ">=3.7"
 summary = "A flake8 extension that checks for type annotations complexity"
-groups = ["check"]
 dependencies = [
     "flake8",
 ]
@@ -226,7 +207,6 @@ name = "flake8-broken-line"
 version = "1.0.0"
 requires_python = ">=3.8,<4.0"
 summary = "Flake8 plugin to forbid backslashes for line breaks"
-groups = ["check"]
 dependencies = [
     "flake8>5",
 ]
@@ -240,7 +220,6 @@ name = "flake8-bugbear"
 version = "23.3.12"
 requires_python = ">=3.7"
 summary = "A plugin for flake8 finding likely bugs and design problems in your program. Contains warnings that don't belong in pyflakes and pycodestyle."
-groups = ["check"]
 dependencies = [
     "attrs>=19.2.0",
     "flake8>=3.0.0",
@@ -255,7 +234,6 @@ name = "flake8-commas"
 version = "4.0.0"
 requires_python = ">=3.8"
 summary = "Flake8 lint for trailing commas."
-groups = ["check"]
 dependencies = [
     "flake8>=5",
 ]
@@ -269,7 +247,6 @@ name = "flake8-comprehensions"
 version = "3.15.0"
 requires_python = ">=3.8"
 summary = "A flake8 plugin to help you write better list/set/dict comprehensions."
-groups = ["check"]
 dependencies = [
     "flake8!=3.2,>=3",
 ]
@@ -283,7 +260,6 @@ name = "flake8-expression-complexity"
 version = "0.0.11"
 requires_python = ">=3.7"
 summary = "A flake8 extension that checks expressions complexity"
-groups = ["check"]
 dependencies = [
     "astpretty",
     "flake8",
@@ -297,9 +273,7 @@ files = [
 name = "flake8-import-order"
 version = "0.18.2"
 summary = "Flake8 and pylama plugin that checks the ordering of import statements."
-groups = ["check"]
 dependencies = [
-    "enum34; python_version <= \"2.7\"",
     "pycodestyle",
     "setuptools",
 ]
@@ -313,11 +287,9 @@ name = "flake8-pyproject"
 version = "1.2.3"
 requires_python = ">= 3.6"
 summary = "Flake8 plug-in loading the configuration from pyproject.toml"
-groups = ["check"]
 dependencies = [
     "Flake8>=5",
     "TOMLi; python_version < \"3.11\"",
-    "TOMLi<2; python_version < \"3.7\"",
 ]
 files = [
     {file = "flake8_pyproject-1.2.3-py3-none-any.whl", hash = "sha256:6249fe53545205af5e76837644dc80b4c10037e73a0e5db87ff562d75fb5bd4a"},
@@ -327,7 +299,6 @@ files = [
 name = "flake8-quotes"
 version = "3.4.0"
 summary = "Flake8 lint for quotes."
-groups = ["check"]
 dependencies = [
     "flake8",
     "setuptools",
@@ -341,7 +312,6 @@ name = "flake8-rst-docstrings"
 version = "0.3.0"
 requires_python = ">=3.7"
 summary = "Python docstring reStructuredText (RST) validator for flake8"
-groups = ["check"]
 dependencies = [
     "flake8>=3",
     "pygments",
@@ -357,11 +327,9 @@ name = "flake8-simplify"
 version = "0.21.0"
 requires_python = ">=3.6.1"
 summary = "flake8 plugin which checks for code that can be simplified"
-groups = ["check"]
 dependencies = [
     "astor>=0.1",
     "flake8>=3.7",
-    "importlib-metadata>=0.9; python_version < \"3.8\"",
 ]
 files = [
     {file = "flake8_simplify-0.21.0-py3-none-any.whl", hash = "sha256:439391e762a9370b371208add0b5c5c40c3d25a98e1f5421d263215d08194183"},
@@ -373,7 +341,6 @@ name = "iniconfig"
 version = "2.0.0"
 requires_python = ">=3.7"
 summary = "brain-dead simple config-ini parsing"
-groups = ["test"]
 files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
     {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
@@ -384,7 +351,6 @@ name = "markdown-it-py"
 version = "3.0.0"
 requires_python = ">=3.8"
 summary = "Python port of markdown-it. Markdown parsing, done right!"
-groups = ["check"]
 dependencies = [
     "mdurl~=0.1",
 ]
@@ -398,7 +364,6 @@ name = "mccabe"
 version = "0.7.0"
 requires_python = ">=3.6"
 summary = "McCabe checker, plugin for flake8"
-groups = ["check"]
 files = [
     {file = "mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"},
     {file = "mccabe-0.7.0.tar.gz", hash = "sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325"},
@@ -409,7 +374,6 @@ name = "mdurl"
 version = "0.1.2"
 requires_python = ">=3.7"
 summary = "Markdown URL utilities"
-groups = ["check"]
 files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
@@ -420,7 +384,6 @@ name = "mypy"
 version = "1.13.0"
 requires_python = ">=3.8"
 summary = "Optional static typing for Python"
-groups = ["check"]
 dependencies = [
     "mypy-extensions>=1.0.0",
     "tomli>=1.1.0; python_version < \"3.11\"",
@@ -466,7 +429,6 @@ name = "mypy-extensions"
 version = "1.0.0"
 requires_python = ">=3.5"
 summary = "Type system extensions for programs checked with the mypy type checker."
-groups = ["check"]
 files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
@@ -477,7 +439,6 @@ name = "packaging"
 version = "24.1"
 requires_python = ">=3.8"
 summary = "Core utilities for Python packages"
-groups = ["test"]
 files = [
     {file = "packaging-24.1-py3-none-any.whl", hash = "sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124"},
     {file = "packaging-24.1.tar.gz", hash = "sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002"},
@@ -488,7 +449,6 @@ name = "pbr"
 version = "6.1.0"
 requires_python = ">=2.6"
 summary = "Python Build Reasonableness"
-groups = ["check"]
 files = [
     {file = "pbr-6.1.0-py2.py3-none-any.whl", hash = "sha256:a776ae228892d8013649c0aeccbb3d5f99ee15e005a4cbb7e61d55a067b28a2a"},
     {file = "pbr-6.1.0.tar.gz", hash = "sha256:788183e382e3d1d7707db08978239965e8b9e4e5ed42669bf4758186734d5f24"},
@@ -499,7 +459,6 @@ name = "pep8-naming"
 version = "0.14.1"
 requires_python = ">=3.8"
 summary = "Check PEP-8 naming conventions, plugin for flake8"
-groups = ["check"]
 dependencies = [
     "flake8>=5.0.0",
 ]
@@ -513,7 +472,6 @@ name = "pluggy"
 version = "1.5.0"
 requires_python = ">=3.8"
 summary = "plugin and hook calling mechanisms for python"
-groups = ["test"]
 files = [
     {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
     {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
@@ -524,7 +482,6 @@ name = "pycodestyle"
 version = "2.9.1"
 requires_python = ">=3.6"
 summary = "Python style guide checker"
-groups = ["check"]
 files = [
     {file = "pycodestyle-2.9.1-py2.py3-none-any.whl", hash = "sha256:d1735fc58b418fd7c5f658d28d943854f8a849b01a5d0a1e6f3f3fdd0166804b"},
     {file = "pycodestyle-2.9.1.tar.gz", hash = "sha256:2c9607871d58c76354b697b42f5d57e1ada7d261c261efac224b664affdc5785"},
@@ -535,7 +492,6 @@ name = "pyflakes"
 version = "2.5.0"
 requires_python = ">=3.6"
 summary = "passive checker of Python programs"
-groups = ["check"]
 files = [
     {file = "pyflakes-2.5.0-py2.py3-none-any.whl", hash = "sha256:4579f67d887f804e67edb544428f264b7b24f435b263c4614f384135cea553d2"},
     {file = "pyflakes-2.5.0.tar.gz", hash = "sha256:491feb020dca48ccc562a8c0cbe8df07ee13078df59813b83959cbdada312ea3"},
@@ -546,7 +502,6 @@ name = "pygments"
 version = "2.18.0"
 requires_python = ">=3.8"
 summary = "Pygments is a syntax highlighting package written in Python."
-groups = ["check"]
 files = [
     {file = "pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a"},
     {file = "pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"},
@@ -557,7 +512,6 @@ name = "pytest"
 version = "8.3.3"
 requires_python = ">=3.8"
 summary = "pytest: simple powerful testing with Python"
-groups = ["test"]
 dependencies = [
     "colorama; sys_platform == \"win32\"",
     "exceptiongroup>=1.0.0rc8; python_version < \"3.11\"",
@@ -576,7 +530,6 @@ name = "pyyaml"
 version = "6.0.2"
 requires_python = ">=3.8"
 summary = "YAML parser and emitter for Python"
-groups = ["default", "check"]
 files = [
     {file = "PyYAML-6.0.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0a9a2848a5b7feac301353437eb7d5957887edbf81d56e903999a75a3d743086"},
     {file = "PyYAML-6.0.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:29717114e51c84ddfba879543fb232a6ed60086602313ca38cce623c1d62cfbf"},
@@ -637,7 +590,6 @@ files = [
 name = "restructuredtext-lint"
 version = "1.4.0"
 summary = "reStructuredText linter"
-groups = ["check"]
 dependencies = [
     "docutils<1.0,>=0.11",
 ]
@@ -647,29 +599,27 @@ files = [
 
 [[package]]
 name = "rich"
-version = "13.9.3"
+version = "13.9.4"
 requires_python = ">=3.8.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
-groups = ["check"]
 dependencies = [
     "markdown-it-py>=2.2.0",
     "pygments<3.0.0,>=2.13.0",
     "typing-extensions<5.0,>=4.0.0; python_version < \"3.11\"",
 ]
 files = [
-    {file = "rich-13.9.3-py3-none-any.whl", hash = "sha256:9836f5096eb2172c9e77df411c1b009bace4193d6a481d534fea75ebba758283"},
-    {file = "rich-13.9.3.tar.gz", hash = "sha256:bc1e01b899537598cf02579d2b9f4a415104d3fc439313a7a2c165d76557a08e"},
+    {file = "rich-13.9.4-py3-none-any.whl", hash = "sha256:6049d5e6ec054bf2779ab3358186963bac2ea89175919d699e378b99738c2a90"},
+    {file = "rich-13.9.4.tar.gz", hash = "sha256:439594978a49a09530cff7ebc4b5c7103ef57baf48d5ea3184f21d9a2befa098"},
 ]
 
 [[package]]
 name = "setuptools"
-version = "75.2.0"
+version = "75.3.0"
 requires_python = ">=3.8"
 summary = "Easily download, build, install, upgrade, and uninstall Python packages"
-groups = ["check"]
 files = [
-    {file = "setuptools-75.2.0-py3-none-any.whl", hash = "sha256:a7fcb66f68b4d9e8e66b42f9876150a3371558f98fa32222ffaa5bced76406f8"},
-    {file = "setuptools-75.2.0.tar.gz", hash = "sha256:753bb6ebf1f465a1912e19ed1d41f403a79173a9acf66a42e7e6aec45c3c16ec"},
+    {file = "setuptools-75.3.0-py3-none-any.whl", hash = "sha256:f2504966861356aa38616760c0f66568e535562374995367b4e69c7143cf6bcd"},
+    {file = "setuptools-75.3.0.tar.gz", hash = "sha256:fba5dd4d766e97be1b1681d98712680ae8f2f26d7881245f2ce9e40714f1a686"},
 ]
 
 [[package]]
@@ -677,7 +627,6 @@ name = "stevedore"
 version = "5.3.0"
 requires_python = ">=3.8"
 summary = "Manage dynamic plugins for Python applications"
-groups = ["check"]
 dependencies = [
     "pbr>=2.0.0",
 ]
@@ -691,8 +640,6 @@ name = "tomli"
 version = "2.0.2"
 requires_python = ">=3.8"
 summary = "A lil' TOML parser"
-groups = ["check", "test"]
-marker = "python_version < \"3.11\""
 files = [
     {file = "tomli-2.0.2-py3-none-any.whl", hash = "sha256:2ebe24485c53d303f690b0ec092806a085f07af5a5aa1464f3931eec36caaa38"},
     {file = "tomli-2.0.2.tar.gz", hash = "sha256:d46d457a85337051c36524bc5349dd91b1877838e2979ac5ced3e710ed8a60ed"},
@@ -703,7 +650,6 @@ name = "types-pyyaml"
 version = "6.0.12.20240917"
 requires_python = ">=3.8"
 summary = "Typing stubs for PyYAML"
-groups = ["check"]
 files = [
     {file = "types-PyYAML-6.0.12.20240917.tar.gz", hash = "sha256:d1405a86f9576682234ef83bcb4e6fff7c9305c8b1fbad5e0bcd4f7dbdc9c587"},
     {file = "types_PyYAML-6.0.12.20240917-py3-none-any.whl", hash = "sha256:392b267f1c0fe6022952462bf5d6523f31e37f6cea49b14cee7ad634b6301570"},
@@ -714,7 +660,6 @@ name = "typing-extensions"
 version = "4.12.2"
 requires_python = ">=3.8"
 summary = "Backported and Experimental Type Hints for Python 3.8+"
-groups = ["check"]
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},

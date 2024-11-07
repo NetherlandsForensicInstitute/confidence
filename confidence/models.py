@@ -103,7 +103,11 @@ class Configuration(Mapping):
             if source:
                 # merge values from source into self._source, overwriting any corresponding keys
                 # unwrap the source to make sure we're dealing with simple types
-                merge_into(self._source, split_keys(unwrap(source), colliding=_COLLIDING_KEYS), conflict=Conflict.OVERWRITE)
+                merge_into(
+                    self._source,
+                    split_keys(unwrap(source), colliding=_COLLIDING_KEYS),
+                    conflict=Conflict.OVERWRITE,
+                )
 
     def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
