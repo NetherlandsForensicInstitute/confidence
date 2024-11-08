@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from enum import IntEnum
 import logging
 import typing
+import warnings
 
 from confidence.exceptions import MergeConflictError
 
@@ -14,10 +15,10 @@ class Conflict(IntEnum):
     ERROR = 1
 
 
-def merge(left: typing.MutableMapping[str, typing.Any],
-          right: typing.Mapping[str, typing.Any],
-          path: typing.Optional[typing.List[str]] = None,
-          conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
+def merge_into(left: typing.MutableMapping[str, typing.Any],
+               right: typing.Mapping[str, typing.Any],
+               path: typing.Optional[typing.List[str]] = None,
+               conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
     """
     Merges values in place from *right* into *left*.
 
@@ -38,7 +39,7 @@ def merge(left: typing.MutableMapping[str, typing.Any],
         if key in left:
             if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
                 # recurse, merge left and right dict values, update path for current 'step'
-                merge(left[key], right[key], path + [key], conflict=conflict)
+                merge_into(left[key], right[key], path + [key], conflict=conflict)
             elif left[key] != right[key]:
                 if conflict is Conflict.ERROR:
                     # not both dicts we could merge, but also not the same, this doesn't work
@@ -95,6 +96,20 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
             LOG.warning('key "%s" collides with a named member, use the get() method to retrieve its value', key)
 
         # merge the result so far with the (possibly updated / fixed / split) current key and value
-        merge(result, {key: value})
+        merge_into(result, {key: value})
 
     return result
+
+
+# retained to compatibility only (warn about the rename, though)
+def merge(left: typing.MutableMapping[str, typing.Any],
+          right: typing.Mapping[str, typing.Any],
+          path: typing.Optional[typing.List[str]] = None,
+          conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
+    warnings.warn(
+        'confidence.utils.merge has been renamed to confidence.utils.merge_into '
+        'and will be removed in a future version',
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return merge_into(left, right, path, conflict)
