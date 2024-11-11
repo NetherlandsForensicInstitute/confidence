@@ -257,7 +257,16 @@ class Configuration(Mapping):
         return iter(self._source)
 
     def __or__(self, other: typing.Mapping[str, typing.Any]) -> 'Configuration':
+        if not isinstance(other, typing.Mapping):
+            # operation not supported for these types (let the interpreter handle the potential reverse and type error)
+            return NotImplemented
         return merge(self, other)
+
+    def __ror__(self, other: typing.Mapping[str, typing.Any]) -> 'Configuration':
+        if not isinstance(other, typing.Mapping):
+            # operation not supported for these types (let the interpreter handle the potential reverse and type error)
+            return NotImplemented
+        return merge(other, self)
 
     def __dir__(self) -> typing.Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
