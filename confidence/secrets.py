@@ -21,11 +21,11 @@ class Secrets(typing.Protocol):
 
 @typing.runtime_checkable
 class SecretCallback(typing.Protocol):
-    def __call__(self, *args: str) -> str | None:
+    def __call__(self, *args: str) -> typing.Optional[str]:
         ...
 
 
-def to_secrets(secrets: Secrets | SecretCallback | None) -> Secrets | None:
+def to_secrets(secrets: typing.Optional[Secrets | SecretCallback]) -> typing.Optional[Secrets]:
     if not secrets:
         return None
     elif isinstance(secrets, SecretCallback):
@@ -44,7 +44,7 @@ def resolve_n_key_secret_callback(value: typing.Mapping[str, typing.Any],
                                   *,
                                   callback: SecretCallback,
                                   single_key: str,
-                                  args: typing.Iterable[str]) -> str | None:
+                                  args: typing.Iterable[str]) -> typing.Optional[str]:
     try:
         secret = value[single_key]
         return callback(*(secret[arg] for arg in args))

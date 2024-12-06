@@ -82,7 +82,7 @@ class Configuration(Mapping):
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
                  missing: typing.Any = Missing.SILENT,
-                 secrets: Secrets | None = None):
+                 secrets: typing.Optional[Secrets] = None):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
