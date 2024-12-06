@@ -117,7 +117,7 @@ class Configuration(Mapping):
 
     def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
-        namespace = type(self)(missing=self._missing)
+        namespace = type(self)(missing=self._missing, secrets=self._secrets)
         namespace._source = value  # type: ignore  # mutability isn't needed after init
         # carry the root object from namespace to namespace, references are always resolved from root
         namespace._root = self._root
