@@ -1,3 +1,4 @@
+from functools import partial
 import logging
 import typing
 
@@ -42,3 +43,20 @@ def resolve_n_key_secret_callback(value: typing.Mapping[str, typing.Any],
         missing_key = e.args[0] if e.args[0] == single_key else f'{single_key}.{e.args[0]}'
         LOG.warning(f'resolving secret failed, missing key {missing_key}')
         raise
+
+
+class SingleKeyCallback:
+    def __init__(self,
+                 callback: SecretCallback,
+                 single_key: str = DEFAULT_SINGLE_KEY_IDENTIFIER,
+                 args: typing.Iterable[str] = DEFAULT_SINGLE_KEY_ARGS):
+        self.matches = partial(
+            is_single_key_secret,
+            key=single_key,
+        )
+        self.resolve = partial(
+            resolve_n_key_secret_callback,
+            callback=callback,
+            single_key=single_key,
+            args=args,
+        )
