@@ -5,6 +5,7 @@ import re
 import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
+from confidence.secrets import Secrets
 from confidence.utils import Conflict, merge_into, split_keys
 
 
@@ -80,7 +81,8 @@ class Configuration(Mapping):
 
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
-                 missing: typing.Any = Missing.SILENT):
+                 missing: typing.Any = Missing.SILENT,
+                 secrets: Secrets | None = None):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -88,6 +90,7 @@ class Configuration(Mapping):
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
             either as a `Missing` instance or a default value
+        :param secrets: an optional `Secrets` implementation
         """
         self._missing = missing
         self._root = self
@@ -97,6 +100,8 @@ class Configuration(Mapping):
                 Missing.SILENT: NotConfigured,
                 Missing.ERROR: NoDefault,
             }[missing]
+
+        self._secrets = secrets
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
