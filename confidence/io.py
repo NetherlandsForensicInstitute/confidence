@@ -229,7 +229,7 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM,
 
 def load(*fps: typing.IO,
          missing: typing.Any = Missing.SILENT,
-         secrets: typing.Optional[Secrets | SecretCallback] = None) -> Configuration:
+         secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
 
@@ -247,7 +247,7 @@ def load(*fps: typing.IO,
 def loadf(*fnames: typing.Union[str, PathLike],
           default: typing.Any = NoDefault,
           missing: typing.Any = Missing.SILENT,
-          secrets: typing.Optional[Secrets | SecretCallback] = None) -> Configuration:
+          secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance from named files.
 
@@ -281,7 +281,7 @@ def loadf(*fnames: typing.Union[str, PathLike],
 
 def loads(*strings: str,
           missing: typing.Any = Missing.SILENT,
-          secrets: typing.Optional[Secrets | SecretCallback] = None) -> Configuration:
+          secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance from strings.
 
@@ -300,7 +300,7 @@ def load_name(*names: str,
               load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
               extension: str = 'yaml',
               missing: typing.Any = Missing.SILENT,
-              secrets: typing.Optional[Secrets | SecretCallback] = None) -> Configuration:
+              secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,

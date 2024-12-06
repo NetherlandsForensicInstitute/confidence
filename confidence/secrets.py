@@ -25,7 +25,7 @@ class SecretCallback(typing.Protocol):
         ...
 
 
-def to_secrets(secrets: typing.Optional[Secrets | SecretCallback]) -> typing.Optional[Secrets]:
+def to_secrets(secrets: typing.Optional[typing.Union[Secrets, SecretCallback]]) -> typing.Optional[Secrets]:
     if not secrets:
         return None
     elif isinstance(secrets, SecretCallback):
