@@ -186,7 +186,7 @@ class Configuration(Mapping):
             *default* was not provided
         :raises ConfiguredReferenceError: when a reference could not be resolved
         """
-        value = self._source
+        value: Mapping[str, typing.Any] = self._source
         steps_taken = []
         try:
             # walk through the values dictionary
@@ -199,7 +199,13 @@ class Configuration(Mapping):
                 return as_type(value)
             elif isinstance(value, Mapping):
                 # wrap value in a Configuration
-                return self._wrap(value)
+                value = self._wrap(value)
+                if self._secrets and self._secrets.matches(value):
+                    # value is a secret, let the local secret handler resolve this
+                    return self._secrets.resolve(value)
+                else:
+                    # any other regular mapping, or no secret handler available, provide as-is
+                    return value
             elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
                 # wrap value in a sequence that retains Configuration functionality
                 return ConfigurationSequence(value, self._root)
