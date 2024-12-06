@@ -25,6 +25,15 @@ class SecretCallback(typing.Protocol):
         ...
 
 
+def to_secrets(secrets: Secrets | SecretCallback | None) -> Secrets | None:
+    if not secrets:
+        return None
+    elif isinstance(secrets, SecretCallback):
+        return SingleKeyCallback(secrets)
+    else:
+        return secrets
+
+
 def is_single_key_secret(value: typing.Mapping[str, typing.Any],
                          *,
                          key: str) -> bool:
