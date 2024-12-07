@@ -5,6 +5,7 @@ import re
 import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
+from confidence.secrets import Secrets
 from confidence.utils import Conflict, merge_into, split_keys
 
 
@@ -46,7 +47,9 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
-def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
+def merge(*sources: typing.Mapping[str, typing.Any],
+          missing: typing.Any = None,
+          secrets: typing.Any = None) -> 'Configuration':
     """
     Merges *sources* into a union, keeping right-side precedence.
 
@@ -54,9 +57,11 @@ def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None)
         most significance
     :param missing: policy for the resulting `Configuration` (defaults to
         `Missing.SILENT`)
+    :param secrets: an optional provider of secret values (defaults to `None`)
     :return: a `Configuration` instance that encompasses all of the keys and
         values in *sources*
-    :raises ValueError: when the missing policies of *source* cannot be aligned
+    :raises ValueError: when the missing policies or secrets implementation of
+        *sources* cannot be aligned
     """
     if missing is None:
         # no explicit missing setting, collect settings from arguments, should be either nothing if sources are not
@@ -66,7 +71,13 @@ def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None)
         # use the one remaining missing setting, or default to Missing.SILENT
         missing = missing.pop() if missing else Missing.SILENT
 
-    return Configuration(*sources, missing=missing)
+    if secrets is None:
+        # no explicit secrets handler, use the same approach as with missing
+        if len(secrets := {source._secrets for source in sources if isinstance(source, Configuration)}) > 1:
+            raise ValueError(f'no union for incompatible instances: {secrets}')
+        secrets = secrets.pop() if secrets else None
+
+    return Configuration(*sources, missing=missing, secrets=secrets)
 
 
 class Configuration(Mapping):
@@ -80,7 +91,8 @@ class Configuration(Mapping):
 
     def __init__(self,
                  *sources: typing.Mapping[str, typing.Any],
-                 missing: typing.Any = Missing.SILENT):
+                 missing: typing.Any = Missing.SILENT,
+                 secrets: typing.Optional[Secrets] = None):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -88,6 +100,7 @@ class Configuration(Mapping):
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
             either as a `Missing` instance or a default value
+        :param secrets: an optional `Secrets` implementation
         """
         self._missing = missing
         self._root = self
@@ -97,6 +110,8 @@ class Configuration(Mapping):
                 Missing.SILENT: NotConfigured,
                 Missing.ERROR: NoDefault,
             }[missing]
+
+        self._secrets: typing.Optional[Secrets] = secrets
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -111,7 +126,7 @@ class Configuration(Mapping):
 
     def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
-        namespace = type(self)(missing=self._missing)
+        namespace = type(self)(missing=self._missing, secrets=self._secrets)
         namespace._source = value  # type: ignore  # mutability isn't needed after init
         # carry the root object from namespace to namespace, references are always resolved from root
         namespace._root = self._root
@@ -181,7 +196,7 @@ class Configuration(Mapping):
             *default* was not provided
         :raises ConfiguredReferenceError: when a reference could not be resolved
         """
-        value = self._source
+        value: Mapping[str, typing.Any] = self._source
         steps_taken = []
         try:
             # walk through the values dictionary
@@ -194,7 +209,13 @@ class Configuration(Mapping):
                 return as_type(value)
             elif isinstance(value, Mapping):
                 # wrap value in a Configuration
-                return self._wrap(value)
+                value = self._wrap(value)
+                if self._secrets and self._secrets.matches(value):
+                    # value is a secret, let the local secret handler resolve this
+                    return self._secrets.resolve(value)
+                else:
+                    # any other regular mapping, or no secret handler available, provide as-is
+                    return value
             elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
                 # wrap value in a sequence that retains Configuration functionality
                 return ConfigurationSequence(value, self._root)
