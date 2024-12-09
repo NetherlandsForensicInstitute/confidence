@@ -9,7 +9,7 @@ import typing
 import yaml
 
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured, unwrap
-
+from confidence.secrets import SecretCallback, Secrets, to_secrets
 
 LOG = logging.getLogger(__name__)
 
@@ -227,21 +227,27 @@ DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM,
                                    Locality.ENVIRONMENT))
 
 
-def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:
+def load(*fps: typing.IO,
+         missing: typing.Any = Missing.SILENT,
+         secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
 
     :param fps: file-like objects (supporting ``.read()``)
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instance providing values from *fps*
     """
-    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
+    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps),
+                         missing=missing,
+                         secrets=to_secrets(secrets))
 
 
 def loadf(*fnames: typing.Union[str, PathLike],
           default: typing.Any = NoDefault,
-          missing: typing.Any = Missing.SILENT) -> Configuration:
+          missing: typing.Any = Missing.SILENT,
+          secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance from named files.
 
@@ -250,6 +256,7 @@ def loadf(*fnames: typing.Union[str, PathLike],
         exist (default is to raise a `FileNotFoundError`)
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instance providing values from *fnames*
     """
     def readf(fname: str) -> typing.Mapping[str, typing.Any]:
@@ -267,25 +274,33 @@ def loadf(*fnames: typing.Union[str, PathLike],
                 LOG.debug(f'unable to read configuration from file {fname}')
                 return default
 
-    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
+    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames),
+                         missing=missing,
+                         secrets=to_secrets(secrets))
 
 
-def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
+def loads(*strings: str,
+          missing: typing.Any = Missing.SILENT,
+          secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance from strings.
 
     :param strings: configuration contents
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instance providing values from *strings*
     """
-    return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
+    return Configuration(*(yaml.safe_load(string) for string in strings),
+                         missing=missing,
+                         secrets=to_secrets(secrets))
 
 
 def load_name(*names: str,
               load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
               extension: str = 'yaml',
-              missing: typing.Any = Missing.SILENT) -> Configuration:
+              missing: typing.Any = Missing.SILENT,
+              secrets: typing.Optional[typing.Union[Secrets, SecretCallback]] = None) -> Configuration:
     """
     Read a `Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -302,6 +317,7 @@ def load_name(*names: str,
     :param extension: file extension to be used
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
@@ -316,7 +332,7 @@ def load_name(*names: str,
                 candidate = path.expanduser(source.format(name=name, extension=extension))
                 yield loadf(candidate, default=NotConfigured)
 
-    return Configuration(*generate_sources(), missing=missing)
+    return Configuration(*generate_sources(), missing=missing, secrets=to_secrets(secrets))
 
 
 def dump(value: typing.Any, fp: typing.IO, encoding: str = 'utf-8') -> None:
