@@ -59,7 +59,7 @@ def resolve_n_key_secret_callback(value: typing.Mapping[str, typing.Any],
         if missing_key := e.args[0] if e.args[0] == single_key else f'{single_key}.{e.args[0]}':
             LOG.warning(f'resolving secret failed, missing key {missing_key}')
         else:
-            LOG.warning(f'resolving secret failed')
+            LOG.warning('resolving secret failed')
         # logging out of the way, there's not actually anything we can do to fix the error here
         # if the caller was Configuration.get(), it will handle the KeyError according to it's policies
         raise
