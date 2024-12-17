@@ -98,3 +98,21 @@ def test_merge_settings():
         assert not silent | error
     with pytest.raises(ValueError):
         assert not value | error
+
+
+def test_merge_direction():
+    a = {'key': 'a'}
+    b = {'key': 'b'}
+
+    assert (Configuration(a) | b).key == 'b'
+    assert (a | Configuration(b)).key == 'b'
+    # NotConfigured should support the operator, but never contribute content
+    assert NotConfigured | a == a
+    assert a | NotConfigured == a
+    assert NotConfigured | b == b
+    assert b | NotConfigured == b
+
+    with pytest.raises(TypeError):
+        assert not Configuration(a) | 5
+    with pytest.raises(TypeError):
+        assert not 5 | Configuration(b)
