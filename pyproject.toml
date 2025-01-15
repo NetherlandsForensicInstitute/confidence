@@ -35,22 +35,8 @@ version = {source = "scm"}
 
 [tool.pdm.dev-dependencies]
 check = [
-    "bandit",
-    "darglint",
-    "flake8",
-    "flake8-annotations-complexity",
-    "flake8-bugbear",
-    "flake8-broken-line",
-    "flake8-commas",
-    "flake8-comprehensions",
-    "flake8-expression-complexity",
-    "flake8-import-order",
-    "flake8-pyproject",
-    "flake8-quotes",
-    "flake8-rst-docstrings",
-    "flake8-simplify",
     "mypy",
-    "pep8-naming",
+    "ruff",
     # dependency-specific typing information
     "types-pyyaml",
 ]
@@ -84,7 +70,7 @@ test = {cmd = [
     "--strict-markers",
     "tests/",
 ]}
-all = {composite = ["check", "test"]}
+type-check = {cmd = ["mypy", "confidence/"]}
 
 [tool.flake8]
 max-line-length = 120
