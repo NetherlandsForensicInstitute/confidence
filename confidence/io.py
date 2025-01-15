@@ -1,3 +1,5 @@
+# noqa: A005 (confidence.io could shadow builtin io, declare this to be an error at import-level, not here)
+
 from enum import IntEnum
 from functools import partial
 from itertools import product
