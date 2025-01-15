@@ -72,11 +72,12 @@ test = {cmd = [
 ]}
 type-check = {cmd = ["mypy", "confidence/"]}
 
-[tool.flake8]
-max-line-length = 120
-import-order-style = "google"
-application-import-names = "confidence"
-docstring-style = "sphinx"
+[tool.ruff]
+format.quote-style = "single"
+line-length = 120
+lint.flake8-quotes.inline-quotes = "single"
+lint.ignore = ["COM812"]
+lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "N", "Q", "SIM"]
 
 [tool.mypy]
 # allow redefinition of inferred / assigned types
