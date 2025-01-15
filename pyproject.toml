@@ -58,10 +58,10 @@ post_build = {shell = """
 """}
 
 # development scripts
-sec-check = {cmd = ["bandit", "--recursive", "confidence/"]}
-lint = {cmd = ["flake8", "confidence/"]}
-type-check = {cmd = ["mypy", "confidence/"]}
-check = {composite = ["sec-check", "lint", "type-check"]}
+all = {composite = ["check", "test"]}
+check = {composite = ["format", "lint", "type-check"]}
+format = {cmd = ["ruff", "format", "--diff", "confidence/"]}
+lint = {cmd = ["ruff", "check", "confidence/"]}
 test = {cmd = [
     "coverage", "run",
     "--branch",
