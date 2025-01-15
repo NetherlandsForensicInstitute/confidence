@@ -152,10 +152,7 @@ class Configuration(Mapping):
                 # track that we've seen path
                 references.add(path)
                 # either keep finding references or stop resolving and return value
-                if isinstance(value, str):
-                    match = self._reference_pattern.search(value)
-                else:
-                    match = None
+                match = self._reference_pattern.search(value) if isinstance(value, str) else None
 
             return value
         except NotConfiguredError as e:
@@ -397,7 +394,7 @@ def _repr_value(value: typing.Any) -> str:
     :return: a string-representation of *value*
     """
     if isinstance(value, Mapping):
-        keys = ', '.join(_repr_value(key) for key in value.keys())
+        keys = ', '.join(_repr_value(key) for key in value)
         return f'mapping(keys=[{keys}])'
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         return 'sequence([...])'
