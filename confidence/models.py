@@ -16,10 +16,14 @@ class Missing(Enum):
 # define a sentinel value to indicate there is no default value specified (None would be a valid default value)
 # as this is used as an argument default to indicate that an error should be raised when a value is not found, make
 # sure that the repr-value of NoDefault shows up as '(raise)' in documentation
-NoDefault = type('NoDefault', (object,), {
-    '__repr__': lambda self: '(raise)',
-    '__str__': lambda self: '(raise)',
-})()  # create instance of that new type to assign to NoDefault
+NoDefault = type(
+    'NoDefault',
+    (object,),
+    {
+        '__repr__': lambda self: '(raise)',
+        '__str__': lambda self: '(raise)',
+    },
+)()  # create instance of that new type to assign to NoDefault
 
 
 def unwrap(source: typing.Any) -> typing.Any:
@@ -78,9 +82,7 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self,
-                 *sources: typing.Mapping[str, typing.Any],
-                 missing: typing.Any = Missing.SILENT):
+    def __init__(self, *sources: typing.Mapping[str, typing.Any], missing: typing.Any = Missing.SILENT):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -132,14 +134,16 @@ class Configuration(Mapping):
                 if match.span(0) != (0, len(value)):
                     # matched a reference inside of another value (template)
                     if isinstance(reference, Configuration):
-                        raise ConfiguredReferenceError(f'cannot insert namespace at {path} into referring value',
-                                                       key=path)
+                        raise ConfiguredReferenceError(
+                            f'cannot insert namespace at {path} into referring value',
+                            key=path,
+                        )
 
                     # render the template containing the referenced value
                     value = '{start}{reference}{end}'.format(
-                        start=value[:match.start(0)],
+                        start=value[: match.start(0)],
                         reference=reference,
-                        end=value[match.end(0):],
+                        end=value[match.end(0) :],
                     )
                 else:
                     # value is only a reference, avoid rendering a template (keep referenced value type)
@@ -158,12 +162,14 @@ class Configuration(Mapping):
             missing_key = match.group('path')  # type: ignore
             raise ConfiguredReferenceError(f'unable to resolve referenced key {missing_key}', key=e.key) from e
 
-    def get(self,
-            path: str,
-            default: typing.Any = NoDefault,
-            *,
-            as_type: typing.Optional[typing.Callable] = None,
-            resolve_references: bool = True) -> typing.Any:
+    def get(
+        self,
+        path: str,
+        default: typing.Any = NoDefault,
+        *,
+        as_type: typing.Optional[typing.Callable] = None,
+        resolve_references: bool = True,
+    ) -> typing.Any:
         """
         Gets a value for the specified path.
 
@@ -292,18 +298,21 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = {Missing.SILENT: NotConfigured,
-                             Missing.ERROR: NoDefault}[self._missing]
+            self._missing = {Missing.SILENT: NotConfigured, Missing.ERROR: NoDefault}[self._missing]
 
 
 # define NotConfigured as a class first (using type() to keep the type checker happy)
-NotConfigured = type('NotConfigured', (Configuration,), {
-    '__bool__': lambda self: False,
-    '__repr__': lambda self: '(not configured)',
-    '__str__': lambda self: '(not configured)',
-    '__doc__': 'Sentinel value to signal there is no value for a requested key.',
-    '__hash__': lambda self: hash((type(self), None)),
-})
+NotConfigured = type(
+    'NotConfigured',
+    (Configuration,),
+    {
+        '__bool__': lambda self: False,
+        '__repr__': lambda self: '(not configured)',
+        '__str__': lambda self: '(not configured)',
+        '__doc__': 'Sentinel value to signal there is no value for a requested key.',
+        '__hash__': lambda self: hash((type(self), None)),
+    },
+)
 # overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
 # not configured, while still acting like a Configuration object
 NotConfigured = NotConfigured()
@@ -321,9 +330,7 @@ class ConfigurationSequence(Sequence):
     A sequence of configured values, retrievable as if this were a `list`.
     """
 
-    def __init__(self,
-                 source: typing.Sequence,
-                 root: Configuration):
+    def __init__(self, source: typing.Sequence, root: Configuration):
         """
         Create a new `.ConfigurationSequence`, based on a single source
         sequence, pointing back to 'root' `Configuration` for reference

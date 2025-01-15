@@ -6,9 +6,25 @@ from confidence.models import Configuration, merge, Missing, NotConfigured, unwr
 
 
 __all__ = (
-    'ConfigurationError', 'ConfiguredReferenceError', 'MergeConflictError', 'NotConfiguredError',
-    'DEFAULT_LOAD_ORDER', 'dump', 'dumpf', 'dumps', 'load', 'load_name', 'loaders', 'loadf', 'loads', 'Locality',
-    'Configuration', 'merge', 'Missing', 'NotConfigured', 'unwrap',
+    'ConfigurationError',
+    'ConfiguredReferenceError',
+    'MergeConflictError',
+    'NotConfiguredError',
+    'DEFAULT_LOAD_ORDER',
+    'dump',
+    'dumpf',
+    'dumps',
+    'load',
+    'load_name',
+    'loaders',
+    'loadf',
+    'loads',
+    'Locality',
+    'Configuration',
+    'merge',
+    'Missing',
+    'NotConfigured',
+    'unwrap',
 )
 
 

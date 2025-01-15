@@ -31,8 +31,7 @@ def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
     config_dirs = reversed(config_dirs.split(path.pathsep))
 
     # load a file from all config dirs, default to NotConfigured
-    return loadf(*(path.join(config_dir, f'{name}.{extension}') for config_dir in config_dirs),
-                 default=NotConfigured)
+    return loadf(*(path.join(config_dir, f'{name}.{extension}') for config_dir in config_dirs), default=NotConfigured)
 
 
 def read_xdg_config_home(name: str, extension: str) -> Configuration:
@@ -79,9 +78,11 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     prefix_len = len(prefix)
     envvar_file = f'{name}_config_file'
     # create a new mapping from environment values starting with the prefix (but stripped of that prefix)
-    values = {var.lower()[prefix_len:]: value
-              for var, value in environ.items()
-              if var.lower().startswith(prefix) and var.lower() != envvar_file}
+    values = {
+        var.lower()[prefix_len:]: value
+        for var, value in environ.items()
+        if var.lower().startswith(prefix) and var.lower() != envvar_file
+    }
     if not values:
         return NotConfigured
 
@@ -165,7 +166,6 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
         '/Library/Preferences/{name}.{extension}',
         partial(read_envvar_dir, 'PROGRAMDATA'),
     ),
-
     Locality.USER: (
         # user-local locations
         read_xdg_config_home,
@@ -174,12 +174,10 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
         partial(read_envvar_dir, 'LOCALAPPDATA'),
         '~/.{name}.{extension}',
     ),
-
     Locality.APPLICATION: (
         # application-local locations
         './{name}.{extension}',
     ),
-
     Locality.ENVIRONMENT: (
         # application-specific environment variables
         read_envvar_file,
@@ -221,10 +219,7 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
             yield specifier
 
 
-DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM,
-                                   Locality.USER,
-                                   Locality.APPLICATION,
-                                   Locality.ENVIRONMENT))
+DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM, Locality.USER, Locality.APPLICATION, Locality.ENVIRONMENT))
 
 
 def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:
@@ -239,9 +234,11 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration
     return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
 
 
-def loadf(*fnames: typing.Union[str, PathLike],
-          default: typing.Any = NoDefault,
-          missing: typing.Any = Missing.SILENT) -> Configuration:
+def loadf(
+    *fnames: typing.Union[str, PathLike],
+    default: typing.Any = NoDefault,
+    missing: typing.Any = Missing.SILENT,
+) -> Configuration:
     """
     Read a `Configuration` instance from named files.
 
@@ -252,6 +249,7 @@ def loadf(*fnames: typing.Union[str, PathLike],
         as a `Missing` instance or a default value
     :returns: a `Configuration` instance providing values from *fnames*
     """
+
     def readf(fname: str) -> typing.Mapping[str, typing.Any]:
         try:
             with open(fname, 'r') as fp:
@@ -282,10 +280,12 @@ def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
     return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
 
 
-def load_name(*names: str,
-              load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
-              extension: str = 'yaml',
-              missing: typing.Any = Missing.SILENT) -> Configuration:
+def load_name(
+    *names: str,
+    load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
+    extension: str = 'yaml',
+    missing: typing.Any = Missing.SILENT,
+) -> Configuration:
     """
     Read a `Configuration` instance by name, trying to read from files in
     increasing significance. The default load order is `.system`, `.user`,
@@ -305,6 +305,7 @@ def load_name(*names: str,
     :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
+
     def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
