@@ -221,7 +221,14 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
             yield specifier
 
 
-DEFAULT_LOAD_ORDER = tuple(loaders(Locality.SYSTEM, Locality.USER, Locality.APPLICATION, Locality.ENVIRONMENT))
+DEFAULT_LOAD_ORDER = tuple(
+    loaders(
+        Locality.SYSTEM,
+        Locality.USER,
+        Locality.APPLICATION,
+        Locality.ENVIRONMENT,
+    )
+)
 
 
 def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:

@@ -123,7 +123,8 @@ class Configuration(Mapping):
         match = self._reference_pattern.search(value)
         references = set()
         try:
-            while match:
+            # keep resolving references until we're at a non-str value or a str-value without references
+            while isinstance(value, str) and (match := self._reference_pattern.search(value)):
                 path = match.group('path')
                 if path in references:
                     raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
@@ -151,8 +152,6 @@ class Configuration(Mapping):
 
                 # track that we've seen path
                 references.add(path)
-                # either keep finding references or stop resolving and return value
-                match = self._reference_pattern.search(value) if isinstance(value, str) else None
 
             return value
         except NotConfiguredError as e:
