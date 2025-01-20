@@ -1,12 +1,12 @@
 # noqa: A005 (confidence.io could shadow builtin io, declare this to be an error at import-level, not here)
 
+import logging
+import re
+import typing
 from enum import IntEnum
 from functools import partial
 from itertools import product
-import logging
-from os import environ, path, PathLike
-import re
-import typing
+from os import PathLike, environ, path
 
 import yaml
 

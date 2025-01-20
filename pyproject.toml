@@ -77,7 +77,8 @@ format.quote-style = "single"
 line-length = 120
 lint.flake8-quotes.inline-quotes = "single"
 lint.ignore = ["COM812"]
-lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "N", "Q", "SIM"]
+lint.isort.lines-after-imports = 2
+lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "I", "N", "Q", "SIM"]
 
 [tool.mypy]
 # allow redefinition of inferred / assigned types

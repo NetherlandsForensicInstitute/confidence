@@ -1,8 +1,8 @@
-from collections.abc import Mapping
-from enum import IntEnum
 import logging
 import typing
 import warnings
+from collections.abc import Mapping
+from enum import IntEnum
 
 from confidence.exceptions import MergeConflictError
 
