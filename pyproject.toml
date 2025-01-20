@@ -60,8 +60,8 @@ post_build = {shell = """
 # development scripts
 all = {composite = ["check", "test"]}
 check = {composite = ["format", "lint", "type-check"]}
-format = {cmd = ["ruff", "format", "--diff", "confidence/"]}
-lint = {cmd = ["ruff", "check", "confidence/"]}
+format = {cmd = ["ruff", "format", "--diff", "confidence/", "tests/"]}
+lint = {cmd = ["ruff", "check", "confidence/", "tests/"]}
 test = {cmd = [
     "coverage", "run",
     "--branch",
