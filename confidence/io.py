@@ -265,7 +265,7 @@ def loadf(
                 LOG.info(f'reading configuration from file {fname}')
                 # default to empty dict, yaml.safe_load will return None for an empty document
                 return yaml.safe_load(fp.read()) or {}
-        except IOError:
+        except OSError:
             # file does not exist or inaccessible
             if default is NoDefault:
                 # no explicit default provided, continue original error

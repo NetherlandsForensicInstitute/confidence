@@ -126,10 +126,10 @@ class Configuration(Mapping):
             # keep resolving references until we're at a non-str value or a str-value without references
             while isinstance(value, str) and (match := self._reference_pattern.search(value)):
                 path = match.group('path')
+                # avoid resolving references recursively (breaks reference tracking)
                 if path in references:
                     raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
 
-                # avoid resolving references recursively (breaks reference tracking)
                 reference = self._root.get(path, resolve_references=False)
 
                 if match.span(0) != (0, len(value)):
@@ -140,12 +140,8 @@ class Configuration(Mapping):
                             key=path,
                         )
 
-                    # render the template containing the referenced value
-                    value = '{start}{reference}{end}'.format(
-                        start=value[: match.start(0)],
-                        reference=reference,
-                        end=value[match.end(0) :],
-                    )
+                    # reformat the value with the reference replaced with the referenced value
+                    value = f'{value[: match.start(0)]}{reference}{value[match.end(0) :]}'
                 else:
                     # value is only a reference, avoid rendering a template (keep referenced value type)
                     value = reference

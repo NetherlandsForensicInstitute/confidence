@@ -30,7 +30,7 @@ def test_empty():
 
 def test_value_types():
     def run_test(subject, key, expected_type):
-        assert isinstance(subject.get(key), expected_type), 'key {} not of type {}'.format(key, expected_type)
+        assert isinstance(subject.get(key), expected_type), f'key {key} not of type {expected_type}'
 
     run_test(Configuration({'just': 'string'}), 'just', str)
     run_test(Configuration({'a': 42}), 'a', int)
