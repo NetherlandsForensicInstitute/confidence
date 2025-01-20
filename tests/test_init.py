@@ -1,4 +1,4 @@
-from confidence import Configuration, dumps, loads, NotConfigured
+from confidence import Configuration, NotConfigured, dumps, loads
 from confidence.models import ConfigurationSequence
 
 

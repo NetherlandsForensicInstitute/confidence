@@ -5,8 +5,7 @@ from confidence.models import NoDefault
 
 
 def test_multiple_sources():
-    subject = Configuration({'key': 'value'},
-                            {'another.key': 42})
+    subject = Configuration({'key': 'value'}, {'another.key': 42})
 
     assert len(subject) == 2
     assert subject.key == 'value'
@@ -14,8 +13,7 @@ def test_multiple_sources():
 
 
 def test_overlapping_sources():
-    subject = Configuration({'namespace.key': 'value'},
-                            {'namespace.another.key': 42})
+    subject = Configuration({'namespace.key': 'value'}, {'namespace.another.key': 42})
 
     assert len(subject) == 1
     assert subject.namespace.key == 'value'
@@ -23,8 +21,7 @@ def test_overlapping_sources():
 
 
 def test_single_overwrite():
-    subject = Configuration({'key1': 1, 'key2': 2},
-                            {'key2': 4, 'key3': 3})
+    subject = Configuration({'key1': 1, 'key2': 2}, {'key2': 4, 'key3': 3})
 
     assert len(subject) == 3
     assert subject.key1 == 1
@@ -33,9 +30,11 @@ def test_single_overwrite():
 
 
 def test_multiple_overwrite():
-    subject = Configuration({'key1': 1, 'namespace.key1': 1, 'namespace.key2': 2, 'key2': 2},
-                            {'key2': 4, 'key3': 3, 'namespace.key1': 1},
-                            {'key3': 6, 'namespace.key3': 3})
+    subject = Configuration(
+        {'key1': 1, 'namespace.key1': 1, 'namespace.key2': 2, 'key2': 2},
+        {'key2': 4, 'key3': 3, 'namespace.key1': 1},
+        {'key3': 6, 'namespace.key3': 3},
+    )
 
     assert len(subject) == 4
     assert subject.key1 == 1
@@ -60,8 +59,7 @@ def test_overwrite_multiple_merge():
 
 
 def test_overwrite_namespace_with_value():
-    subject = Configuration({'key1': 1, 'namespace.key1': 1},
-                            {'key2': 2, 'namespace': 'namespace'})
+    subject = Configuration({'key1': 1, 'namespace.key1': 1}, {'key2': 2, 'namespace': 'namespace'})
 
     assert len(subject) == 3
     assert subject.key1 == 1
@@ -70,8 +68,7 @@ def test_overwrite_namespace_with_value():
 
 
 def test_overwrite_value_with_namespace():
-    subject = Configuration({'key2': 2, 'namespace': 'namespace'},
-                            {'key1': 1, 'namespace.key1': 1})
+    subject = Configuration({'key2': 2, 'namespace': 'namespace'}, {'key1': 1, 'namespace.key1': 1})
 
     assert len(subject) == 3
     assert subject.key1 == 1

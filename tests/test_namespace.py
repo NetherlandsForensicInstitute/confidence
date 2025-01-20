@@ -17,14 +17,16 @@ def test_empty():
 
 
 def test_value_types():
-    subject = Configuration({
-        'a_string': 'just',
-        'an_int': 42,
-        'a_float': 3.14,
-        'a_boolean': False,
-        'a_list': [1, 2, 3],
-        'we_must': {'go_deeper': True},
-    })
+    subject = Configuration(
+        {
+            'a_string': 'just',
+            'an_int': 42,
+            'a_float': 3.14,
+            'a_boolean': False,
+            'a_list': [1, 2, 3],
+            'we_must': {'go_deeper': True},
+        }
+    )
 
     assert isinstance(subject.a_string, str)
     assert isinstance(subject.an_int, int)
@@ -57,8 +59,9 @@ def test_collisions():
         subject = Configuration({'key': 'value', 'keys': [1, 2], '_missing': 'error'})
 
     for collision in ('keys', '_missing'):
-        logger.warning.assert_any_call('key "%s" collides with a named member, use the get() method to '
-                                       'retrieve its value', collision)
+        logger.warning.assert_any_call(
+            'key "%s" collides with a named member, use the get() method to retrieve its value', collision
+        )
 
     assert subject.key == 'value'
     assert callable(subject.keys)

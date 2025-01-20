@@ -1,5 +1,5 @@
-from datetime import date
 import warnings
+from datetime import date
 
 import pytest
 
@@ -37,8 +37,9 @@ def test_merge_overlap():
 
     assert len(merged) == 1, 'overlapping merge of incorrect length'
     assert len(merged['parent']) == 4, 'value in overlapping merge of incorrect length'
-    assert (merged['parent']['second'], merged['parent']['third']) == (456, 789), \
+    assert (merged['parent']['second'], merged['parent']['third']) == (456, 789), (
         'incorrect values in overlapping merge'
+    )
 
 
 def test_merge_equal():
@@ -57,7 +58,7 @@ def test_merge_conflict():
     right = {'parent': {'third': 3, 'first': 4}}  # parent.first differs
 
     try:
-        merged = merge_into(left, right)
+        _ = merge_into(left, right)
     except Exception as e:
         assert 'parent.first' in str(e), "conflict error didn't specify conflicting key"
     else:
@@ -123,29 +124,13 @@ def test_split_overlap_complex():
     separated = split_keys(subject)
 
     assert separated == {
-        'dotted': {
-            'key': 1,
-            'something_else': {
-                'again': 2,
-                'entirely': 3
-            }
-        },
-        'key': {
-            'thing': {
-                'key': 4,
-                'another_key': 5
-            }
-        }
+        'dotted': {'key': 1, 'something_else': {'again': 2, 'entirely': 3}},
+        'key': {'thing': {'key': 4, 'another_key': 5}},
     }
 
 
 def test_split_key_types():
-    subject = {
-        'ns.1234.key': 42,
-        'ns': {
-            1234: {'key2': 43}
-        }
-    }
+    subject = {'ns.1234.key': 42, 'ns': {1234: {'key2': 43}}}
 
     with pytest.raises(ValueError) as e:
         assert not split_keys(subject)
@@ -153,12 +138,7 @@ def test_split_key_types():
     assert '1234' in str(e.value)
     assert 'int' in str(e.value)
 
-    subject = {
-        'ns.2019-04-01.key': 42,
-        'ns': {
-            date(2019, 4, 1): {'key2': 43}
-        }
-    }
+    subject = {'ns.2019-04-01.key': 42, 'ns': {date(2019, 4, 1): {'key2': 43}}}
 
     with pytest.raises(ValueError) as e:
         assert not split_keys(subject)
