@@ -200,9 +200,11 @@ def test_load_name_multiple():
 def test_load_name_order(broken_open):
     env = {'HOME': '/home/user', 'LOCALAPPDATA': 'C:/Users/user/AppData/Local'}
 
-    with patch('confidence.io.path') as mocked_path, patch(
-        'confidence.io.open', side_effect=broken_open
-    ) as mocked_open, patch('confidence.io.environ', env):
+    with (
+        patch('confidence.io.path') as mocked_path,
+        patch('confidence.io.open', side_effect=broken_open) as mocked_open,
+        patch('confidence.io.environ', env),
+    ):
         # hard-code user-expansion, unmock join, unmock pathsep
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
@@ -242,9 +244,11 @@ def test_load_name_xdg_config_dirs(broken_open):
         'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
     }
 
-    with patch('confidence.io.path') as mocked_path, patch(
-        'confidence.io.open', side_effect=broken_open
-    ) as mocked_open, patch('confidence.io.environ', env):
+    with (
+        patch('confidence.io.path') as mocked_path,
+        patch('confidence.io.open', side_effect=broken_open) as mocked_open,
+        patch('confidence.io.environ', env),
+    ):
         # hard-code path separator, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.pathsep = ':'
@@ -267,8 +271,10 @@ def test_load_name_xdg_config_dirs(broken_open):
 
 
 def test_load_name_xdg_config_dirs_fallback():
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.loadf') as mocked_loadf, patch(
-        'confidence.io.environ', {}
+    with (
+        patch('confidence.io.path') as mocked_path,
+        patch('confidence.io.loadf') as mocked_loadf,
+        patch('confidence.io.environ', {}),
     ):
         # hard-code path separator, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
@@ -290,9 +296,11 @@ def test_load_name_xdg_config_dirs_fallback():
 def test_load_name_xdg_config_home(broken_open):
     env = {'XDG_CONFIG_HOME': '/home/user/.not-config', 'HOME': '/home/user'}
 
-    with patch('confidence.io.path') as mocked_path, patch(
-        'confidence.io.open', side_effect=broken_open
-    ) as mocked_open, patch('confidence.io.environ', env):
+    with (
+        patch('confidence.io.path') as mocked_path,
+        patch('confidence.io.open', side_effect=broken_open) as mocked_open,
+        patch('confidence.io.environ', env),
+    ):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
         mocked_path.join.side_effect = path.join
@@ -313,8 +321,10 @@ def test_load_name_xdg_config_home(broken_open):
 def test_load_name_xdg_config_home_fallback():
     env = {'HOME': '/home/user'}
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.loadf') as mocked_loadf, patch(
-        'confidence.io.environ', env
+    with (
+        patch('confidence.io.path') as mocked_path,
+        patch('confidence.io.loadf') as mocked_loadf,
+        patch('confidence.io.environ', env),
     ):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
@@ -397,8 +407,10 @@ def test_load_name_envvar_dir():
     # only the envvar dir loaders are partials in DEFAULT_LOAD_ORDER
     load_order = [loader for loader in DEFAULT_LOAD_ORDER if isinstance(loader, partial)]
 
-    with patch('confidence.io.path') as mocked_path, patch('confidence.io.loadf') as mocked_loadf, patch(
-        'confidence.io.environ', env
+    with (
+        patch('confidence.io.path') as mocked_path,
+        patch('confidence.io.loadf') as mocked_loadf,
+        patch('confidence.io.environ', env),
     ):
         # hard-code user-expansion, unmock join
         mocked_path.expanduser.side_effect = _patched_expanduser
