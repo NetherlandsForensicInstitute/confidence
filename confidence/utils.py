@@ -18,7 +18,7 @@ class Conflict(IntEnum):
 def merge_into(
     left: typing.MutableMapping[str, typing.Any],
     right: typing.Mapping[str, typing.Any],
-    path: typing.Optional[typing.List[str]] = None,
+    path: typing.Optional[list[str]] = None,
     conflict: Conflict = Conflict.ERROR,
 ) -> typing.Mapping[str, typing.Any]:
     """
@@ -110,7 +110,7 @@ def split_keys(
 def merge(
     left: typing.MutableMapping[str, typing.Any],
     right: typing.Mapping[str, typing.Any],
-    path: typing.Optional[typing.List[str]] = None,
+    path: typing.Optional[list[str]] = None,
     conflict: Conflict = Conflict.ERROR,
 ) -> typing.Mapping[str, typing.Any]:
     warnings.warn(

@@ -273,7 +273,7 @@ class Configuration(Mapping):
         keys = ', '.join(_repr_value(key) for key in self.keys())
         return f'{self.__class__.__module__}.{self.__class__.__name__}(keys=[{keys}])'
 
-    def __getstate__(self) -> typing.Dict[str, typing.Any]:
+    def __getstate__(self) -> dict[str, typing.Any]:
         state = self.__dict__.copy()
 
         # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
@@ -285,7 +285,7 @@ class Configuration(Mapping):
 
         return state
 
-    def __setstate__(self, state: typing.Dict[str, typing.Any]) -> None:
+    def __setstate__(self, state: dict[str, typing.Any]) -> None:
         self.__dict__ = state
 
         if isinstance(self._missing, Missing):
