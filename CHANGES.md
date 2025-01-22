@@ -4,6 +4,7 @@ Changes
 development (master)
 --------------------
 
+- Drop support for Python 3.8.
 - Add `merge` function to combine multiple mappings into a single `Configuration`.
 - Enable the use of the binary or / union operator on `Configuration` instances, analogous to a builtin `dict` (e.g. `config = defaults | overrides`).
 
