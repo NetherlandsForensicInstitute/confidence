@@ -2,25 +2,27 @@ from os import path
 
 import pytest
 
-from confidence import Configuration, ConfigurationError, ConfiguredReferenceError, loadf, NotConfigured
+from confidence import Configuration, ConfigurationError, ConfiguredReferenceError, NotConfigured, loadf
 
 
 test_files = path.join(path.dirname(__file__), 'files')
 
 
 def test_reference_syntax():
-    config = Configuration({
-        'key1': '$(reference)',
-        'key2': '${reference)',
-        'key3': '${}',
-        'key4': '$ {reference}',
-        'key5': '#{reference}',
-        'key_with_space ': 'value',
-        'key with spaces': 'value2',
-        'key6': '${key_with_space }',
-        'key7': '${key with spaces}',
-        'key8': '${key_with_space}',
-    })
+    config = Configuration(
+        {
+            'key1': '$(reference)',
+            'key2': '${reference)',
+            'key3': '${}',
+            'key4': '$ {reference}',
+            'key5': '#{reference}',
+            'key_with_space ': 'value',
+            'key with spaces': 'value2',
+            'key6': '${key_with_space }',
+            'key7': '${key with spaces}',
+            'key8': '${key_with_space}',
+        }
+    )
 
     assert config.reference is NotConfigured
     assert '$' in config.key1
@@ -36,16 +38,18 @@ def test_reference_syntax():
 
 
 def test_value_types():
-    config = Configuration({
-        'ns.str': 'string',
-        'ns.int': 42,
-        'ns.float': 2.0,
-        'ns.bool': True,
-        'ns.ref1': 'prefix ${ns.str} suffix',
-        'ns.ref2': 'p${ns.int}s',
-        'ns.ref3': '${ns.float}',
-        'ns.ref4': '${ns.bool}',
-    })
+    config = Configuration(
+        {
+            'ns.str': 'string',
+            'ns.int': 42,
+            'ns.float': 2.0,
+            'ns.bool': True,
+            'ns.ref1': 'prefix ${ns.str} suffix',
+            'ns.ref2': 'p${ns.int}s',
+            'ns.ref3': '${ns.float}',
+            'ns.ref4': '${ns.bool}',
+        }
+    )
 
     assert config.ns.str == 'string'
     assert config.ns.ref1 == config.get('ns.ref1') == 'prefix string suffix'
@@ -55,21 +59,25 @@ def test_value_types():
 
 
 def test_multiple_references():
-    config = Configuration({
-        'key': 'A seemingly ${ns.word1}, ${ns.word2} sentence.',
-        'ns.word1': 'full',
-        'ns.word2': 'complete',
-    })
+    config = Configuration(
+        {
+            'key': 'A seemingly ${ns.word1}, ${ns.word2} sentence.',
+            'ns.word1': 'full',
+            'ns.word2': 'complete',
+        }
+    )
 
     assert config.key == 'A seemingly full, complete sentence.'
 
 
 def test_multi_level_reference():
-    config = Configuration({
-        'key': 'A ${ns.part1}',
-        'ns.part1': 'seemingly full, ${ns.part2}.',
-        'ns.part2': 'complete sentence',
-    })
+    config = Configuration(
+        {
+            'key': 'A ${ns.part1}',
+            'ns.part1': 'seemingly full, ${ns.part2}.',
+            'ns.part2': 'complete sentence',
+        }
+    )
 
     assert config.ns.part2 == 'complete sentence'
     assert config.ns.part1 == 'seemingly full, complete sentence.'
@@ -77,11 +85,12 @@ def test_multi_level_reference():
 
 
 def test_recursive_reference():
-    config = Configuration({
-        'ns': {'reference': 'final',
-               'final': 'the actual value'},
-        'wanted': '${ns.${ns.reference}}',
-    })
+    config = Configuration(
+        {
+            'ns': {'reference': 'final', 'final': 'the actual value'},
+            'wanted': '${ns.${ns.reference}}',
+        }
+    )
 
     assert config.ns.final == 'the actual value'
     assert config.ns.reference == 'final'
@@ -89,11 +98,13 @@ def test_recursive_reference():
 
 
 def test_sub_config_reference():
-    config = Configuration({
-        'key': 'string',
-        'ns.test1': '${key}',
-        'ns.test2': '${ns.test1}',
-    })
+    config = Configuration(
+        {
+            'key': 'string',
+            'ns.test1': '${key}',
+            'ns.test2': '${ns.test1}',
+        }
+    )
 
     assert config.key == 'string'
 
@@ -107,11 +118,13 @@ def test_sub_config_reference():
 
 
 def test_reference_ns():
-    config = Configuration({
-        'key': '${ns}',
-        'ns.key': 'string',
-        'broken': 'no ${ns} inside',
-    })
+    config = Configuration(
+        {
+            'key': '${ns}',
+            'ns.key': 'string',
+            'broken': 'no ${ns} inside',
+        }
+    )
 
     assert config.ns.key == 'string'
     assert isinstance(config.key, Configuration)
@@ -123,11 +136,13 @@ def test_reference_ns():
 
 
 def test_missing_reference():
-    config = Configuration({
-        'key': 'string',
-        'template.working': '${key}',
-        'template.missing': '${ns.key}',
-    })
+    config = Configuration(
+        {
+            'key': 'string',
+            'template.working': '${key}',
+            'template.missing': '${ns.key}',
+        }
+    )
 
     assert config.key == 'string'
     assert config.template.working == 'string'
@@ -142,9 +157,11 @@ def test_missing_reference():
 
 
 def test_self_recursion():
-    config = Configuration({
-        'ns.key': '${ns.key}',
-    })
+    config = Configuration(
+        {
+            'ns.key': '${ns.key}',
+        }
+    )
 
     with pytest.raises(ConfigurationError) as e:
         assert not config.ns.key
@@ -153,10 +170,12 @@ def test_self_recursion():
 
 
 def test_loop_recursion():
-    config = Configuration({
-        'ns.key': '${ns.ns.key}',
-        'ns.ns.key': '${ns.key}',
-    })
+    config = Configuration(
+        {
+            'ns.key': '${ns.ns.key}',
+            'ns.ns.key': '${ns.key}',
+        }
+    )
 
     with pytest.raises(ConfigurationError) as e:
         assert not config.ns.key

@@ -1,6 +1,6 @@
 from itertools import chain, groupby
 
-from confidence import DEFAULT_LOAD_ORDER, loaders, Locality
+from confidence import DEFAULT_LOAD_ORDER, Locality, loaders
 from confidence.io import _LOADERS
 
 
@@ -23,8 +23,12 @@ def test_no_loaders():
 
 def test_locality_loaders():
     assert tuple(loaders(Locality.USER)) == _LOADERS[Locality.USER]
-    assert tuple(loaders(Locality.SYSTEM, Locality.APPLICATION)) == tuple(chain(_LOADERS[Locality.SYSTEM], _LOADERS[Locality.APPLICATION]))
-    assert tuple(loaders(Locality.ENVIRONMENT, Locality.ENVIRONMENT)) == tuple(chain(_LOADERS[Locality.ENVIRONMENT], _LOADERS[Locality.ENVIRONMENT]))
+    assert tuple(loaders(Locality.SYSTEM, Locality.APPLICATION)) == tuple(
+        chain(_LOADERS[Locality.SYSTEM], _LOADERS[Locality.APPLICATION])
+    )
+    assert tuple(loaders(Locality.ENVIRONMENT, Locality.ENVIRONMENT)) == tuple(
+        chain(_LOADERS[Locality.ENVIRONMENT], _LOADERS[Locality.ENVIRONMENT])
+    )
 
 
 def test_loaders_mixed():
@@ -33,4 +37,6 @@ def test_loaders_mixed():
 
     assert tuple(loaders('just a string')) == ('just a string',)
     assert tuple(loaders('just a string', function)) == ('just a string', function)
-    assert tuple(loaders(function, Locality.ENVIRONMENT, '{name}.{extension}')) == tuple(chain([function], _LOADERS[Locality.ENVIRONMENT], ['{name}.{extension}']))
+    assert tuple(loaders(function, Locality.ENVIRONMENT, '{name}.{extension}')) == tuple(
+        chain([function], _LOADERS[Locality.ENVIRONMENT], ['{name}.{extension}'])
+    )

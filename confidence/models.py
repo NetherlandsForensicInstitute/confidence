@@ -1,8 +1,8 @@
+import re
+import typing
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from itertools import chain
-import re
-import typing
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import Conflict, merge_into, split_keys
@@ -16,10 +16,14 @@ class Missing(Enum):
 # define a sentinel value to indicate there is no default value specified (None would be a valid default value)
 # as this is used as an argument default to indicate that an error should be raised when a value is not found, make
 # sure that the repr-value of NoDefault shows up as '(raise)' in documentation
-NoDefault = type('NoDefault', (object,), {
-    '__repr__': lambda self: '(raise)',
-    '__str__': lambda self: '(raise)',
-})()  # create instance of that new type to assign to NoDefault
+NoDefault = type(
+    'NoDefault',
+    (object,),
+    {
+        '__repr__': lambda self: '(raise)',
+        '__str__': lambda self: '(raise)',
+    },
+)()  # create instance of that new type to assign to NoDefault
 
 
 def unwrap(source: typing.Any) -> typing.Any:
@@ -78,9 +82,7 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self,
-                 *sources: typing.Mapping[str, typing.Any],
-                 missing: typing.Any = Missing.SILENT):
+    def __init__(self, *sources: typing.Mapping[str, typing.Any], missing: typing.Any = Missing.SILENT):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -121,49 +123,45 @@ class Configuration(Mapping):
         match = self._reference_pattern.search(value)
         references = set()
         try:
-            while match:
+            # keep resolving references until we're at a non-str value or a str-value without references
+            while isinstance(value, str) and (match := self._reference_pattern.search(value)):
                 path = match.group('path')
+                # avoid resolving references recursively (breaks reference tracking)
                 if path in references:
                     raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
 
-                # avoid resolving references recursively (breaks reference tracking)
                 reference = self._root.get(path, resolve_references=False)
 
                 if match.span(0) != (0, len(value)):
                     # matched a reference inside of another value (template)
                     if isinstance(reference, Configuration):
-                        raise ConfiguredReferenceError(f'cannot insert namespace at {path} into referring value',
-                                                       key=path)
+                        raise ConfiguredReferenceError(
+                            f'cannot insert namespace at {path} into referring value',
+                            key=path,
+                        )
 
-                    # render the template containing the referenced value
-                    value = '{start}{reference}{end}'.format(
-                        start=value[:match.start(0)],
-                        reference=reference,
-                        end=value[match.end(0):],
-                    )
+                    # reformat the value with the reference replaced with the referenced value
+                    value = f'{value[: match.start(0)]}{reference}{value[match.end(0) :]}'
                 else:
                     # value is only a reference, avoid rendering a template (keep referenced value type)
                     value = reference
 
                 # track that we've seen path
                 references.add(path)
-                # either keep finding references or stop resolving and return value
-                if isinstance(value, str):
-                    match = self._reference_pattern.search(value)
-                else:
-                    match = None
 
             return value
         except NotConfiguredError as e:
             missing_key = match.group('path')  # type: ignore
             raise ConfiguredReferenceError(f'unable to resolve referenced key {missing_key}', key=e.key) from e
 
-    def get(self,
-            path: str,
-            default: typing.Any = NoDefault,
-            *,
-            as_type: typing.Optional[typing.Callable] = None,
-            resolve_references: bool = True) -> typing.Any:
+    def get(
+        self,
+        path: str,
+        default: typing.Any = NoDefault,
+        *,
+        as_type: typing.Optional[typing.Callable] = None,
+        resolve_references: bool = True,
+    ) -> typing.Any:
         """
         Gets a value for the specified path.
 
@@ -275,7 +273,7 @@ class Configuration(Mapping):
         keys = ', '.join(_repr_value(key) for key in self.keys())
         return f'{self.__class__.__module__}.{self.__class__.__name__}(keys=[{keys}])'
 
-    def __getstate__(self) -> typing.Dict[str, typing.Any]:
+    def __getstate__(self) -> dict[str, typing.Any]:
         state = self.__dict__.copy()
 
         # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
@@ -287,23 +285,26 @@ class Configuration(Mapping):
 
         return state
 
-    def __setstate__(self, state: typing.Dict[str, typing.Any]) -> None:
+    def __setstate__(self, state: dict[str, typing.Any]) -> None:
         self.__dict__ = state
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = {Missing.SILENT: NotConfigured,
-                             Missing.ERROR: NoDefault}[self._missing]
+            self._missing = {Missing.SILENT: NotConfigured, Missing.ERROR: NoDefault}[self._missing]
 
 
 # define NotConfigured as a class first (using type() to keep the type checker happy)
-NotConfigured = type('NotConfigured', (Configuration,), {
-    '__bool__': lambda self: False,
-    '__repr__': lambda self: '(not configured)',
-    '__str__': lambda self: '(not configured)',
-    '__doc__': 'Sentinel value to signal there is no value for a requested key.',
-    '__hash__': lambda self: hash((type(self), None)),
-})
+NotConfigured = type(
+    'NotConfigured',
+    (Configuration,),
+    {
+        '__bool__': lambda self: False,
+        '__repr__': lambda self: '(not configured)',
+        '__str__': lambda self: '(not configured)',
+        '__doc__': 'Sentinel value to signal there is no value for a requested key.',
+        '__hash__': lambda self: hash((type(self), None)),
+    },
+)
 # overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
 # not configured, while still acting like a Configuration object
 NotConfigured = NotConfigured()
@@ -321,9 +322,7 @@ class ConfigurationSequence(Sequence):
     A sequence of configured values, retrievable as if this were a `list`.
     """
 
-    def __init__(self,
-                 source: typing.Sequence,
-                 root: Configuration):
+    def __init__(self, source: typing.Sequence, root: Configuration):
         """
         Create a new `.ConfigurationSequence`, based on a single source
         sequence, pointing back to 'root' `Configuration` for reference
@@ -390,7 +389,7 @@ def _repr_value(value: typing.Any) -> str:
     :return: a string-representation of *value*
     """
     if isinstance(value, Mapping):
-        keys = ', '.join(_repr_value(key) for key in value.keys())
+        keys = ', '.join(_repr_value(key) for key in value)
         return f'mapping(keys=[{keys}])'
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
         return 'sequence([...])'

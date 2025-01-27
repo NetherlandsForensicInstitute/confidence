@@ -84,8 +84,12 @@ def test_addition(complicated_config):
 def test_addition_wrap(complicated_config):
     sequence = complicated_config.different.types
 
-    assert (sequence + [1, 2, 3])[3].containing.surprise[1].sequence_with == 'a mapping inside it, with a reference (mind = blown)'
-    assert ((1, 2, 3) + sequence)[6].containing.surprise[1].sequence_with == 'a mapping inside it, with a reference (mind = blown)'
+    assert (sequence + [1, 2, 3])[3].containing.surprise[
+        1
+    ].sequence_with == 'a mapping inside it, with a reference (mind = blown)'
+    assert ((1, 2, 3) + sequence)[6].containing.surprise[
+        1
+    ].sequence_with == 'a mapping inside it, with a reference (mind = blown)'
 
     mapping = {'a': {'mapping': 42}}
     sequence = sequence + [1, 2, mapping, 4]
@@ -103,7 +107,9 @@ def test_repr(complicated_config):
     assert 'mapping(keys=[' in repr(sequence + [{'namespaces': 'honking great idea'}])
     assert 'honking' not in repr(sequence + [{'namespaces': 'honking great idea'}])
     # any mapping-like object should be represented as its keys
-    assert repr(sequence + [{'namespaces': 'honking great idea'}]) == repr(sequence + [Configuration({'namespaces': 'honking great idea'})])
+    assert repr(sequence + [{'namespaces': 'honking great idea'}]) == repr(
+        sequence + [Configuration({'namespaces': 'honking great idea'})]
+    )
 
     assert '[...]' in repr(sequence + [[1, 2, 42]])
     assert '42' not in repr(sequence + [[1, 2, 42]])

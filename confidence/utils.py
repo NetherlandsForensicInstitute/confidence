@@ -1,8 +1,8 @@
-from collections.abc import Mapping
-from enum import IntEnum
 import logging
 import typing
 import warnings
+from collections.abc import Mapping
+from enum import IntEnum
 
 from confidence.exceptions import MergeConflictError
 
@@ -15,10 +15,12 @@ class Conflict(IntEnum):
     ERROR = 1
 
 
-def merge_into(left: typing.MutableMapping[str, typing.Any],
-               right: typing.Mapping[str, typing.Any],
-               path: typing.Optional[typing.List[str]] = None,
-               conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
+def merge_into(
+    left: typing.MutableMapping[str, typing.Any],
+    right: typing.Mapping[str, typing.Any],
+    path: typing.Optional[list[str]] = None,
+    conflict: Conflict = Conflict.ERROR,
+) -> typing.Mapping[str, typing.Any]:
     """
     Merges values in place from *right* into *left*.
 
@@ -56,8 +58,10 @@ def merge_into(left: typing.MutableMapping[str, typing.Any],
     return left
 
 
-def split_keys(mapping: typing.Mapping[str, typing.Any],
-               colliding: typing.Optional[typing.Container] = None) -> typing.Mapping[str, typing.Any]:
+def split_keys(
+    mapping: typing.Mapping[str, typing.Any],
+    colliding: typing.Optional[typing.Container] = None,
+) -> typing.Mapping[str, typing.Any]:
     """
     Recursively walks *mapping* to split keys that contain a dot into nested
     mappings.
@@ -82,8 +86,9 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
 
         # reject non-str keys, avoid complicating access patterns
         if not isinstance(key, str):
-            raise ValueError(f'non-str type keys ({key}, {key.__class__.__module__}.{key.__class__.__name__}) '
-                             'not supported')
+            raise ValueError(
+                f'non-str type keys ({key}, {key.__class__.__module__}.{key.__class__.__name__}) not supported',
+            )
 
         if '.' in key:
             # update key to be the first part before the dot separator
@@ -102,10 +107,12 @@ def split_keys(mapping: typing.Mapping[str, typing.Any],
 
 
 # retained to compatibility only (warn about the rename, though)
-def merge(left: typing.MutableMapping[str, typing.Any],
-          right: typing.Mapping[str, typing.Any],
-          path: typing.Optional[typing.List[str]] = None,
-          conflict: Conflict = Conflict.ERROR) -> typing.Mapping[str, typing.Any]:
+def merge(
+    left: typing.MutableMapping[str, typing.Any],
+    right: typing.Mapping[str, typing.Any],
+    path: typing.Optional[list[str]] = None,
+    conflict: Conflict = Conflict.ERROR,
+) -> typing.Mapping[str, typing.Any]:
     warnings.warn(
         'confidence.utils.merge has been renamed to confidence.utils.merge_into '
         'and will be removed in a future version',

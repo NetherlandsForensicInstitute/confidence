@@ -14,11 +14,10 @@ authors = [
 dependencies = [
     "pyyaml",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "Apache Software License 2.0"}
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -35,22 +34,8 @@ version = {source = "scm"}
 
 [tool.pdm.dev-dependencies]
 check = [
-    "bandit",
-    "darglint",
-    "flake8",
-    "flake8-annotations-complexity",
-    "flake8-bugbear",
-    "flake8-broken-line",
-    "flake8-commas",
-    "flake8-comprehensions",
-    "flake8-expression-complexity",
-    "flake8-import-order",
-    "flake8-pyproject",
-    "flake8-quotes",
-    "flake8-rst-docstrings",
-    "flake8-simplify",
     "mypy",
-    "pep8-naming",
+    "ruff",
     # dependency-specific typing information
     "types-pyyaml",
 ]
@@ -72,10 +57,10 @@ post_build = {shell = """
 """}
 
 # development scripts
-sec-check = {cmd = ["bandit", "--recursive", "confidence/"]}
-lint = {cmd = ["flake8", "confidence/"]}
-type-check = {cmd = ["mypy", "confidence/"]}
-check = {composite = ["sec-check", "lint", "type-check"]}
+all = {composite = ["check", "test"]}
+check = {composite = ["format", "lint", "type-check"]}
+format = {cmd = ["ruff", "format", "--diff", "confidence/", "tests/"]}
+lint = {cmd = ["ruff", "check", "confidence/", "tests/"]}
 test = {cmd = [
     "coverage", "run",
     "--branch",
@@ -84,13 +69,20 @@ test = {cmd = [
     "--strict-markers",
     "tests/",
 ]}
-all = {composite = ["check", "test"]}
+type-check = {cmd = ["mypy", "confidence/"]}
 
-[tool.flake8]
-max-line-length = 120
-import-order-style = "google"
-application-import-names = "confidence"
-docstring-style = "sphinx"
+[tool.ruff]
+format.quote-style = "single"
+line-length = 120
+lint.flake8-quotes.inline-quotes = "single"
+lint.ignore = [
+    # enforced by the formatter, not ignoring this causes warnings
+    "COM812",
+    # 'r' is the default mode for builtin open(), but explicit is better than implicit
+    "UP015",
+]
+lint.isort.lines-after-imports = 2
+lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "I", "N", "Q", "SIM", "UP"]
 
 [tool.mypy]
 # allow redefinition of inferred / assigned types
