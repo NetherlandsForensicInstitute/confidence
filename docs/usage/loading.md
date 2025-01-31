@@ -6,8 +6,8 @@ Although confidence is internally divided in a number of modules, all of the fun
 # manually creating a Configuration object from a dict of values is about as
 # simple as it sounds:
 config = confidence.Configuration({
-   'service.host': 'example.com',
-   'service.port': 443,
+    'service.host': 'example.com',
+    'service.port': 443,
 })
 # suppose there's a function connect that takes two arguments
 # we can connect to the configured host and port as such:
@@ -40,4 +40,32 @@ A single file like this can easily be loaded by [`loadf`][confidence.loadf]:
 config = confidence.loadf('path/to/file.yaml')
 # the result is the same as the example above, we can use config.service like we would a dict
 connection = connect(**config.service)
+```
+
+## Reading from multiple files
+
+If you split your configuration over multiple files as they contain configuration for different things, 
+like a service to connect to and some local paths to store data, confidence can load them both as if they were one:
+
+```yaml
+# some system-wide configuration in /etc/paths.yaml
+paths:
+  data: /storage/data
+  backup: /mnt/backup/data
+```
+
+```yaml
+# service configuration as before, stored in path/to/service.yaml
+service.host: example.com
+service.port: 443
+```
+
+```python
+# loadf can take multiple files, the contents of which are combined into a
+# single Configuration object
+config = confidence.loadf('/etc/paths.yaml', 'path/to/service.yaml')
+# there's still something to connect to the service
+connection = connect(**config.service)
+# and some extra things that configure the place to backup to
+connection.backup_to(config.paths.backup)
 ```
