@@ -24,6 +24,7 @@ theme:
         name: Switch to light mode
 
 markdown_extensions:
+  - admonition
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -38,16 +39,16 @@ plugins:
     handlers:
       python:
         options:
-          show_root_heading: yes
+          heading_level: 2
+          show_root_heading: true
           show_source: false
           show_bases: false
-          heading_level: 2
           docstring_style: sphinx
           separate_signature: true
           signature_crossrefs: true
 
 nav:
-  - Introduction: index.md
+  - Home: index.md
   - Usage:
     - usage/loading.md
     - usage/runtime.md
