@@ -69,3 +69,24 @@ connection = connect(**config.service)
 # and some extra things that configure the place to backup to
 connection.backup_to(config.paths.backup)
 ```
+
+## Overriding defaults from one file to the next
+
+If values from multiple files overlap (like if `/etc/paths.yaml` would contain `service.port: 80`), things become slightly more complicated.
+Confidence uses a predictable precedence of content here: the value that gets loaded last has the highest precedence (or 'wins').
+`loadf` will load content in the order of the arguments that get passed, so `service.port` would be 443, as defined in `path/to/service.yaml`.
+You can use this behaviour to define defaults somewhere, that get overridden later:
+
+```yaml
+# some system-wide configuration in /etc/paths.yaml
+service.port: 80
+paths:
+  data: /storage/data
+  backup: /mnt/backup/data
+```  
+
+```yaml
+service:
+  host: example.com
+  port: 443
+```
