@@ -67,7 +67,7 @@ def read_envvars(name: str, format: Format = YAML) -> Configuration:
     accessible in the resulting `Configuration` as
     ``c.spa_ce.key``, where ``c`` is the `Configuration` instance.
 
-    .. note::
+    !!! note
 
         An environment variable matching ``NAME_CONFIG_FILE`` (where the name
         part matches the *name* argument) is explicitly ignored here.
@@ -197,8 +197,6 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
     Arguments can be `Locality` instances, producing the loader(s) available
     for that locality, `str` instances (used as file path templates) or
     `callable` s. These can be mixed:
-
-    .. code-block:: python
 
         # define a load order using predefined user-local locations,
         # an explicit path, a template and a user-defined function
