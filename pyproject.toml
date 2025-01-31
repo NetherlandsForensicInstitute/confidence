@@ -51,6 +51,7 @@ docs = [
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
+docs = {cmd = ["mkdocs", "build", "--config-file", "docs/mkdocs.yaml"]}
 check = {composite = ["format", "lint", "type-check"]}
 format = "ruff format --diff confidence/ tests/"
 lint = "ruff check confidence/ tests/"
