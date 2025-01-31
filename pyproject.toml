@@ -43,6 +43,11 @@ test = [
     "coverage",
     "pytest",
 ]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [tool.pdm.scripts]
 # pre_build hook: create README.md from README.md (omitting the badges) and CHANGES.md
