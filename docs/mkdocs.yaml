@@ -31,6 +31,8 @@ plugins:
           show_bases: false
           heading_level: 2
           docstring_style: sphinx
+          separate_signature: true
+          signature_crossrefs: true
 
 nav:
   - Introduction: index.md
