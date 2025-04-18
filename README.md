@@ -1,6 +1,3 @@
-[![Build Status](https://img.shields.io/github/actions/workflow/status/NetherlandsForensicInstitute/confidence/test.yml?branch=master)](https://github.com/NetherlandsForensicInstitute/confidence/actions/workflows/test.yml?query=workflow%3A%22Test+package%22)
-[![PyPI Version](https://img.shields.io/pypi/v/confidence.svg)](https://pypi.org/project/confidence/)
-
 confidence 😎
 =============
 
