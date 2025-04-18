@@ -16,7 +16,7 @@ jobs:
           cache: true
           cache-dependency-path: 'pylock.toml'
       - name: Install check dependencies
-        run: pdm install --group check
+        run: pdm install --with check
       - name: Run checks
         run: pdm run check
   test:
@@ -33,6 +33,6 @@ jobs:
           cache: true
           cache-dependency-path: 'pylock.toml'
       - name: Install test dependencies
-        run: pdm install --group test
+        run: pdm install --with test
       - name: Run tests
         run: pdm run test
