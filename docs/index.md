@@ -21,5 +21,3 @@ config = confidence.load_name('myapp')
 # that's fine, a Configuration quacks just like it 😎
 myapp.run(config)
 ```
-
-# Changelog
