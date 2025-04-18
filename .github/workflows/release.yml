@@ -22,9 +22,11 @@ jobs:
       - name: Check lock file
         run: pdm lock --check
       - name: Create build artifact
-        run: pdm build --no-sdist  # build step produces LATEST-CHANGES.md
+        run: pdm build --no-sdist
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Select latest changes from CHANGES.md
+        run: python .github/latest-changes.py
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/confidence-*.whl
