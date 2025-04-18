@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: write
-      id-token: write
+      contents: write  # required by action-gh-release to create release
+      id-token: write  # required by gh-action-pypi-publish to publish release on pypi
     steps:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
