@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (master)
---------------------
+0.16 (2025-04-18)
+-----------------
 
 - Drop support for Python 3.8.
 - Add `merge` function to combine multiple mappings into a single `Configuration`.
