@@ -1,5 +1,5 @@
-Changes
-=======
+Changelog
+=========
 
 development (main)
 ------------------

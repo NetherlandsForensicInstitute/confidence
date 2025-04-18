@@ -48,7 +48,9 @@ plugins:
           signature_crossrefs: true
 
 nav:
-  - Home: index.md
+  - Home:
+    - index.md
+    - Changelog: changelog.md
   - Usage:
     - usage/loading.md
     - usage/runtime.md
