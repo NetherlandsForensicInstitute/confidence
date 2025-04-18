@@ -1,0 +1,31 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create release
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write  # required by action-gh-release to create release
+      id-token: write  # required by gh-action-pypi-publish to publish release on pypi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.13'
+          cache: true
+      - name: Check lock file
+        run: pdm lock --check
+      - name: Create build artifact
+        run: pdm build --no-sdist  # build step produces LATEST-CHANGES.md
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/confidence-*.whl
+          body_path: LATEST-CHANGES.md
