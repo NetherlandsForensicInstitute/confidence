@@ -65,7 +65,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     accessible in the resulting `Configuration` as
     ``c.spa_ce.key``, where ``c`` is the `Configuration` instance.
 
-    .. note::
+    !!! note
 
         An environment variable matching ``NAME_CONFIG_FILE`` (where the name
         part matches the *name* argument) is explicitly ignored here.
@@ -196,18 +196,18 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
     for that locality, `str` instances (used as file path templates) or
     `callable` s. These can be mixed:
 
-    .. code-block:: python
+    ```python
+    # define a load order using predefined user-local locations,
+    # an explicit path, a template and a user-defined function
+    load_order = loaders(Locality.user,
+                         '/etc/defaults/hard-coded.yaml',
+                         '/path/to/{name}.{extension}',
+                         my_loader)
 
-        # define a load order using predefined user-local locations,
-        # an explicit path, a template and a user-defined function
-        load_order = loaders(Locality.user,
-                             '/etc/defaults/hard-coded.yaml',
-                             '/path/to/{name}.{extension}',
-                             my_loader)
-
-        # load configuration for name 'my-application' using the load order
-        # defined above
-        config = load_name('my-application', load_order=load_order)
+    # load configuration for name 'my-application' using the load order
+    # defined above
+    config = load_name('my-application', load_order=load_order)
+    ```
 
     :param specifiers: loader specifiers, see description
     :yields: configuration loaders in the specified order

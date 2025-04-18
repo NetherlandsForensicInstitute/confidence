@@ -32,7 +32,7 @@ homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 [tool.pdm]
 version = {source = "scm"}
 
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 check = [
     "mypy",
     "ruff",
@@ -43,9 +43,15 @@ test = [
     "coverage",
     "pytest",
 ]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
+docs = "mkdocs build --config-file docs/mkdocs.yaml"
 check = {composite = ["format", "lint", "type-check"]}
 format = "ruff format --diff confidence/ tests/"
 lint = "ruff check confidence/ tests/"
