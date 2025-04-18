@@ -3,7 +3,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project]
-dynamic = ["version"]  # determined from source control, see tool.pdm.version below
+dynamic = ["version"]  # determined from source control
 name = "confidence"
 description = "Simple module to load and use configuration in a clean, 'pythonic' way."
 keywords = ["configuration"]
@@ -49,7 +49,9 @@ test = [
 pre_build = {shell ="""
     mv README.md README.md.orig &&
     tail --lines=+3 README.md.orig > README.md &&
-    cat CHANGES.md >> README.md
+    cat CHANGES.md >> README.md &&
+    # slice the latest set of changes from CHANGES.md
+    python .github/latest-changes.py
 """}
 # post_build hook: reinstate original README.md
 post_build = {shell = """
