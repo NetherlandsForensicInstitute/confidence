@@ -17,7 +17,7 @@ jobs:
       - name: Check lock file
         run: pdm lock --check
       - name: Install check dependencies
-        run: pdm install --group check
+        run: pdm install --with check
       - name: Run checks
         run: pdm run check
   test:
@@ -32,6 +32,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: true
       - name: Install test dependencies
-        run: pdm install --group test
+        run: pdm install --with test
       - name: Run tests
         run: pdm run test
