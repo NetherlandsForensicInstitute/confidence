@@ -12,15 +12,13 @@ theme:
   palette:
     - media: '(prefers-color-scheme: light)'
       scheme: default
-      primary: deep orange
       toggle:
-        icon: material/weather-sunny
+        icon: material/weather-night
         name: Switch to dark mode
     - media: '(prefers-color-scheme: dark)'
       scheme: slate
-      primary: deep orange
       toggle:
-        icon: material/weather-night
+        icon: material/weather-sunny
         name: Switch to light mode
 
 markdown_extensions:
@@ -50,11 +48,10 @@ plugins:
 nav:
   - Home:
     - index.md
-    - Changelog: changelog.md
+    - changelog.md
   - Usage:
     - usage/loading.md
     - usage/runtime.md
-    - usage/advanced.md
   - Reference:
     - reference/loading.md
     - reference/objects.md
