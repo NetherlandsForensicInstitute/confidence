@@ -45,20 +45,6 @@ test = [
 ]
 
 [tool.pdm.scripts]
-# pre_build hook: create README.md from README.md (omitting the badges) and CHANGES.md
-pre_build = {shell ="""
-    mv README.md README.md.orig &&
-    tail --lines=+3 README.md.orig > README.md &&
-    cat CHANGES.md >> README.md &&
-    # slice the latest set of changes from CHANGES.md
-    python .github/latest-changes.py
-"""}
-# post_build hook: reinstate original README.md
-post_build = {shell = """
-    mv README.md.orig README.md
-"""}
-
-# development scripts
 all = {composite = ["check", "test"]}
 check = {composite = ["format", "lint", "type-check"]}
 format = "ruff format --diff confidence/ tests/"
