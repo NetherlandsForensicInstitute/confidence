@@ -32,7 +32,7 @@ homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 [tool.pdm]
 version = {source = "scm"}
 
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 check = [
     "mypy",
     "ruff",
