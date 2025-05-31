@@ -38,3 +38,6 @@ class YAML(Format):
 
     def loads(self, string: str) -> typing.Any:
         return yaml.safe_load(string)
+
+
+DEFAULT_FORMAT = YAML(extension='.yaml')
