@@ -258,10 +258,10 @@ def loadf(
     :returns: a `Configuration` instance providing values from *fnames*
     """
 
-    def readf(fname: Path) -> typing.Mapping[str, typing.Any]:
+    def readf(fpath: Path) -> typing.Mapping[str, typing.Any]:
         try:
-            with open(fname, 'r') as fp:
-                LOG.info(f'reading configuration from file {fname}')
+            with fpath.open('r') as fp:
+                LOG.info(f'reading configuration from file {fpath}')
                 # default to empty dict, yaml.safe_load will return None for an empty document
                 return yaml.safe_load(fp.read()) or {}
         except OSError:
@@ -270,7 +270,7 @@ def loadf(
                 # no explicit default provided, continue original error
                 raise
             else:
-                LOG.debug(f'unable to read configuration from file {fname}')
+                LOG.debug(f'unable to read configuration from file {fpath}')
                 return default
 
     return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
@@ -349,7 +349,7 @@ def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], encoding: str =
     :param fname: name or path of the file to write to
     :param encoding: encoding to use
     """
-    with open(fname, 'wb') as out_file:
+    with Path(fname).open('wb') as out_file:
         dump(value, out_file, encoding=encoding)
 
 
