@@ -26,6 +26,9 @@ class _JSONFormat(Format):
     def __init__(self, extension: typing.Optional[str] = '.json'):
         self.extension = extension or ''
 
+    def __call__(self, extension: str) -> typing.Self:
+        return type(self)(extension)
+
     def loads(self, string: str) -> typing.Any:
         return json.loads(string)
 
@@ -35,6 +38,9 @@ class _YAMLFormat(Format):
 
     def __init__(self, extension: typing.Optional[str] = '.yaml'):
         self.extension = extension or ''
+
+    def __call__(self, extension: str) -> typing.Self:
+        return type(self)(extension)
 
     def loads(self, string: str) -> typing.Any:
         return yaml.safe_load(string)
