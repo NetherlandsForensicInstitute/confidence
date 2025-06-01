@@ -7,7 +7,7 @@ import yaml
 
 
 class Format(typing.Protocol):
-    extension: typing.Optional[str] = None
+    extension: str = ''
 
     def load(self, fp: typing.TextIO) -> typing.Any:
         return self.loads(fp.read())
@@ -20,24 +20,26 @@ class Format(typing.Protocol):
             return self.load(fp)
 
 
-class JSON(Format):
-    extension: typing.Optional[str] = '.json'
+class _JSONFormat(Format):
+    extension: str = '.json'
 
-    def __init__(self, extension: str = '.json'):
-        self.extension = extension
+    def __init__(self, extension: typing.Optional[str] = '.json'):
+        self.extension = extension or ''
 
     def loads(self, string: str) -> typing.Any:
         return json.loads(string)
 
 
-class YAML(Format):
-    extension: typing.Optional[str] = '.yaml'
+class _YAMLFormat(Format):
+    extension: str = '.yaml'
 
-    def __init__(self, extension: str = '.yaml'):
-        self.extension = extension
+    def __init__(self, extension: typing.Optional[str] = '.yaml'):
+        self.extension = extension or ''
 
     def loads(self, string: str) -> typing.Any:
         return yaml.safe_load(string)
 
 
-DEFAULT_FORMAT = YAML(extension='.yaml')
+JSON = _JSONFormat('.json')
+YAML = _YAMLFormat('.yaml')
+DEFAULT_FORMAT = YAML
