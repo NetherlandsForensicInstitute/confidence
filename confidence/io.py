@@ -319,8 +319,7 @@ def load_name(
             if callable(source):
                 yield source(name, extension)
             else:
-                # expand user to turn ~/.name.yaml into /home/user/.name.yaml
-                candidate = Path(source.format(name=name, extension=extension)).expanduser()
+                candidate = Path(source.format(name=name, suffix=format.suffix))
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
