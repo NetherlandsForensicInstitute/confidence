@@ -6,7 +6,8 @@ import typing
 from enum import IntEnum
 from functools import partial
 from itertools import product
-from os import PathLike, environ, path
+from os import PathLike, environ, pathsep
+from pathlib import Path
 
 import yaml
 
@@ -30,10 +31,10 @@ def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
     # XDG spec: "If $XDG_CONFIG_DIRS is either not set or empty, a value equal to /etc/xdg should be used."
     config_dirs = environ.get('XDG_CONFIG_DIRS', '/etc/xdg')
     # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
-    config_dirs = reversed(config_dirs.split(path.pathsep))
+    config_dirs = reversed(config_dirs.split(pathsep))
 
     # load a file from all config dirs, default to NotConfigured
-    return loadf(*(path.join(config_dir, f'{name}.{extension}') for config_dir in config_dirs), default=NotConfigured)
+    return loadf(*(Path(config_dir) / f'{name}.{extension}' for config_dir in config_dirs), default=NotConfigured)
 
 
 def read_xdg_config_home(name: str, extension: str) -> Configuration:
@@ -47,14 +48,12 @@ def read_xdg_config_home(name: str, extension: str) -> Configuration:
     :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     # find optional value of ${XDG_CONFIG_HOME}
-    config_home = environ.get('XDG_CONFIG_HOME')
-    if not config_home:
-        # XDG spec: "If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used."
-        # see https://specifications.freedesktop.org/basedir-spec/latest/ar01s03.html
-        config_home = path.expanduser('~/.config')
+    # XDG spec: "If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used."
+    # see https://specifications.freedesktop.org/basedir-spec/latest/ar01s03.html
+    config_home = Path(environ.get('XDG_CONFIG_HOME') or '~/.config').expanduser()
 
     # expand to full path to configuration file in XDG config path
-    return loadf(path.join(config_home, f'{name}.{extension}'), default=NotConfigured)
+    return loadf(config_home / f'{name}.{extension}', default=NotConfigured)
 
 
 def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configuration:
@@ -138,7 +137,7 @@ def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
         return NotConfigured
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
-    config_path = path.join(path.expanduser(config_dir), f'{name}.{extension}')
+    config_path = Path(config_dir).expanduser() / f'{name}.{extension}'
     return loadf(config_path, default=NotConfigured)
 
 
@@ -259,7 +258,7 @@ def loadf(
     :returns: a `Configuration` instance providing values from *fnames*
     """
 
-    def readf(fname: str) -> typing.Mapping[str, typing.Any]:
+    def readf(fname: Path) -> typing.Mapping[str, typing.Any]:
         try:
             with open(fname, 'r') as fp:
                 LOG.info(f'reading configuration from file {fname}')
@@ -274,7 +273,7 @@ def loadf(
                 LOG.debug(f'unable to read configuration from file {fname}')
                 return default
 
-    return Configuration(*(readf(path.expanduser(fname)) for fname in fnames), missing=missing)
+    return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
 
 
 def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
@@ -323,7 +322,7 @@ def load_name(
                 yield source(name, extension)
             else:
                 # expand user to turn ~/.name.yaml into /home/user/.name.yaml
-                candidate = path.expanduser(source.format(name=name, extension=extension))
+                candidate = Path(source.format(name=name, extension=extension)).expanduser()
                 yield loadf(candidate, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
