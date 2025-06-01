@@ -63,7 +63,7 @@ lint.ignore = [
     "UP015",
 ]
 lint.isort.lines-after-imports = 2
-lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "I", "N", "Q", "SIM", "UP"]
+lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "I", "N", "PTH", "Q", "SIM", "UP"]
 
 [tool.mypy]
 # allow redefinition of inferred / assigned types
