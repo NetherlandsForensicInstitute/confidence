@@ -1,3 +1,5 @@
+# ruff: noqa: PTH118, PTH120, PTH123 (allow use of os.path to test pathlib usage)
+
 from functools import partial
 from itertools import cycle
 from os import path

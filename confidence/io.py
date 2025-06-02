@@ -1,5 +1,3 @@
-# noqa: A005 (confidence.io could shadow builtin io, declare this to be an error at import-level, not here)
-
 import logging
 import re
 import typing

@@ -1,3 +1,5 @@
+# ruff: noqa: PTH118, PTH120, PTH123 (allow use of os.path to test pathlib usage)
+
 from collections.abc import Mapping, Sequence
 from os import path
 
