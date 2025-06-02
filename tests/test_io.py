@@ -22,8 +22,6 @@ from confidence import (
 from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
-test_files = path.join(path.dirname(__file__), 'files')
-
 yaml_str = """
     key: value
     some:
@@ -74,7 +72,7 @@ def broken_open():
     return broken
 
 
-def test_load_defaults():
+def test_load_defaults(test_files):
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
     # as json is a subset of yaml, this should work just fine
@@ -82,17 +80,17 @@ def test_load_defaults():
         _assert_values(load(file))
 
 
-def test_load_yaml():
+def test_load_yaml(test_files):
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
 
 
-def test_load_json():
+def test_load_json(test_files):
     with open(path.join(test_files, 'config.json')) as file:
         _assert_values(load(file))
 
 
-def test_load_multiple():
+def test_load_multiple(test_files):
     with open(path.join(test_files, 'config.json')) as file1, open(path.join(test_files, 'config.yaml')) as file2:
         _assert_values(load(file1, file2))
 
@@ -114,24 +112,24 @@ def test_loads_multiple():
     _assert_values(loads(json_str, yaml_str))
 
 
-def test_loadf_defaults():
+def test_loadf_defaults(test_files):
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
     _assert_values(loadf(path.join(test_files, 'config.json')))
 
 
-def test_loadf_yaml():
+def test_loadf_yaml(test_files):
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
 
 
-def test_loadf_json():
+def test_loadf_json(test_files):
     _assert_values(loadf(path.join(test_files, 'config.json')))
 
 
-def test_loadf_multiple():
+def test_loadf_multiple(test_files):
     _assert_values(loadf(path.join(test_files, 'config.json'), path.join(test_files, 'config.yaml')))
 
 
-def test_loadf_home():
+def test_loadf_home(test_files):
     with patch('confidence.io.path') as mocked_path:
         # actual expanded home directory not under test, verify that it was called
         mocked_path.expanduser.return_value = path.join(test_files, 'config.yaml')
@@ -158,7 +156,7 @@ def test_loadf_missing():
             loadf('/path/to/file')
 
 
-def test_loadf_empty():
+def test_loadf_empty(test_files):
     assert len(loadf(path.join(test_files, 'empty.yaml'))) == 0
     assert len(loadf(path.join(test_files, 'comments.yaml'))) == 0
     assert len(loadf(path.join(test_files, 'empty.yaml'), path.join(test_files, 'comments.yaml'))) == 0
@@ -172,14 +170,14 @@ def test_loadf_empty():
     )
 
 
-def test_load_name_single():
+def test_load_name_single(test_files):
     test_path = path.join(test_files, '{name}.{extension}')
 
     _assert_values(load_name('config', load_order=(test_path,)))
     _assert_values(load_name('config', load_order=(test_path,), extension='json'))
 
 
-def test_load_name_multiple():
+def test_load_name_multiple(test_files):
     test_path = path.join(test_files, '{name}.{extension}')
 
     # bar has precedence over foo
@@ -365,7 +363,7 @@ def test_load_name_envvars():
     assert subject.types.maybe is True
 
 
-def test_load_name_envvar_file():
+def test_load_name_envvar_file(test_files):
     env = {
         'FOO_CONFIG_FILE': path.join(test_files, 'foo.yaml'),
         'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
@@ -380,7 +378,7 @@ def test_load_name_envvar_file():
     assert subject.overlapping.fully == 'bar'
 
 
-def test_load_name_overlapping_envvars():
+def test_load_name_overlapping_envvars(test_files):
     env = {
         'FOO_KEY': 'foo',
         'FOO_NS_KEY': 'value',

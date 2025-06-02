@@ -1,19 +1,13 @@
-# ruff: noqa: PTH118, PTH120, PTH123 (allow use of os.path to test pathlib usage)
-
 from collections.abc import Mapping, Sequence
-from os import path
 
 import pytest
 
 from confidence import Configuration, loadf
 
 
-test_files = path.join(path.dirname(__file__), 'files')
-
-
 @pytest.fixture
-def complicated_config():
-    return loadf(path.join(test_files, 'complicated.yaml'))
+def complicated_config(test_files):
+    return loadf(test_files / 'complicated.yaml')
 
 
 def test_configured_sequence(complicated_config):
