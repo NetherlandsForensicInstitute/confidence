@@ -3,6 +3,7 @@
 from functools import partial
 from itertools import cycle
 from os import path
+from pathlib import Path
 from unittest.mock import call, mock_open, patch
 
 import pytest
@@ -20,6 +21,22 @@ from confidence import (
     loads,
 )
 from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
+
+
+@pytest.fixture(autouse=True)
+def unix_style_pathsep():
+    # hard-code the path separator to unix style throughout the tests here for consistency
+    with patch('confidence.io.pathsep', ':'):
+        yield
+
+
+@pytest.fixture
+def tilde_home_user():
+    def expanduser(self):
+        return Path(str(self).replace('~', '/home/user'))
+
+    with patch.object(Path, 'expanduser', expanduser):
+        yield expanduser
 
 
 yaml_str = """
