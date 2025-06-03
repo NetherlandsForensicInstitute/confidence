@@ -26,7 +26,7 @@ class _JSONFormat(Format):
     def __init__(self, suffix: typing.Optional[str] = '.json'):
         self.suffix = suffix or ''
 
-    def __call__(self, suffix: str) -> typing.Self:
+    def __call__(self, suffix: str) -> Format:
         return type(self)(suffix)
 
     def loads(self, string: str) -> typing.Any:
@@ -39,7 +39,7 @@ class _YAMLFormat(Format):
     def __init__(self, suffix: typing.Optional[str] = '.yaml'):
         self.suffix = suffix or ''
 
-    def __call__(self, suffix: str) -> typing.Self:
+    def __call__(self, suffix: str) -> Format:
         return type(self)(suffix)
 
     def loads(self, string: str) -> typing.Any:
