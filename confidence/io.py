@@ -362,5 +362,4 @@ def dumps(value: typing.Any) -> str:
     # use block style output for nested collections (flow style dumps nested dicts inline)
     encoded = yaml.safe_dump(unwrap(value), default_flow_style=False)
     # omit explicit document end (...) included with simple values
-    # (to be replaced with encoded.removesuffix('\n...\n') when python requirement hits 3.9+)
-    return encoded[:-4] if encoded.endswith('...\n') else encoded
+    return encoded.removesuffix('\n...\n')
