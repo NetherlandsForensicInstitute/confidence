@@ -200,13 +200,20 @@ def test_load_name_multiple(test_files):
 
 
 def test_load_name_order(tilde_home_user):
-    env = {'HOME': '/home/user', 'LOCALAPPDATA': 'C:/Users/user/AppData/Local'}
+    env = {
+        'HOME': '/home/user',
+        'LOCALAPPDATA': 'C:/Users/user/AppData/Local',
+        'FOO_TEST': '21',
+        'BAR_TEST': '42',
+    }
 
     with (
         patch('confidence.io.environ', env),
         patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
     ):
-        assert len(load_name('foo', 'bar')) == 0
+        subject = load_name('foo', 'bar')
+        assert len(subject) == 1
+        assert subject.test == 42
 
     mocked_loadf.assert_has_calls(
         [
