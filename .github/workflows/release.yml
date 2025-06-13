@@ -19,6 +19,7 @@ jobs:
         with:
           python-version: '3.13'
           cache: true
+          cache-dependency-path: 'pylock.toml'
       - name: Use pylock.toml
         run: pdm config lock.format pylock
       - name: Check lock file
