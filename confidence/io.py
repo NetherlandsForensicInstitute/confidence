@@ -295,7 +295,8 @@ def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SI
 def load_name(
     *names: str,
     load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
-    extension: str = 'yaml',
+    format: Format = YAML,
+    extension: None = None,
     missing: typing.Any = Missing.SILENT,
 ) -> Configuration:
     """
@@ -311,7 +312,7 @@ def load_name(
         significance
     :param load_order: ordered list of name templates or `callable` s, in
         increasing order of significance
-    :param extension: file extension to be used
+    :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
     :returns: a `Configuration` instances providing values loaded from *names*
@@ -323,10 +324,11 @@ def load_name(
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):
             if callable(source):
-                yield source(name, extension)
+                yield source(name, format)
             else:
-                candidate = Path(source.format(name=name, suffix=format.suffix))
-                yield loadf(candidate, default=NotConfigured)
+                # TODO: should expanduser be called here?
+                candidate = Path(source.format(name=name, suffix=format.suffix)).expanduser()
+                yield loadf(candidate, format=format, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
 
