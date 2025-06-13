@@ -279,16 +279,17 @@ def loadf(
     return Configuration(*(readf(Path(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
+def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from strings.
 
     :param strings: configuration contents
+    :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
     :returns: a `Configuration` instance providing values from *strings*
     """
-    return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
+    return Configuration(*(format.loads(string) for string in strings), missing=missing)
 
 
 def load_name(
