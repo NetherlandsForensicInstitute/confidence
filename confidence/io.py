@@ -9,6 +9,7 @@ from pathlib import Path
 
 import yaml
 
+from confidence.formats import YAML, Format
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured, unwrap
 
 
@@ -242,13 +243,15 @@ def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration
 
 def loadf(
     *fnames: typing.Union[str, PathLike],
+    format: Format = YAML,
     default: typing.Any = NoDefault,
     missing: typing.Any = Missing.SILENT,
 ) -> Configuration:
     """
     Read a `Configuration` instance from named files.
 
-    :param fnames: name of the files to ``open()``
+    :param fnames: name of the files to read
+    :param format: configuration (file) format to use
     :param default: `dict` or `Configuration` to use when a file does not
         exist (default is to raise a `FileNotFoundError`)
     :param missing: policy to be used when a configured key is missing, either
@@ -258,10 +261,7 @@ def loadf(
 
     def readf(fpath: Path) -> typing.Mapping[str, typing.Any]:
         try:
-            with fpath.open('r') as fp:
-                LOG.info(f'reading configuration from file {fpath}')
-                # default to empty dict, yaml.safe_load will return None for an empty document
-                return yaml.safe_load(fp.read()) or {}
+            return format.loadf(fpath)
         except OSError:
             # file does not exist or inaccessible
             if default is NoDefault:
@@ -271,7 +271,7 @@ def loadf(
                 LOG.debug(f'unable to read configuration from file {fpath}')
                 return default
 
-    return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
+    return Configuration(*(readf(Path(fname)) for fname in fnames), missing=missing)
 
 
 def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
