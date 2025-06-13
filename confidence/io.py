@@ -233,16 +233,17 @@ DEFAULT_LOAD_ORDER = tuple(
 )
 
 
-def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:
+def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
 
     :param fps: file-like objects (supporting ``.read()``)
+    :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
     :returns: a `Configuration` instance providing values from *fps*
     """
-    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
+    return Configuration(*(format.load(fp) for fp in fps), missing=missing)
 
 
 def loadf(
