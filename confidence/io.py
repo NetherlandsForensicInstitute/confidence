@@ -157,30 +157,30 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-Loadable = typing.Union[str, typing.Callable[[str, str], Configuration]]
+Loadable = typing.Union[str, typing.Callable[[str, Format], Configuration]]
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
-        '/etc/{name}/{name}.{extension}',
-        '/etc/{name}.{extension}',
-        '/Library/Preferences/{name}/{name}.{extension}',
-        '/Library/Preferences/{name}.{extension}',
+        '/etc/{name}/{name}{suffix}',
+        '/etc/{name}{suffix}',
+        '/Library/Preferences/{name}/{name}{suffix}',
+        '/Library/Preferences/{name}{suffix}',
         partial(read_envvar_dir, 'PROGRAMDATA'),
     ),
     Locality.USER: (
         # user-local locations
         read_xdg_config_home,
-        '~/Library/Preferences/{name}.{extension}',
+        '~/Library/Preferences/{name}{suffix}',
         partial(read_envvar_dir, 'APPDATA'),
         partial(read_envvar_dir, 'LOCALAPPDATA'),
-        '~/.{name}.{extension}',
+        '~/.{name}{suffix}',
     ),
     Locality.APPLICATION: (
         # application-local locations
-        './{name}.{extension}',
+        './{name}{suffix}',
     ),
     Locality.ENVIRONMENT: (
         # application-specific environment variables
@@ -204,7 +204,7 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
         # an explicit path, a template and a user-defined function
         load_order = loaders(Locality.user,
                              '/etc/defaults/hard-coded.yaml',
-                             '/path/to/{name}.{extension}',
+                             '/path/to/{name}{suffix}',
                              my_loader)
 
         # load configuration for name 'my-application' using the load order
