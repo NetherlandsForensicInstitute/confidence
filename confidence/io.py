@@ -59,7 +59,7 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     return loadf(config_home / f'{name}{format.suffix}', format=format, default=NotConfigured)
 
 
-def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configuration:
+def read_envvars(name: str, format: Format = YAML) -> Configuration:
     """
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces. Underscores can be retained as
@@ -75,7 +75,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
         `.read_envvar_file`.
 
     :param name: environment variable prefix to look for (without the ``_``)
-    :param extension: *(unused)*
+    :param format: configuration (file) format to use
     :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     prefix = f'{name}_'
@@ -100,7 +100,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     LOG.info(f'reading configuration from {len(values)} {prefix}* environment variables')
 
     # pass value to yaml.safe_load to align data type transformation with reading values from files
-    return Configuration({dotted(name): yaml.safe_load(value) for name, value in values.items()})
+    return Configuration({dotted(name): format.loads(value) for name, value in values.items()})
 
 
 def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
