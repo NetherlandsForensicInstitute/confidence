@@ -103,20 +103,20 @@ def read_envvars(name: str, format: Format = YAML) -> Configuration:
     return Configuration({dotted(name): format.loads(value) for name, value in values.items()})
 
 
-def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
+def read_envvar_file(name: str, format: Format = YAML) -> Configuration:
     """
     Read values from a file provided as a environment variable
     ``NAME_CONFIG_FILE``.
 
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
-    :param extension: *(unused)*
+    :param format: configuration (file) format to use
     :returns: a `Configuration`, possibly `NotConfigured`
     """
     envvar_file = environ.get(f'{name}_config_file'.upper())
     if envvar_file:
         # envvar set, load value as file
-        return loadf(envvar_file)
+        return loadf(envvar_file, format=format)
     else:
         # envvar not set, return an empty source
         return NotConfigured
