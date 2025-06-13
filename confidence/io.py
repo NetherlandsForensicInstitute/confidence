@@ -1,6 +1,7 @@
 import logging
 import re
 import typing
+import warnings
 from enum import IntEnum
 from functools import partial
 from itertools import product
@@ -9,20 +10,21 @@ from pathlib import Path
 
 import yaml
 
+from confidence.formats import YAML, Format
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured, unwrap
 
 
 LOG = logging.getLogger(__name__)
 
 
-def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
+def read_xdg_config_dirs(name: str, format: Format = YAML) -> Configuration:
     """
     Read from files found in XDG-specified system-wide configuration paths,
     defaulting to ``/etc/xdg``. Depends on ``XDG_CONFIG_DIRS`` environment
     variable.
 
     :param name: application or configuration set name
-    :param extension: file extension to look for
+    :param format: configuration (file) format to use
     :returns: a `Configuration` instance with values read from XDG-specified
         directories
     """
@@ -32,17 +34,21 @@ def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
     config_dirs = reversed(config_dirs.split(pathsep))
 
     # load a file from all config dirs, default to NotConfigured
-    return loadf(*(Path(config_dir) / f'{name}.{extension}' for config_dir in config_dirs), default=NotConfigured)
+    return loadf(
+        *(Path(config_dir) / f'{name}{format.suffix}' for config_dir in config_dirs),
+        format=format,
+        default=NotConfigured,
+    )
 
 
-def read_xdg_config_home(name: str, extension: str) -> Configuration:
+def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     """
     Read from file found in XDG-specified configuration home directory,
     expanding to ``${HOME}/.config/name.extension`` by default. Depends on
     ``XDG_CONFIG_HOME`` or ``HOME`` environment variables.
 
     :param name: application or configuration set name
-    :param extension: file extension to look for
+    :param format: configuration (file) format to use
     :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     # find optional value of ${XDG_CONFIG_HOME}
@@ -51,10 +57,10 @@ def read_xdg_config_home(name: str, extension: str) -> Configuration:
     config_home = environ.get('XDG_CONFIG_HOME')
     config_home = Path(config_home) if config_home else Path('~/.config').expanduser()
     # expand to full path to configuration file in XDG config path
-    return loadf(config_home / f'{name}.{extension}', default=NotConfigured)
+    return loadf(config_home / f'{name}{format.suffix}', format=format, default=NotConfigured)
 
 
-def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configuration:
+def read_envvars(name: str, format: Format = YAML) -> Configuration:
     """
     Read environment variables starting with ``NAME_``, where subsequent
     underscores are interpreted as namespaces. Underscores can be retained as
@@ -70,7 +76,7 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
         `.read_envvar_file`.
 
     :param name: environment variable prefix to look for (without the ``_``)
-    :param extension: *(unused)*
+    :param format: configuration (file) format to use
     :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     prefix = f'{name}_'
@@ -95,39 +101,39 @@ def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configura
     LOG.info(f'reading configuration from {len(values)} {prefix}* environment variables')
 
     # pass value to yaml.safe_load to align data type transformation with reading values from files
-    return Configuration({dotted(name): yaml.safe_load(value) for name, value in values.items()})
+    return Configuration({dotted(name): format.loads(value) for name, value in values.items()})
 
 
-def read_envvar_file(name: str, extension: typing.Optional[str] = None) -> Configuration:
+def read_envvar_file(name: str, format: Format = YAML) -> Configuration:
     """
     Read values from a file provided as a environment variable
     ``NAME_CONFIG_FILE``.
 
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
-    :param extension: *(unused)*
+    :param format: configuration (file) format to use
     :returns: a `Configuration`, possibly `NotConfigured`
     """
     envvar_file = environ.get(f'{name}_config_file'.upper())
     if envvar_file:
         # envvar set, load value as file
-        return loadf(envvar_file)
+        return loadf(envvar_file, format=format)
     else:
         # envvar not set, return an empty source
         return NotConfigured
 
 
-def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
+def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configuration:
     """
     Read values from a file located in a directory specified by a particular
-    environment file. ``read_envvar_dir('HOME', 'example', 'yaml')`` would
+    environment file. ``read_envvar_dir('HOME', 'example', format=YAML)`` would
     look for a file at ``/home/user/example.yaml``. When the environment
     variable isn't set or the file does not exist, `NotConfigured` will be
     returned.
 
     :param envvar: the environment variable to interpret as a directory
     :param name: application or configuration set name
-    :param extension: file extension to look for
+    :param format: configuration (file) format to use
     :returns: a `Configuration`, possibly `NotConfigured`
     """
     config_dir = environ.get(envvar)
@@ -135,8 +141,8 @@ def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
         return NotConfigured
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
-    config_path = Path(config_dir).expanduser() / f'{name}.{extension}'
-    return loadf(config_path, default=NotConfigured)
+    config_path = Path(config_dir).expanduser() / f'{name}{format.suffix}'
+    return loadf(config_path, format=format, default=NotConfigured)
 
 
 class Locality(IntEnum):
@@ -152,30 +158,30 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-Loadable = typing.Union[str, typing.Callable[[str, str], Configuration]]
+Loadable = typing.Union[str, typing.Callable[[str, Format], Configuration]]
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
-        '/etc/{name}/{name}.{extension}',
-        '/etc/{name}.{extension}',
-        '/Library/Preferences/{name}/{name}.{extension}',
-        '/Library/Preferences/{name}.{extension}',
+        '/etc/{name}/{name}{suffix}',
+        '/etc/{name}{suffix}',
+        '/Library/Preferences/{name}/{name}{suffix}',
+        '/Library/Preferences/{name}{suffix}',
         partial(read_envvar_dir, 'PROGRAMDATA'),
     ),
     Locality.USER: (
         # user-local locations
         read_xdg_config_home,
-        '~/Library/Preferences/{name}.{extension}',
+        '~/Library/Preferences/{name}{suffix}',
         partial(read_envvar_dir, 'APPDATA'),
         partial(read_envvar_dir, 'LOCALAPPDATA'),
-        '~/.{name}.{extension}',
+        '~/.{name}{suffix}',
     ),
     Locality.APPLICATION: (
         # application-local locations
-        './{name}.{extension}',
+        './{name}{suffix}',
     ),
     Locality.ENVIRONMENT: (
         # application-specific environment variables
@@ -199,7 +205,7 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
         # an explicit path, a template and a user-defined function
         load_order = loaders(Locality.user,
                              '/etc/defaults/hard-coded.yaml',
-                             '/path/to/{name}.{extension}',
+                             '/path/to/{name}{suffix}',
                              my_loader)
 
         # load configuration for name 'my-application' using the load order
@@ -228,27 +234,30 @@ DEFAULT_LOAD_ORDER = tuple(
 )
 
 
-def load(*fps: typing.IO, missing: typing.Any = Missing.SILENT) -> Configuration:
+def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
 
     :param fps: file-like objects (supporting ``.read()``)
+    :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
     :returns: a `Configuration` instance providing values from *fps*
     """
-    return Configuration(*(yaml.safe_load(fp.read()) for fp in fps), missing=missing)
+    return Configuration(*(format.load(fp) for fp in fps), missing=missing)
 
 
 def loadf(
     *fnames: typing.Union[str, PathLike],
+    format: Format = YAML,
     default: typing.Any = NoDefault,
     missing: typing.Any = Missing.SILENT,
 ) -> Configuration:
     """
     Read a `Configuration` instance from named files.
 
-    :param fnames: name of the files to ``open()``
+    :param fnames: name of the files to read
+    :param format: configuration (file) format to use
     :param default: `dict` or `Configuration` to use when a file does not
         exist (default is to raise a `FileNotFoundError`)
     :param missing: policy to be used when a configured key is missing, either
@@ -258,10 +267,7 @@ def loadf(
 
     def readf(fpath: Path) -> typing.Mapping[str, typing.Any]:
         try:
-            with fpath.open('r') as fp:
-                LOG.info(f'reading configuration from file {fpath}')
-                # default to empty dict, yaml.safe_load will return None for an empty document
-                return yaml.safe_load(fp.read()) or {}
+            return format.loadf(fpath)
         except OSError:
             # file does not exist or inaccessible
             if default is NoDefault:
@@ -271,25 +277,27 @@ def loadf(
                 LOG.debug(f'unable to read configuration from file {fpath}')
                 return default
 
-    return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
+    return Configuration(*(readf(Path(fname)) for fname in fnames), missing=missing)
 
 
-def loads(*strings: str, missing: typing.Any = Missing.SILENT) -> Configuration:
+def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from strings.
 
     :param strings: configuration contents
+    :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
     :returns: a `Configuration` instance providing values from *strings*
     """
-    return Configuration(*(yaml.safe_load(string) for string in strings), missing=missing)
+    return Configuration(*(format.loads(string) for string in strings), missing=missing)
 
 
 def load_name(
     *names: str,
     load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
-    extension: str = 'yaml',
+    format: Format = YAML,
+    extension: None = None,
     missing: typing.Any = Missing.SILENT,
 ) -> Configuration:
     """
@@ -305,23 +313,33 @@ def load_name(
         significance
     :param load_order: ordered list of name templates or `callable` s, in
         increasing order of significance
-    :param extension: file extension to be used
+    :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
     :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
+    if extension is not None:
+        if format is YAML:
+            warnings.warn(
+                'extension argument to load_name has been deprecated, use the format argument to set the file suffix',
+                DeprecationWarning,
+                stacklevel=2,  # warn about user code calling load_name rather than load_name itself`
+            )
+            format = YAML(f'.{extension}')
+        else:
+            raise ValueError("format and extension cannot be combined, use format's suffix")
 
     def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):
             if callable(source):
-                yield source(name, extension)
+                yield source(name, format)
             else:
-                # expand user to turn ~/.name.yaml into /home/user/.name.yaml
-                candidate = Path(source.format(name=name, extension=extension)).expanduser()
-                yield loadf(candidate, default=NotConfigured)
+                # TODO: should expanduser be called here?
+                candidate = Path(source.format(name=name, suffix=format.suffix)).expanduser()
+                yield loadf(candidate, format=format, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
 
