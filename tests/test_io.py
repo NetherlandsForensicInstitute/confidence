@@ -1,6 +1,8 @@
+# ruff: noqa: PTH118, PTH123 (allow use of os.path to test pathlib usage)
+
 from functools import partial
-from itertools import cycle
 from os import path
+from pathlib import Path
 from unittest.mock import call, mock_open, patch
 
 import pytest
@@ -20,7 +22,21 @@ from confidence import (
 from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
-test_files = path.join(path.dirname(__file__), 'files')
+@pytest.fixture(autouse=True)
+def unix_style_pathsep():
+    # hard-code the path separator to unix style throughout the tests here for consistency
+    with patch('confidence.io.pathsep', ':'):
+        yield
+
+
+@pytest.fixture
+def tilde_home_user():
+    def expanduser(self):
+        return Path(str(self).replace('~', '/home/user'))
+
+    with patch.object(Path, 'expanduser', expanduser):
+        yield expanduser
+
 
 yaml_str = """
     key: value
@@ -58,21 +74,7 @@ def _assert_values(conf):
     assert conf.does_not.exist is NotConfigured
 
 
-def _patched_expanduser(value):
-    return value.replace('~', '/home/user')
-
-
-@pytest.fixture
-def broken_open():
-    errors = cycle((FileNotFoundError, IOError, PermissionError))
-
-    def broken(*args, **kwargs):
-        raise next(errors)
-
-    return broken
-
-
-def test_load_defaults():
+def test_load_defaults(test_files):
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
     # as json is a subset of yaml, this should work just fine
@@ -80,17 +82,17 @@ def test_load_defaults():
         _assert_values(load(file))
 
 
-def test_load_yaml():
+def test_load_yaml(test_files):
     with open(path.join(test_files, 'config.yaml')) as file:
         _assert_values(load(file))
 
 
-def test_load_json():
+def test_load_json(test_files):
     with open(path.join(test_files, 'config.json')) as file:
         _assert_values(load(file))
 
 
-def test_load_multiple():
+def test_load_multiple(test_files):
     with open(path.join(test_files, 'config.json')) as file1, open(path.join(test_files, 'config.yaml')) as file2:
         _assert_values(load(file1, file2))
 
@@ -112,51 +114,50 @@ def test_loads_multiple():
     _assert_values(loads(json_str, yaml_str))
 
 
-def test_loadf_defaults():
+def test_loadf_defaults(test_files):
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
     _assert_values(loadf(path.join(test_files, 'config.json')))
 
 
-def test_loadf_yaml():
+def test_loadf_yaml(test_files):
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
 
 
-def test_loadf_json():
+def test_loadf_json(test_files):
     _assert_values(loadf(path.join(test_files, 'config.json')))
 
 
-def test_loadf_multiple():
+def test_loadf_multiple(test_files):
     _assert_values(loadf(path.join(test_files, 'config.json'), path.join(test_files, 'config.yaml')))
 
 
-def test_loadf_home():
-    with patch('confidence.io.path') as mocked_path:
-        # actual expanded home directory not under test, verify that it was called
-        mocked_path.expanduser.return_value = path.join(test_files, 'config.yaml')
-        _assert_values(loadf('~/config.yaml'))
+def test_loadf_home(test_files):
+    def expanduser(self):
+        return Path(str(self).replace('~', str(test_files)))
 
-    mocked_path.expanduser.assert_called_once_with('~/config.yaml')
+    with patch.object(Path, 'expanduser', expanduser):
+        _assert_values(loadf('~/config.yaml'))
+        assert Path('~/config.yaml').expanduser().exists()
 
 
 def test_loadf_default():
-    with patch('confidence.io.path') as mocked_path:
-        mocked_path.expanduser.side_effect = _patched_expanduser
+    assert not Path('/path/to/file-that-should-not-exist').exists()
 
-        config = loadf('/path/to/file', default={'a': 2})
-        assert config.a == 2
+    config = loadf('/path/to/file-that-should-not-exist', default={'a': 2})
+    assert config.a == 2
 
-        config = loadf('/path/to/file', default=Configuration({'b': 2}))
-        assert config.b == 2
+    config = loadf('/path/to/file-that-should-not-exist', default=Configuration({'b': 2}))
+    assert config.b == 2
 
 
 def test_loadf_missing():
-    with patch('confidence.io.path') as mocked_path:
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        with pytest.raises(FileNotFoundError):
-            loadf('/path/to/file')
+    assert not Path('/path/to/file-that-should-not-exist').exists()
+
+    with pytest.raises(FileNotFoundError):
+        loadf('/path/to/file-that-should-not-exist')
 
 
-def test_loadf_empty():
+def test_loadf_empty(test_files):
     assert len(loadf(path.join(test_files, 'empty.yaml'))) == 0
     assert len(loadf(path.join(test_files, 'comments.yaml'))) == 0
     assert len(loadf(path.join(test_files, 'empty.yaml'), path.join(test_files, 'comments.yaml'))) == 0
@@ -170,14 +171,14 @@ def test_loadf_empty():
     )
 
 
-def test_load_name_single():
+def test_load_name_single(test_files):
     test_path = path.join(test_files, '{name}.{extension}')
 
     _assert_values(load_name('config', load_order=(test_path,)))
     _assert_values(load_name('config', load_order=(test_path,), extension='json'))
 
 
-def test_load_name_multiple():
+def test_load_name_multiple(test_files):
     test_path = path.join(test_files, '{name}.{extension}')
 
     # bar has precedence over foo
@@ -197,74 +198,57 @@ def test_load_name_multiple():
     assert subject.overlapping.fully == 'foo'
 
 
-def test_load_name_order(broken_open):
+def test_load_name_order(tilde_home_user):
     env = {'HOME': '/home/user', 'LOCALAPPDATA': 'C:/Users/user/AppData/Local'}
 
     with (
-        patch('confidence.io.path') as mocked_path,
-        patch('confidence.io.open', side_effect=broken_open) as mocked_open,
         patch('confidence.io.environ', env),
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
     ):
-        # hard-code user-expansion, unmock join, unmock pathsep
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        mocked_path.join.side_effect = path.join
-        mocked_path.pathsep = path.pathsep
-
         assert len(load_name('foo', 'bar')) == 0
 
-    mocked_open.assert_has_calls(
+    mocked_loadf.assert_has_calls(
         [
-            call('/etc/xdg/foo.yaml', 'r'),
-            call('/etc/xdg/bar.yaml', 'r'),
-            call('/etc/foo/foo.yaml', 'r'),
-            call('/etc/bar/bar.yaml', 'r'),
-            call('/etc/foo.yaml', 'r'),
-            call('/etc/bar.yaml', 'r'),
-            call('/Library/Preferences/foo/foo.yaml', 'r'),
-            call('/Library/Preferences/bar/bar.yaml', 'r'),
-            call('/Library/Preferences/foo.yaml', 'r'),
-            call('/Library/Preferences/bar.yaml', 'r'),
-            call('/home/user/.config/foo.yaml', 'r'),
-            call('/home/user/.config/bar.yaml', 'r'),
-            call('/home/user/Library/Preferences/foo.yaml', 'r'),
-            call('/home/user/Library/Preferences/bar.yaml', 'r'),
-            call('C:/Users/user/AppData/Local/foo.yaml', 'r'),
-            call('C:/Users/user/AppData/Local/bar.yaml', 'r'),
-            call('/home/user/.foo.yaml', 'r'),
-            call('/home/user/.bar.yaml', 'r'),
-            call('./foo.yaml', 'r'),
-            call('./bar.yaml', 'r'),
+            call(Path('/etc/xdg/foo.yaml'), default=NotConfigured),
+            call(Path('/etc/xdg/bar.yaml'), default=NotConfigured),
+            call(Path('/etc/foo/foo.yaml'), default=NotConfigured),
+            call(Path('/etc/bar/bar.yaml'), default=NotConfigured),
+            call(Path('/etc/foo.yaml'), default=NotConfigured),
+            call(Path('/etc/bar.yaml'), default=NotConfigured),
+            call(Path('/Library/Preferences/foo/foo.yaml'), default=NotConfigured),
+            call(Path('/Library/Preferences/bar/bar.yaml'), default=NotConfigured),
+            call(Path('/Library/Preferences/foo.yaml'), default=NotConfigured),
+            call(Path('/Library/Preferences/bar.yaml'), default=NotConfigured),
+            call(Path('/home/user/.config/foo.yaml'), default=NotConfigured),
+            call(Path('/home/user/.config/bar.yaml'), default=NotConfigured),
+            call(Path('/home/user/Library/Preferences/foo.yaml'), default=NotConfigured),
+            call(Path('/home/user/Library/Preferences/bar.yaml'), default=NotConfigured),
+            call(Path('C:/Users/user/AppData/Local/foo.yaml'), default=NotConfigured),
+            call(Path('C:/Users/user/AppData/Local/bar.yaml'), default=NotConfigured),
+            call(Path('/home/user/.foo.yaml'), default=NotConfigured),
+            call(Path('/home/user/.bar.yaml'), default=NotConfigured),
+            call(Path('./foo.yaml'), default=NotConfigured),
+            call(Path('./bar.yaml'), default=NotConfigured),
         ],
         any_order=False,
     )
 
 
-def test_load_name_xdg_config_dirs(broken_open):
+def test_load_name_xdg_config_dirs():
     env = {
         'XDG_CONFIG_DIRS': '/etc/xdg-desktop/:/etc/not-xdg',
     }
 
     with (
-        patch('confidence.io.path') as mocked_path,
-        patch('confidence.io.open', side_effect=broken_open) as mocked_open,
         patch('confidence.io.environ', env),
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
     ):
-        # hard-code path separator, unmock join
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        mocked_path.pathsep = ':'
-        mocked_path.join.side_effect = path.join
-        # avoid actually opening files that might unexpectedly exist
-        mocked_path.exists.return_value = False
-
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
-    mocked_open.assert_has_calls(
+    mocked_loadf.assert_has_calls(
         [
-            # this might not be ideal (/etc/not-xdg should maybe show up twice first), but also not realistic…
-            call('/etc/not-xdg/foo.yaml', 'r'),
-            call('/etc/xdg-desktop/foo.yaml', 'r'),
-            call('/etc/not-xdg/bar.yaml', 'r'),
-            call('/etc/xdg-desktop/bar.yaml', 'r'),
+            call(Path('/etc/not-xdg/foo.yaml'), Path('/etc/xdg-desktop/foo.yaml'), default=NotConfigured),
+            call(Path('/etc/not-xdg/bar.yaml'), Path('/etc/xdg-desktop/bar.yaml'), default=NotConfigured),
         ],
         any_order=False,
     )
@@ -272,72 +256,51 @@ def test_load_name_xdg_config_dirs(broken_open):
 
 def test_load_name_xdg_config_dirs_fallback():
     with (
-        patch('confidence.io.path') as mocked_path,
-        patch('confidence.io.loadf') as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
         patch('confidence.io.environ', {}),
     ):
-        # hard-code path separator, unmock join
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        mocked_path.pathsep = ':'
-        mocked_path.join.side_effect = path.join
-        mocked_path.exists.return_value = True
-
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call('/etc/xdg/foo.yaml', default=NotConfigured),
-            call('/etc/xdg/bar.yaml', default=NotConfigured),
+            call(Path('/etc/xdg/foo.yaml'), default=NotConfigured),
+            call(Path('/etc/xdg/bar.yaml'), default=NotConfigured),
         ],
         any_order=False,
     )
 
 
-def test_load_name_xdg_config_home(broken_open):
+def test_load_name_xdg_config_home(tilde_home_user):
     env = {'XDG_CONFIG_HOME': '/home/user/.not-config', 'HOME': '/home/user'}
 
     with (
-        patch('confidence.io.path') as mocked_path,
-        patch('confidence.io.open', side_effect=broken_open) as mocked_open,
         patch('confidence.io.environ', env),
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
     ):
-        # hard-code user-expansion, unmock join
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        mocked_path.join.side_effect = path.join
-        # avoid actually opening files that might unexpectedly exist
-        mocked_path.exists.return_value = False
-
-        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
-
-    mocked_open.assert_has_calls(
-        [
-            call('/home/user/.not-config/foo.yaml', 'r'),
-            call('/home/user/.not-config/bar.yaml', 'r'),
-        ],
-        any_order=False,
-    )
-
-
-def test_load_name_xdg_config_home_fallback():
-    env = {'HOME': '/home/user'}
-
-    with (
-        patch('confidence.io.path') as mocked_path,
-        patch('confidence.io.loadf') as mocked_loadf,
-        patch('confidence.io.environ', env),
-    ):
-        # hard-code user-expansion, unmock join
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        mocked_path.join.side_effect = path.join
-        mocked_path.exists.return_value = True
-        mocked_loadf.return_value = NotConfigured
-
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call('/home/user/.config/foo.yaml', default=NotConfigured),
-            call('/home/user/.config/bar.yaml', default=NotConfigured),
+            call(Path('/home/user/.not-config/foo.yaml'), default=NotConfigured),
+            call(Path('/home/user/.not-config/bar.yaml'), default=NotConfigured),
+        ],
+        any_order=False,
+    )
+
+
+def test_load_name_xdg_config_home_fallback(tilde_home_user):
+    env = {'HOME': '/home/user'}
+
+    with (
+        patch('confidence.io.environ', env),
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+    ):
+        assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
+
+    mocked_loadf.assert_has_calls(
+        [
+            call(Path('/home/user/.config/foo.yaml'), default=NotConfigured),
+            call(Path('/home/user/.config/bar.yaml'), default=NotConfigured),
         ],
         any_order=False,
     )
@@ -363,7 +326,7 @@ def test_load_name_envvars():
     assert subject.types.maybe is True
 
 
-def test_load_name_envvar_file():
+def test_load_name_envvar_file(test_files):
     env = {
         'FOO_CONFIG_FILE': path.join(test_files, 'foo.yaml'),
         'BAR_CONFIG_FILE': path.join(test_files, 'bar.yaml'),
@@ -378,7 +341,7 @@ def test_load_name_envvar_file():
     assert subject.overlapping.fully == 'bar'
 
 
-def test_load_name_overlapping_envvars():
+def test_load_name_overlapping_envvars(test_files):
     env = {
         'FOO_KEY': 'foo',
         'FOO_NS_KEY': 'value',
@@ -401,31 +364,24 @@ def test_load_name_overlapping_envvars():
     assert subject.overlapping.fully == 'bar'
 
 
-def test_load_name_envvar_dir():
+def test_load_name_envvar_dir(tilde_home_user):
     env = {'PROGRAMDATA': 'C:/ProgramData', 'APPDATA': 'D:/Users/user/AppData/Roaming'}
 
     # only the envvar dir loaders are partials in DEFAULT_LOAD_ORDER
     load_order = [loader for loader in DEFAULT_LOAD_ORDER if isinstance(loader, partial)]
 
     with (
-        patch('confidence.io.path') as mocked_path,
-        patch('confidence.io.loadf') as mocked_loadf,
         patch('confidence.io.environ', env),
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
     ):
-        # hard-code user-expansion, unmock join
-        mocked_path.expanduser.side_effect = _patched_expanduser
-        mocked_path.join.side_effect = path.join
-        mocked_path.exists.return_value = True
-        mocked_loadf.return_value = NotConfigured
-
         assert len(load_name('foo', 'bar', load_order=load_order)) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call('C:/ProgramData/foo.yaml', default=NotConfigured),
-            call('C:/ProgramData/bar.yaml', default=NotConfigured),
-            call('D:/Users/user/AppData/Roaming/foo.yaml', default=NotConfigured),
-            call('D:/Users/user/AppData/Roaming/bar.yaml', default=NotConfigured),
+            call(Path('C:/ProgramData/foo.yaml'), default=NotConfigured),
+            call(Path('C:/ProgramData/bar.yaml'), default=NotConfigured),
+            call(Path('D:/Users/user/AppData/Roaming/foo.yaml'), default=NotConfigured),
+            call(Path('D:/Users/user/AppData/Roaming/bar.yaml'), default=NotConfigured),
         ],
         any_order=False,
     )
@@ -447,11 +403,11 @@ def test_dumps():
 
 
 def test_dumpf():
-    with patch('confidence.io.open', mock_open()) as mocked:
+    with patch.object(Path, 'open', mock_open()) as mocked_open:
         dumpf(Configuration({'ns.key1': True, 'ns.key2': None}), '/path/to/dumped.yaml')
 
-    mocked.assert_called_once_with('/path/to/dumped.yaml', 'wb')
-    write = mocked().write
+    mocked_open.assert_called_once_with('wb')
+    write = mocked_open().write
     for s in ('ns', 'key1', 'key2', 'null'):
         write.assert_any_call(str_containing(s))
 
