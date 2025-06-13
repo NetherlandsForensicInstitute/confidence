@@ -16,14 +16,14 @@ from confidence.models import Configuration, Missing, NoDefault, NotConfigured, 
 LOG = logging.getLogger(__name__)
 
 
-def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
+def read_xdg_config_dirs(name: str, format: Format = YAML) -> Configuration:
     """
     Read from files found in XDG-specified system-wide configuration paths,
     defaulting to ``/etc/xdg``. Depends on ``XDG_CONFIG_DIRS`` environment
     variable.
 
     :param name: application or configuration set name
-    :param extension: file extension to look for
+    :param format: configuration (file) format to use
     :returns: a `Configuration` instance with values read from XDG-specified
         directories
     """
@@ -33,7 +33,11 @@ def read_xdg_config_dirs(name: str, extension: str) -> Configuration:
     config_dirs = reversed(config_dirs.split(pathsep))
 
     # load a file from all config dirs, default to NotConfigured
-    return loadf(*(Path(config_dir) / f'{name}.{extension}' for config_dir in config_dirs), default=NotConfigured)
+    return loadf(
+        *(Path(config_dir) / f'{name}{format.suffix}' for config_dir in config_dirs),
+        format=format,
+        default=NotConfigured,
+    )
 
 
 def read_xdg_config_home(name: str, extension: str) -> Configuration:
