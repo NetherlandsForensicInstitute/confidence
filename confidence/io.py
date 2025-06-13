@@ -122,17 +122,17 @@ def read_envvar_file(name: str, format: Format = YAML) -> Configuration:
         return NotConfigured
 
 
-def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
+def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configuration:
     """
     Read values from a file located in a directory specified by a particular
-    environment file. ``read_envvar_dir('HOME', 'example', 'yaml')`` would
+    environment file. ``read_envvar_dir('HOME', 'example', format=YAML)`` would
     look for a file at ``/home/user/example.yaml``. When the environment
     variable isn't set or the file does not exist, `NotConfigured` will be
     returned.
 
     :param envvar: the environment variable to interpret as a directory
     :param name: application or configuration set name
-    :param extension: file extension to look for
+    :param format: configuration (file) format to use
     :returns: a `Configuration`, possibly `NotConfigured`
     """
     config_dir = environ.get(envvar)
@@ -140,8 +140,8 @@ def read_envvar_dir(envvar: str, name: str, extension: str) -> Configuration:
         return NotConfigured
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
-    config_path = Path(config_dir).expanduser() / f'{name}.{extension}'
-    return loadf(config_path, default=NotConfigured)
+    config_path = Path(config_dir).expanduser() / f'{name}{format.suffix}'
+    return loadf(config_path, format=format, default=NotConfigured)
 
 
 class Locality(IntEnum):
