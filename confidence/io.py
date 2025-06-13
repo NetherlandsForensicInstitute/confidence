@@ -40,14 +40,14 @@ def read_xdg_config_dirs(name: str, format: Format = YAML) -> Configuration:
     )
 
 
-def read_xdg_config_home(name: str, extension: str) -> Configuration:
+def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     """
     Read from file found in XDG-specified configuration home directory,
     expanding to ``${HOME}/.config/name.extension`` by default. Depends on
     ``XDG_CONFIG_HOME`` or ``HOME`` environment variables.
 
     :param name: application or configuration set name
-    :param extension: file extension to look for
+    :param format: configuration (file) format to use
     :returns: a `Configuration` instance, possibly `NotConfigured`
     """
     # find optional value of ${XDG_CONFIG_HOME}
@@ -56,7 +56,7 @@ def read_xdg_config_home(name: str, extension: str) -> Configuration:
     config_home = environ.get('XDG_CONFIG_HOME')
     config_home = Path(config_home) if config_home else Path('~/.config').expanduser()
     # expand to full path to configuration file in XDG config path
-    return loadf(config_home / f'{name}.{extension}', default=NotConfigured)
+    return loadf(config_home / f'{name}{format.suffix}', format=format, default=NotConfigured)
 
 
 def read_envvars(name: str, extension: typing.Optional[str] = None) -> Configuration:
