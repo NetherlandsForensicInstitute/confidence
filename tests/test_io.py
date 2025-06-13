@@ -19,6 +19,7 @@ from confidence import (
     loadf,
     loads,
 )
+from confidence.formats import JSON, YAML
 from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
@@ -172,14 +173,14 @@ def test_loadf_empty(test_files):
 
 
 def test_load_name_single(test_files):
-    test_path = path.join(test_files, '{name}.{extension}')
+    test_path = path.join(test_files, '{name}{suffix}')
 
     _assert_values(load_name('config', load_order=(test_path,)))
-    _assert_values(load_name('config', load_order=(test_path,), extension='json'))
+    _assert_values(load_name('config', load_order=(test_path,), format=JSON))
 
 
 def test_load_name_multiple(test_files):
-    test_path = path.join(test_files, '{name}.{extension}')
+    test_path = path.join(test_files, '{name}{suffix}')
 
     # bar has precedence over foo
     subject = load_name('foo', 'fake', 'bar', load_order=(test_path,))
@@ -209,26 +210,26 @@ def test_load_name_order(tilde_home_user):
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/etc/xdg/foo.yaml'), default=NotConfigured),
-            call(Path('/etc/xdg/bar.yaml'), default=NotConfigured),
-            call(Path('/etc/foo/foo.yaml'), default=NotConfigured),
-            call(Path('/etc/bar/bar.yaml'), default=NotConfigured),
-            call(Path('/etc/foo.yaml'), default=NotConfigured),
-            call(Path('/etc/bar.yaml'), default=NotConfigured),
-            call(Path('/Library/Preferences/foo/foo.yaml'), default=NotConfigured),
-            call(Path('/Library/Preferences/bar/bar.yaml'), default=NotConfigured),
-            call(Path('/Library/Preferences/foo.yaml'), default=NotConfigured),
-            call(Path('/Library/Preferences/bar.yaml'), default=NotConfigured),
-            call(Path('/home/user/.config/foo.yaml'), default=NotConfigured),
-            call(Path('/home/user/.config/bar.yaml'), default=NotConfigured),
-            call(Path('/home/user/Library/Preferences/foo.yaml'), default=NotConfigured),
-            call(Path('/home/user/Library/Preferences/bar.yaml'), default=NotConfigured),
-            call(Path('C:/Users/user/AppData/Local/foo.yaml'), default=NotConfigured),
-            call(Path('C:/Users/user/AppData/Local/bar.yaml'), default=NotConfigured),
-            call(Path('/home/user/.foo.yaml'), default=NotConfigured),
-            call(Path('/home/user/.bar.yaml'), default=NotConfigured),
-            call(Path('./foo.yaml'), default=NotConfigured),
-            call(Path('./bar.yaml'), default=NotConfigured),
+            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/foo/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/bar/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/Library/Preferences/foo/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/Library/Preferences/bar/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/Library/Preferences/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/Library/Preferences/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('C:/Users/user/AppData/Local/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('C:/Users/user/AppData/Local/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('./foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('./bar.yaml'), format=YAML, default=NotConfigured),
         ],
         any_order=False,
     )
@@ -247,8 +248,8 @@ def test_load_name_xdg_config_dirs():
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/etc/not-xdg/foo.yaml'), Path('/etc/xdg-desktop/foo.yaml'), default=NotConfigured),
-            call(Path('/etc/not-xdg/bar.yaml'), Path('/etc/xdg-desktop/bar.yaml'), default=NotConfigured),
+            call(Path('/etc/not-xdg/foo.yaml'), Path('/etc/xdg-desktop/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/not-xdg/bar.yaml'), Path('/etc/xdg-desktop/bar.yaml'), format=YAML, default=NotConfigured),
         ],
         any_order=False,
     )
@@ -263,8 +264,8 @@ def test_load_name_xdg_config_dirs_fallback():
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/etc/xdg/foo.yaml'), default=NotConfigured),
-            call(Path('/etc/xdg/bar.yaml'), default=NotConfigured),
+            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NotConfigured),
         ],
         any_order=False,
     )
@@ -281,8 +282,8 @@ def test_load_name_xdg_config_home(tilde_home_user):
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/home/user/.not-config/foo.yaml'), default=NotConfigured),
-            call(Path('/home/user/.not-config/bar.yaml'), default=NotConfigured),
+            call(Path('/home/user/.not-config/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.not-config/bar.yaml'), format=YAML, default=NotConfigured),
         ],
         any_order=False,
     )
@@ -299,8 +300,8 @@ def test_load_name_xdg_config_home_fallback(tilde_home_user):
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/home/user/.config/foo.yaml'), default=NotConfigured),
-            call(Path('/home/user/.config/bar.yaml'), default=NotConfigured),
+            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NotConfigured),
         ],
         any_order=False,
     )
@@ -378,10 +379,10 @@ def test_load_name_envvar_dir(tilde_home_user):
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('C:/ProgramData/foo.yaml'), default=NotConfigured),
-            call(Path('C:/ProgramData/bar.yaml'), default=NotConfigured),
-            call(Path('D:/Users/user/AppData/Roaming/foo.yaml'), default=NotConfigured),
-            call(Path('D:/Users/user/AppData/Roaming/bar.yaml'), default=NotConfigured),
+            call(Path('C:/ProgramData/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('C:/ProgramData/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('D:/Users/user/AppData/Roaming/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('D:/Users/user/AppData/Roaming/bar.yaml'), format=YAML, default=NotConfigured),
         ],
         any_order=False,
     )
