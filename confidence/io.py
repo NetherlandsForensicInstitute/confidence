@@ -1,6 +1,7 @@
 import logging
 import re
 import typing
+import warnings
 from enum import IntEnum
 from functools import partial
 from itertools import product
@@ -318,6 +319,16 @@ def load_name(
     :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
+    if extension is not None:
+        if format is YAML:
+            warnings.warn(
+                'extension argument to load_name has been deprecated, use the format argument to set the file suffix',
+                DeprecationWarning,
+                stacklevel=2,  # warn about user code calling load_name rather than load_name itself`
+            )
+            format = YAML(f'.{extension}')
+        else:
+            raise ValueError("format and extension cannot be combined, use format's suffix")
 
     def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
         # argument order for product matters, for names "foo" and "bar":
