@@ -1,3 +1,10 @@
+# Project-specific ignores
+
+# Project moved to pylock.toml
+pdm.lock
+
+# ----
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
