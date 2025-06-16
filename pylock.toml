@@ -6,7 +6,7 @@ environments = [
     "python_version >= \"3.9\"",
 ]
 extras = []
-dependency-groups = ["check", "default", "test"]
+dependency-groups = ["default", "check", "test"]
 default-groups = ["default"]
 created-by = "pdm"
 
