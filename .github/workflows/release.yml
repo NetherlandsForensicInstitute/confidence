@@ -21,7 +21,7 @@ jobs:
           cache: true
           cache-dependency-path: 'pylock.toml'
       - name: Check lock file
-        run: pdm lock --check
+        run: pdm run check-lock
       - name: Create build artifact
         run: pdm build --no-sdist
       - name: Publish package distributions to PyPI

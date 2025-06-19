@@ -15,8 +15,6 @@ jobs:
           python-version: '3.13'
           cache: true
           cache-dependency-path: 'pylock.toml'
-      - name: Check lock file
-        run: pdm lock --check
       - name: Install check dependencies
         run: pdm install --group check
       - name: Run checks
