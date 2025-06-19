@@ -46,7 +46,7 @@ test = [
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
-check = {composite = ["format", "lint", "type-check"]}
+check = {composite = ["check-lock", "format", "lint", "type-check"]}
 check-lock = "pdm lock --check"
 format = "ruff format --diff confidence/ tests/"
 lint = "ruff check confidence/ tests/"
