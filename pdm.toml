@@ -1,0 +1,6 @@
+[pypi]
+# explicit default url, avoid including local mirror urls
+url = "https://pypi.org/simple"
+
+[lock]
+format = "pylock"

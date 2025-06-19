@@ -46,11 +46,13 @@ test = [
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
-check = {composite = ["format", "lint", "type-check"]}
+check = {composite = ["check-lock", "format", "lint", "type-check"]}
+check-lock = "pdm lock --check"
 format = "ruff format --diff confidence/ tests/"
 lint = "ruff check confidence/ tests/"
 test = "coverage run --branch --source confidence --module pytest --strict-markers tests/"
 type-check = "mypy confidence/"
+update-lock = "pdm lock --group :all"
 
 [tool.ruff]
 format.quote-style = "single"

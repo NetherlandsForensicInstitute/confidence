@@ -14,8 +14,7 @@ jobs:
         with:
           python-version: '3.13'
           cache: true
-      - name: Check lock file
-        run: pdm lock --check
+          cache-dependency-path: 'pylock.toml'
       - name: Install check dependencies
         run: pdm install --group check
       - name: Run checks
@@ -31,6 +30,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: true
+          cache-dependency-path: 'pylock.toml'
       - name: Install test dependencies
         run: pdm install --group test
       - name: Run tests
