@@ -1,5 +1,6 @@
 import json
 import typing
+from abc import abstractmethod
 from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
@@ -17,6 +18,7 @@ class Format(typing.Protocol):
     def load(self, fp: typing.TextIO) -> typing.Any:
         return self.loads(fp.read())
 
+    @abstractmethod
     def loads(self, string: str) -> typing.Any:
         raise NotImplementedError
 
@@ -27,6 +29,7 @@ class Format(typing.Protocol):
     def dump(self, value: typing.Any, fp: typing.TextIO) -> None:
         fp.write(self.dumps(value))
 
+    @abstractmethod
     def dumps(self, value: typing.Any) -> str:
         raise NotImplementedError
 
