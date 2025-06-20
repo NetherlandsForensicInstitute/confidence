@@ -9,7 +9,7 @@ import yaml
 from confidence.models import unwrap
 
 
-@dataclass
+@dataclass(frozen=True)
 class Format(typing.Protocol):
     suffix: str = ''
     encoding: str = 'utf-8'
@@ -40,7 +40,7 @@ class Format(typing.Protocol):
         return replace(self, suffix=suffix)
 
 
-@dataclass
+@dataclass(frozen=True)
 class _JSONFormat(Format):
     suffix: str = '.json'
 
@@ -51,7 +51,7 @@ class _JSONFormat(Format):
         return json.dumps(unwrap(value))
 
 
-@dataclass
+@dataclass(frozen=True)
 class _YAMLFormat(Format):
     suffix: str = '.yaml'
 
