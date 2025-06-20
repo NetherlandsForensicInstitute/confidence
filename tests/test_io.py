@@ -20,7 +20,7 @@ from confidence import (
     loads,
 )
 from confidence.formats import JSON, YAML
-from confidence.io import dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
+from confidence.io import dump, dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
 @pytest.fixture(autouse=True)
@@ -442,6 +442,14 @@ def test_dumpf():
 
 
 @pytest.mark.parametrize('value', (123, 16.0, 'abc', True, False, None, [1, 2, 3], {'a': 1, 'b': 'c'}))
+def test_dump_roundtrip(value, tmp_path):
+    with (tmp_path / 'config.yaml').open('wt') as fp:
+        dump(value, fp)
+    with (tmp_path / 'config.yaml').open('rt') as fp:
+        assert YAML.load(fp) == value
+
+
+@pytest.mark.parametrize('value', (123, 16.0, 'abc', True, False, None, [1, 2, 3], {'a': 1, 'b': 'c'}))
 def test_dumps_roundtrip(value):
     encoded = dumps(value)
     assert yaml.safe_load(encoded) == value
@@ -454,3 +462,17 @@ def test_dumpf_roundtrip(value, tmp_path):
 
     with open(tmp_path / 'config.yaml', 'r') as in_file:
         assert yaml.safe_load(in_file) == value
+
+
+def test_dumpf_deprecated_encoding(tmp_path):
+    with patch('confidence.io.warnings') as warnings:
+        dumpf({'a': 1}, tmp_path / 'dumpf.yaml', encoding='utf-32')
+
+    warnings.warn.assert_called_once_with(
+        str_containing('encoding argument to dump functions'),
+        category=DeprecationWarning,
+        stacklevel=3,
+    )
+
+    with pytest.raises(ValueError, match="use format's encoding"):
+        dumpf({'a': 1}, tmp_path / 'dumpf.yaml', format=JSON, encoding='utf-32')
