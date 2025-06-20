@@ -6,12 +6,13 @@ from pathlib import Path
 
 import yaml
 
-from confidence import unwrap
+from confidence.models import unwrap
 
 
 @dataclass
 class Format(typing.Protocol):
     suffix: str = ''
+    encoding: str = 'utf-8'
 
     def load(self, fp: typing.TextIO) -> typing.Any:
         return self.loads(fp.read())
@@ -19,8 +20,8 @@ class Format(typing.Protocol):
     def loads(self, string: str) -> typing.Any:
         raise NotImplementedError
 
-    def loadf(self, fpath: typing.Union[str, PathLike], encoding: str = 'utf-8') -> typing.Any:
-        with Path(fpath).expanduser().open('rt', encoding=encoding) as fp:
+    def loadf(self, fpath: typing.Union[str, PathLike], encoding: typing.Optional[str] = None) -> typing.Any:
+        with Path(fpath).expanduser().open('rt', encoding=encoding or self.encoding) as fp:
             return self.load(fp)
 
     def dump(self, value: typing.Any, fp: typing.TextIO) -> None:
@@ -29,8 +30,10 @@ class Format(typing.Protocol):
     def dumps(self, value: typing.Any) -> str:
         raise NotImplementedError
 
-    def dumpf(self, value: typing.Any, fname: typing.Union[str, PathLike]) -> None:
-        with Path(fname).open('wt', encoding='utf-8') as fp:
+    def dumpf(
+        self, value: typing.Any, fname: typing.Union[str, PathLike], encoding: typing.Optional[str] = None
+    ) -> None:
+        with Path(fname).open('wt', encoding=encoding or self.encoding) as fp:
             return self.dump(value, fp)
 
     def __call__(self, suffix: str) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
@@ -56,11 +59,11 @@ class _YAMLFormat(Format):
         return yaml.safe_load(string)
 
     def dumps(self, value: typing.Any) -> str:
-        return yaml.safe_dump(unwrap(value))
+        return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
 
 
-JSON = _JSONFormat('.json')
-YAML = _YAMLFormat('.yaml')
+JSON: Format = _JSONFormat(suffix='.json')
+YAML: Format = _YAMLFormat(suffix='.yaml')
 
 
 __all__ = (
