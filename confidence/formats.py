@@ -44,6 +44,9 @@ class _JSONFormat(Format):
     def loads(self, string: str) -> typing.Any:
         return json.loads(string)
 
+    def dumps(self, value: typing.Any) -> str:
+        return json.dumps(unwrap(value))
+
 
 @dataclass
 class _YAMLFormat(Format):
@@ -51,6 +54,9 @@ class _YAMLFormat(Format):
 
     def loads(self, string: str) -> typing.Any:
         return yaml.safe_load(string)
+
+    def dumps(self, value: typing.Any) -> str:
+        return yaml.safe_dump(unwrap(value))
 
 
 JSON = _JSONFormat('.json')
