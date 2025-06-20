@@ -78,3 +78,8 @@ allow_untyped_defs = false
 strict_optional = true
 # warn about lines in this file that make no sense to mypy
 warn_unused_configs = true
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+]
