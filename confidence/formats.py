@@ -59,6 +59,8 @@ class _YAMLFormat(Format):
         return yaml.safe_load(string)
 
     def dumps(self, value: typing.Any) -> str:
+        # use block style output for nested collections (flow style dumps nested dicts inline)
+        # omit explicit document end (...) included with simple values
         return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
 
 
