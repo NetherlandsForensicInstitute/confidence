@@ -62,8 +62,8 @@ class _YAMLFormat(Format):
         return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
 
 
-JSON: Format = _JSONFormat(suffix='.json')
-YAML: Format = _YAMLFormat(suffix='.yaml')
+JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
+YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
 
 __all__ = (
