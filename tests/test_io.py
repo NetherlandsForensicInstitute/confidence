@@ -3,7 +3,7 @@
 from functools import partial
 from os import path
 from pathlib import Path
-from unittest.mock import call, mock_open, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 import yaml
@@ -393,6 +393,23 @@ def test_load_name_envvar_dir(tilde_home_user):
         ],
         any_order=False,
     )
+
+
+def test_load_name_deprecated_extension():
+    loader = MagicMock()
+
+    with patch('confidence.io.warnings') as warnings:
+        load_name('app', extension='yml', load_order=[loader])
+
+    warnings.warn.assert_called_once_with(
+        str_containing('extension argument'),
+        category=DeprecationWarning,
+        stacklevel=2,
+    )
+    loader.assert_called_once_with('app', YAML('.yml'))
+
+    with pytest.raises(ValueError, match='format and extension'):
+        load_name('app', extension='jsn', format=JSON)
 
 
 def test_dumps():

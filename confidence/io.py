@@ -323,7 +323,7 @@ def load_name(
         if format is YAML:
             warnings.warn(
                 'extension argument to load_name has been deprecated, use the format argument to set the file suffix',
-                DeprecationWarning,
+                category=DeprecationWarning,
                 stacklevel=2,  # warn about user code calling load_name rather than load_name itself`
             )
             format = YAML(f'.{extension}')
