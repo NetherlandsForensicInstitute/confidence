@@ -57,6 +57,7 @@ update-lock = "pdm lock --group :all"
 [tool.ruff]
 format.quote-style = "single"
 line-length = 120
+lint.flake8-builtins.ignorelist = ["format"]
 lint.flake8-quotes.inline-quotes = "single"
 lint.ignore = [
     # enforced by the formatter, not ignoring this causes warnings
@@ -77,3 +78,8 @@ allow_untyped_defs = false
 strict_optional = true
 # warn about lines in this file that make no sense to mypy
 warn_unused_configs = true
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+]

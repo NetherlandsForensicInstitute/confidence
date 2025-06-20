@@ -1,6 +1,7 @@
 import logging
 
 from confidence.exceptions import ConfigurationError, ConfiguredReferenceError, MergeConflictError, NotConfiguredError
+from confidence.formats import JSON, YAML, Format
 from confidence.io import DEFAULT_LOAD_ORDER, Locality, dump, dumpf, dumps, load, load_name, loaders, loadf, loads
 from confidence.models import Configuration, Missing, NotConfigured, merge, unwrap
 
@@ -8,9 +9,12 @@ from confidence.models import Configuration, Missing, NotConfigured, merge, unwr
 __all__ = (
     'ConfigurationError',
     'ConfiguredReferenceError',
+    'DEFAULT_LOAD_ORDER',
+    'Format',
+    'JSON',
     'MergeConflictError',
     'NotConfiguredError',
-    'DEFAULT_LOAD_ORDER',
+    'YAML',
     'dump',
     'dumpf',
     'dumps',
