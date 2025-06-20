@@ -333,6 +333,10 @@ def test_load_name_envvars():
     assert subject.types.num == 42
     assert subject.types.maybe is True
 
+    with patch('confidence.io.environ', {'KEY_FOO': 'foo', 'BAR_CONFIG_FILE': '/tmp/bar.conf'}):
+        # neither environment variable should be hit here
+        assert not load_name('foo', 'bar', load_order=(read_envvars,))
+
 
 def test_load_name_envvar_file(test_files):
     env = {
