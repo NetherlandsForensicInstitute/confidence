@@ -6,6 +6,8 @@ from pathlib import Path
 
 import yaml
 
+from confidence import unwrap
+
 
 @dataclass
 class Format(typing.Protocol):
@@ -20,6 +22,16 @@ class Format(typing.Protocol):
     def loadf(self, fpath: typing.Union[str, PathLike], encoding: str = 'utf-8') -> typing.Any:
         with Path(fpath).expanduser().open('rt', encoding=encoding) as fp:
             return self.load(fp)
+
+    def dump(self, value: typing.Any, fp: typing.TextIO) -> None:
+        fp.write(self.dumps(value))
+
+    def dumps(self, value: typing.Any) -> str:
+        raise NotImplementedError
+
+    def dumpf(self, value: typing.Any, fname: typing.Union[str, PathLike]) -> None:
+        with Path(fname).open('wt', encoding='utf-8') as fp:
+            return self.dump(value, fp)
 
     def __call__(self, suffix: str) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
         return replace(self, suffix=suffix)
