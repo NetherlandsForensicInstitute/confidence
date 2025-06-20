@@ -36,8 +36,8 @@ class Format(typing.Protocol):
         with Path(fname).open('wt', encoding=encoding or self.encoding) as fp:
             return self.dump(value, fp)
 
-    def __call__(self, suffix: str) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
-        return replace(self, suffix=suffix)
+    def __call__(self, **kwargs: typing.Any) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
+        return replace(self, **kwargs)
 
 
 @dataclass(frozen=True)
