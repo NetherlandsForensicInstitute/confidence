@@ -1,11 +1,13 @@
 import json
 import typing
+from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
 
 import yaml
 
 
+@dataclass
 class Format(typing.Protocol):
     suffix: str = ''
 
@@ -19,28 +21,21 @@ class Format(typing.Protocol):
         with Path(fpath).expanduser().open('rt', encoding=encoding) as fp:
             return self.load(fp)
 
+    def __call__(self, suffix: str) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
+        return replace(self, suffix=suffix)
 
+
+@dataclass
 class _JSONFormat(Format):
     suffix: str = '.json'
-
-    def __init__(self, suffix: typing.Optional[str] = '.json'):
-        self.suffix = suffix or ''
-
-    def __call__(self, suffix: str) -> Format:
-        return type(self)(suffix)
 
     def loads(self, string: str) -> typing.Any:
         return json.loads(string)
 
 
+@dataclass
 class _YAMLFormat(Format):
     suffix: str = '.yaml'
-
-    def __init__(self, suffix: typing.Optional[str] = '.yaml'):
-        self.suffix = suffix or ''
-
-    def __call__(self, suffix: str) -> Format:
-        return type(self)(suffix)
 
     def loads(self, string: str) -> typing.Any:
         return yaml.safe_load(string)
