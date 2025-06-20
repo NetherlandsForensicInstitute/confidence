@@ -410,7 +410,7 @@ def test_load_name_deprecated_extension():
         category=DeprecationWarning,
         stacklevel=2,
     )
-    loader.assert_called_once_with('app', YAML('.yml'))
+    loader.assert_called_once_with('app', YAML(suffix='.yml'))
 
     with pytest.raises(ValueError, match='format and extension'):
         load_name('app', extension='jsn', format=JSON)

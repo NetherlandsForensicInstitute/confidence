@@ -324,7 +324,7 @@ def load_name(
                 category=DeprecationWarning,
                 stacklevel=2,  # warn about user code calling load_name rather than load_name itself`
             )
-            format = YAML(f'.{extension}')
+            format = YAML(suffix=f'.{extension}')
         else:
             raise ValueError("format and extension cannot be combined, use format's suffix")
 
@@ -342,17 +342,34 @@ def load_name(
     return Configuration(*generate_sources(), missing=missing)
 
 
-def dump(value: typing.Any, fp: typing.TextIO, format: Format = YAML, encoding: str = 'utf-8') -> None:
+def _check_format_encoding(format: Format, encoding: typing.Optional[str]) -> Format:
+    if encoding:
+        if format is YAML:
+            warnings.warn(
+                'encoding argument to dump functions has been deprecated, use the format argument to set the encoding',
+                category=DeprecationWarning,
+                stacklevel=3,
+            )
+            return format(encoding=encoding)
+        else:
+            raise ValueError("format and encoding cannot be combined, use format's encoding")
+
+    return format
+
+
+def dump(value: typing.Any, fp: typing.TextIO, format: Format = YAML, encoding: None = None) -> None:
     """
     Shorthand for `format.dump(value, fp)`.
     """
+    format = _check_format_encoding(format, encoding)
     format.dump(value, fp)
 
 
-def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], format: Format = YAML, encoding: str = 'utf-8') -> None:
+def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], format: Format = YAML, encoding: None = None) -> None:
     """
     Shorthand for `format.dumpf(value, fname)`.
     """
+    format = _check_format_encoding(format, encoding)
     format.dumpf(value, fname)
 
 
