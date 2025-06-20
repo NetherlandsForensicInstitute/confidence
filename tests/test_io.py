@@ -435,7 +435,7 @@ def test_dumpf():
     with patch.object(Path, 'open', mock_open()) as mocked_open:
         dumpf(Configuration({'ns.key1': True, 'ns.key2': None}), '/path/to/dumped.yaml')
 
-    mocked_open.assert_called_once_with('wb')
+    mocked_open.assert_called_once_with('wt', encoding='utf-8')
     write = mocked_open().write
     for s in ('ns', 'key1', 'key2', 'null'):
         write.assert_any_call(str_containing(s))

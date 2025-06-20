@@ -8,10 +8,8 @@ from itertools import product
 from os import PathLike, environ, pathsep
 from pathlib import Path
 
-import yaml
-
 from confidence.formats import YAML, Format
-from confidence.models import Configuration, Missing, NoDefault, NotConfigured, unwrap
+from confidence.models import Configuration, Missing, NoDefault, NotConfigured
 
 
 LOG = logging.getLogger(__name__)
@@ -344,40 +342,22 @@ def load_name(
     return Configuration(*generate_sources(), missing=missing)
 
 
-def dump(value: typing.Any, fp: typing.IO, encoding: str = 'utf-8') -> None:
+def dump(value: typing.Any, fp: typing.TextIO, format: Format = YAML, encoding: str = 'utf-8') -> None:
     """
-    Serialize the configuration in *value* to YAML format, writing it to *fp*.
-
-    :param value: the value (like a `Configuration` object) to dump
-    :param fp: a file-like object to write to
-    :param encoding: encoding to use
+    Shorthand for `format.dump(value, fp)`.
     """
-    # recursively unwrap the value to help yaml understand what we're trying to dump
-    # use block style output for nested collections (flow style dumps nested dicts inline)
-    yaml.safe_dump(unwrap(value), stream=fp, encoding=encoding, default_flow_style=False)
+    format.dump(value, fp)
 
 
-def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], encoding: str = 'utf-8') -> None:
+def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], format: Format = YAML, encoding: str = 'utf-8') -> None:
     """
-    Serialize the configuration in *value* to a YAML-formatted file.
-
-    :param value: the value (like a `Configuration` object) to dump
-    :param fname: name or path of the file to write to
-    :param encoding: encoding to use
+    Shorthand for `format.dumpf(value, fname)`.
     """
-    with Path(fname).open('wb') as out_file:
-        dump(value, out_file, encoding=encoding)
+    format.dumpf(value, fname)
 
 
-def dumps(value: typing.Any) -> str:
+def dumps(value: typing.Any, format: Format = YAML) -> str:
     """
-    Serialize the configuration in *value* as a YAML-formatted string.
-
-    :param value: the value (like a `Configuration` object) to dump
-    :returns: *configuration*, serialized as a `str` in YAML format
+    Shorthand for `format.dumps(value)`.
     """
-    # recursively unwrap the value to help yaml understand what we're trying to dump
-    # use block style output for nested collections (flow style dumps nested dicts inline)
-    encoded = yaml.safe_dump(unwrap(value), default_flow_style=False)
-    # omit explicit document end (...) included with simple values
-    return encoded.removesuffix('\n...\n')
+    return format.dumps(value)
