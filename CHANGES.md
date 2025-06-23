@@ -1,6 +1,12 @@
 Changes
 =======
 
+development (main)
+------------------
+
+- Introduce `confidence.Format` with two concrete implementations: `confidence.JSON` and `confidence.YAML`, which can be customized before use (e.g. `format = YAML(suffix='.yml')`).
+- **Deprecate** the use of `extension` argument to loading functions and `encoding` argument to dumping functions, both can be controlled with a `confidence.Format`.
+
 0.16 (2025-04-18)
 -----------------
 
