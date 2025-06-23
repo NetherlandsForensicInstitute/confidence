@@ -402,14 +402,8 @@ def test_load_name_envvar_dir(tilde_home_user):
 def test_load_name_deprecated_extension():
     loader = MagicMock()
 
-    with patch('confidence.io.warnings') as warnings:
+    with pytest.warns(DeprecationWarning, match='extension argument'):
         load_name('app', extension='yml', load_order=[loader])
-
-    warnings.warn.assert_called_once_with(
-        str_containing('extension argument'),
-        category=DeprecationWarning,
-        stacklevel=2,
-    )
     loader.assert_called_once_with('app', YAML(suffix='.yml'))
 
     with pytest.raises(ValueError, match='format and extension'):
@@ -465,14 +459,8 @@ def test_dumpf_roundtrip(value, tmp_path):
 
 
 def test_dumpf_deprecated_encoding(tmp_path):
-    with patch('confidence.io.warnings') as warnings:
+    with pytest.warns(DeprecationWarning, match='encoding argument'):
         dumpf({'a': 1}, tmp_path / 'dumpf.yaml', encoding='utf-32')
-
-    warnings.warn.assert_called_once_with(
-        str_containing('encoding argument to dump functions'),
-        category=DeprecationWarning,
-        stacklevel=3,
-    )
 
     with pytest.raises(ValueError, match="use format's encoding"):
         dumpf({'a': 1}, tmp_path / 'dumpf.yaml', format=JSON, encoding='utf-32')

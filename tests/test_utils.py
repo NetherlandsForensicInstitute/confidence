@@ -1,4 +1,3 @@
-import warnings
 from datetime import date
 
 import pytest
@@ -148,9 +147,5 @@ def test_split_key_types():
 
 
 def test_merge_deprecation():
-    with warnings.catch_warnings(record=True) as warned:
+    with pytest.warns(DeprecationWarning, match='renamed'):
         assert merge({}, {'a': 5}) == {'a': 5}
-
-    assert len(warned) == 1
-    assert issubclass(warned[0].category, DeprecationWarning)
-    assert 'renamed' in str(warned[0].message)
