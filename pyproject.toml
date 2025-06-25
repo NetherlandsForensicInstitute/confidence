@@ -43,6 +43,11 @@ test = [
     "coverage",
     "pytest",
 ]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
