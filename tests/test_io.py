@@ -229,12 +229,14 @@ def test_load_name_order(tilde_home_user):
             call(Path('/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
             call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NotConfigured),
             call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/Library/Preferences/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
+            # loadf is usually the one to expand ~ to /home/user here, but we've mocked it, so the value being passed
+            # will still contain the ~
+            call(Path('~/Library/Preferences/foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('~/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
             call(Path('C:/Users/user/AppData/Local/foo.yaml'), format=YAML, default=NotConfigured),
             call(Path('C:/Users/user/AppData/Local/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/.foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/.bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('~/.foo.yaml'), format=YAML, default=NotConfigured),
+            call(Path('~/.bar.yaml'), format=YAML, default=NotConfigured),
             call(Path('./foo.yaml'), format=YAML, default=NotConfigured),
             call(Path('./bar.yaml'), format=YAML, default=NotConfigured),
         ],
