@@ -23,7 +23,7 @@ class Format(typing.Protocol):
         raise NotImplementedError
 
     def loadf(self, fpath: typing.Union[str, PathLike], encoding: typing.Optional[str] = None) -> typing.Any:
-        with Path(fpath).expanduser().open('rt', encoding=encoding or self.encoding) as fp:
+        with Path(fpath).open('rt', encoding=encoding or self.encoding) as fp:
             return self.load(fp)
 
     def dump(self, value: typing.Any, fp: typing.TextIO) -> None:

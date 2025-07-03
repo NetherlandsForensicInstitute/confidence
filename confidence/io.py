@@ -275,7 +275,8 @@ def loadf(
                 LOG.debug(f'unable to read configuration from file {fpath}')
                 return default
 
-    return Configuration(*(readf(Path(fname)) for fname in fnames), missing=missing)
+    # expand the user directories here, format is not in charge of the file paths
+    return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
 
 
 def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
@@ -335,8 +336,7 @@ def load_name(
             if callable(source):
                 yield source(name, format)
             else:
-                # TODO: should expanduser be called here?
-                candidate = Path(source.format(name=name, suffix=format.suffix)).expanduser()
+                candidate = Path(source.format(name=name, suffix=format.suffix))
                 yield loadf(candidate, format=format, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
@@ -370,7 +370,8 @@ def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], format: Format 
     Shorthand for `format.dumpf(value, fname)`.
     """
     format = _check_format_encoding(format, encoding)
-    format.dumpf(value, fname)
+    # expand the dump path here, format is not in charge of the file paths
+    format.dumpf(value, Path(fname).expanduser())
 
 
 def dumps(value: typing.Any, format: Format = YAML) -> str:
