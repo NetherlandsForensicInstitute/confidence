@@ -1,6 +1,11 @@
 Changes
 =======
 
+development (main)
+------------------
+
+- Let `Configuration.get()` mimic the behaviour of `dict.get()`, returning `None` by default for missing keys.
+
 0.16 (2025-04-18)
 -----------------
 
