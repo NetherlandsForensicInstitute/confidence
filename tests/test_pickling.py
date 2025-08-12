@@ -2,7 +2,6 @@ import pickle
 
 import pytest
 
-from confidence.exceptions import NotConfiguredError
 from confidence.models import Configuration, Missing, NotConfigured
 
 
@@ -33,8 +32,7 @@ def test_missing_error():
     reencoded = pickle.loads(pickle.dumps(subject))
 
     assert subject.testing == reencoded.testing == 123
-    with pytest.raises(NotConfiguredError):
-        assert not reencoded.get('not_there')
+    assert reencoded.get('not_there') is None  # should *not* trigger the missing setting
     with pytest.raises(AttributeError):
         assert not reencoded.not_there
 

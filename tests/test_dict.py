@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 
 import pytest
 
-from confidence import Configuration, ConfigurationError, loadf
+from confidence import Configuration, loadf
 from confidence.models import NoDefault
 
 
@@ -10,13 +10,10 @@ def test_empty():
     def run_test(subject):
         assert subject.get('path.without.value', default=None) is None
         assert subject.get('another.path.without.value', default=4) == 4
-        with pytest.raises(ConfigurationError) as e:
-            subject.get('some_long.path')
-        assert 'some_long' in str(e.value)
-        with pytest.raises(KeyError) as e:
+        assert subject.get('some_long.path') is None
+        with pytest.raises(KeyError, match='some_long'):
             subject['some_long']
-        assert 'some_long' in str(e.value)
-        with pytest.raises(KeyError) as e:
+        with pytest.raises(KeyError, match='some_long') as e:
             subject['some_long.path']
         assert 'path' not in str(e.value)
 
