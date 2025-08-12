@@ -130,7 +130,7 @@ class Configuration(Mapping):
                 if path in references:
                     raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
 
-                reference = self._root.get(path, resolve_references=False)
+                reference = self._root.get(path, default=NoDefault, resolve_references=False)
 
                 if match.span(0) != (0, len(value)):
                     # matched a reference inside of another value (template)
@@ -157,7 +157,7 @@ class Configuration(Mapping):
     def get(
         self,
         path: str,
-        default: typing.Any = NoDefault,
+        default: typing.Any = None,
         *,
         as_type: typing.Optional[typing.Callable] = None,
         resolve_references: bool = True,
@@ -168,7 +168,8 @@ class Configuration(Mapping):
         :param path: the configuration key to fetch a value for, steps
             separated by a dot (``.``)
         :param default: a value to return if no value is found for the
-            supplied path (``None`` is allowed)
+            supplied path (defaults to ``None``, use ``NoDefault`` to trigger a
+            ``KeyError`` for a non-existing)
         :param as_type: an optional callable to apply to the value found for
             the supplied path (possibly raising exceptions of its own if the
             value can not be coerced to the expected type)
@@ -176,7 +177,7 @@ class Configuration(Mapping):
         :returns: the value associated with the supplied configuration key, if
             available, or a supplied default value if the key was not found
         :raises NotConfiguredError: when no value was found for *path* and
-            *default* was not provided
+            *default* was ``NoDefault``
         :raises ConfiguredReferenceError: when a reference could not be resolved
         """
         value = self._source
@@ -249,7 +250,9 @@ class Configuration(Mapping):
         return len(self._source)
 
     def __getitem__(self, item: str) -> typing.Any:
-        return self.get(item)
+        # emulate the way dict would handle this: explicitly pass NoDefault to trigger a KeyError when item is not
+        # available
+        return self.get(item, default=NoDefault)
 
     def __iter__(self) -> typing.Iterator[str]:
         return iter(self._source)
