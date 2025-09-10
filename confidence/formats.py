@@ -12,8 +12,18 @@ from confidence.models import unwrap
 
 @dataclass(frozen=True)
 class Format(ABC):
-    suffix: str = ''
-    encoding: str = 'utf-8'
+    """
+    Base class for implementing various configuration file formats.
+
+    Configuration I/O will expect methods for reading and writing `TextIO`,
+    pathlike values and plain `str`s, the former of these delegating to using
+    either `loads` or `dumps` by default. Note that a `Format` data class will
+    also contain at least `suffix` and `encoding` attributes used by the same
+    I/O mechanisms.
+    """
+
+    suffix: str = ''  #: the default file path suffix for a configuration file of this Format
+    encoding: str = 'utf-8'  #: the default text encoding for reading from binary I/O
 
     def load(self, fp: typing.TextIO) -> typing.Any:
         return self.loads(fp.read())
@@ -40,12 +50,20 @@ class Format(ABC):
             return self.dump(value, fp)
 
     def __call__(self, **kwargs: typing.Any) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
+        """
+        Create a new `Format` instance similar to this one, with the
+        parameters in `kwargs` set to their new values.
+
+        :param kwargs: the parameters to be updated, e.g. `encoding='ascii'`
+        :return: an updated `Format`
+        """
+        # delegate all the heavy lifting to dataclasses.replace()
         return replace(self, **kwargs)
 
 
 @dataclass(frozen=True)
 class _JSONFormat(Format):
-    suffix: str = '.json'
+    suffix: str = '.json'  #: the default file suffix for the JSON format: .json
 
     def loads(self, string: str) -> typing.Any:
         return json.loads(string)
@@ -56,7 +74,7 @@ class _JSONFormat(Format):
 
 @dataclass(frozen=True)
 class _YAMLFormat(Format):
-    suffix: str = '.yaml'
+    suffix: str = '.yaml'  #: the default file suffix for the YAML format: .yaml
 
     def loads(self, string: str) -> typing.Any:
         return yaml.safe_load(string)
@@ -67,6 +85,7 @@ class _YAMLFormat(Format):
         return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
 
 
+# expose *instances* of the formats defined here for users to interact with, editable by calling them (see __call__)
 JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
 YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
