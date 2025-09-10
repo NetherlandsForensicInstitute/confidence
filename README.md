@@ -73,6 +73,14 @@ configuration = confidence.load_name('app', load_order=confidence.loaders(
     # loading system after user makes system locations take precedence
     confidence.Locality.USER, confidence.Locality.SYSTEM
 ))
+
+# prefer using .yml file names instead? tweak the format:
+
+configuration = confidence.load_name('app', format=YAML('.yml'))
+
+# it doesn't even need to be YAML, JSON is included:
+
+configuration = confidence.load('app', format=JSON('.conf'))
 ~~~~
 
 While powerful, no set of convenience functions will ever satisfy
@@ -91,12 +99,17 @@ def read_from_source(name):
 
 # all of this can be combined to turn it into a single glorious Configuration instance
 # precedence rules apply here, values from read_from_source will overwrite both
-# app_defaults and values read from file
-configuration = confidence.Configuration(app_defaults,
-                                         # yeah, this would be a Configuration instance
-                                         # remember it's just like a dict?
-                                         confidence.loadf('path/to/app.yaml'),
-                                         read_from_source('app'))
+# app_defaults and values read from files (the latter of which will use some 
+# user-supplied Format to read the file)
+configuration = confidence.Configuration(
+    app_defaults,
+    # yeah, these would be a Configuration instances
+    # remember it's just like a dict?
+    confidence.loadf('path/to/app.yaml'),
+    confidence.loadf('another/file/somewhere.ini', format=MyINIFormat),
+    read_from_source('app'),
+)
+
 # make it so, no. 1
 run_app(configuration)
 ~~~~
