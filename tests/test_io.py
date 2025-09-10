@@ -200,6 +200,8 @@ def test_load_name_multiple(test_files):
 
 
 def test_load_name_order(tilde_home_user):
+    # override actual environment variables for testing purposes
+    # (HOME is used for some XDG-specified locations, LOCALAPPDATA is used for windows-specific locations)
     env = {
         'HOME': '/home/user',
         'LOCALAPPDATA': 'C:/Users/user/AppData/Local',
