@@ -297,8 +297,8 @@ def load_name(
     *names: str,
     load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
     format: Format = YAML,
-    extension: None = None,
     missing: typing.Any = Missing.SILENT,
+    extension: None = None,  # NB: parameter is deprecated, see below
 ) -> Configuration:
     """
     Read a `Configuration` instance by name, trying to read from files in
@@ -358,7 +358,12 @@ def _check_format_encoding(format: Format, encoding: typing.Optional[str]) -> Fo
     return format
 
 
-def dump(value: typing.Any, fp: typing.TextIO, format: Format = YAML, encoding: None = None) -> None:
+def dump(
+    value: typing.Any,
+    fp: typing.TextIO,
+    format: Format = YAML,
+    encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
+) -> None:
     """
     Shorthand for `format.dump(value, fp)`.
     """
@@ -366,7 +371,12 @@ def dump(value: typing.Any, fp: typing.TextIO, format: Format = YAML, encoding: 
     format.dump(value, fp)
 
 
-def dumpf(value: typing.Any, fname: typing.Union[str, PathLike], format: Format = YAML, encoding: None = None) -> None:
+def dumpf(
+    value: typing.Any,
+    fname: typing.Union[str, PathLike],
+    format: Format = YAML,
+    encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
+) -> None:
     """
     Shorthand for `format.dumpf(value, fname)`.
     """
