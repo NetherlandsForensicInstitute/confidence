@@ -1,6 +1,6 @@
 import json
 import typing
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
@@ -11,7 +11,7 @@ from confidence.models import unwrap
 
 
 @dataclass(frozen=True)
-class Format(typing.Protocol):
+class Format(ABC):
     suffix: str = ''
     encoding: str = 'utf-8'
 
