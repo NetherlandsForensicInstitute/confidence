@@ -27,6 +27,14 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
+[project.optional-dependencies]
+all = [
+    "confidence[toml]",
+]
+toml = [
+    "tomlkit>=0.13.3",
+]
+
 [project.urls]
 homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 
