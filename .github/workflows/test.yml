@@ -15,8 +15,8 @@ jobs:
           python-version: '3.13'
           cache: true
           cache-dependency-path: 'pylock.toml'
-      - name: Install check dependencies
-        run: pdm install --group check
+      - name: Install dependencies
+        run: pdm install --with :all
       - name: Run checks
         run: pdm run check
   test:
@@ -32,7 +32,7 @@ jobs:
           allow-python-prereleases: true
           cache: true
           cache-dependency-path: 'pylock.toml'
-      - name: Install test dependencies
-        run: pdm install --group test
+      - name: Install dependencies
+        run: pdm install --with :all
       - name: Run tests
         run: pdm run test
