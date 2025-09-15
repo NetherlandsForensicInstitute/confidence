@@ -19,7 +19,7 @@ from confidence import (
     loadf,
     loads,
 )
-from confidence.formats import JSON, YAML
+from confidence.formats import JSON, TOML, YAML
 from confidence.io import dump, dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
 
 
@@ -99,11 +99,7 @@ def test_load_multiple(test_files):
 
 
 def test_loads_defaults():
-    _assert_values(loads(yaml_str))
     _assert_values(loads(json_str))
-
-
-def test_loads_yaml():
     _assert_values(loads(yaml_str))
 
 
@@ -111,21 +107,31 @@ def test_loads_json():
     _assert_values(loads(json_str))
 
 
+def test_loads_yaml():
+    _assert_values(loads(yaml_str))
+
+
 def test_loads_multiple():
     _assert_values(loads(json_str, yaml_str))
 
 
 def test_loadf_defaults(test_files):
-    _assert_values(loadf(path.join(test_files, 'config.yaml')))
     _assert_values(loadf(path.join(test_files, 'config.json')))
-
-
-def test_loadf_yaml(test_files):
     _assert_values(loadf(path.join(test_files, 'config.yaml')))
 
 
 def test_loadf_json(test_files):
     _assert_values(loadf(path.join(test_files, 'config.json')))
+    _assert_values(loadf(path.join(test_files, 'config.json'), format=JSON))
+
+
+def test_loadf_toml(test_files):
+    _assert_values(loadf(path.join(test_files, 'config.toml'), format=TOML))
+
+
+def test_loadf_yaml(test_files):
+    _assert_values(loadf(path.join(test_files, 'config.yaml')))
+    _assert_values(loadf(path.join(test_files, 'config.yaml'), format=YAML))
 
 
 def test_loadf_multiple(test_files):
