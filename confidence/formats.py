@@ -74,24 +74,6 @@ class _JSONFormat(Format):
 
 
 @dataclass(frozen=True)
-class _YAMLFormat(Format):
-    suffix: str = '.yaml'  #: the default file suffix for the YAML format: .yaml
-
-    def loads(self, string: str) -> typing.Any:
-        return yaml.safe_load(string)
-
-    def dumps(self, value: typing.Any) -> str:
-        # use block style output for nested collections (flow style dumps nested dicts inline)
-        # omit explicit document end (...) included with simple values
-        return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
-
-
-# expose *instances* of the formats defined here for users to interact with, editable by calling them (see __call__)
-JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
-YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
-
-
-@dataclass(frozen=True)
 class _TOMLFormat(Format):
     suffix = '.toml'
 
@@ -112,7 +94,23 @@ class _TOMLFormat(Format):
             return tomlkit.item(value).as_string()
 
 
+@dataclass(frozen=True)
+class _YAMLFormat(Format):
+    suffix: str = '.yaml'  #: the default file suffix for the YAML format: .yaml
+
+    def loads(self, string: str) -> typing.Any:
+        return yaml.safe_load(string)
+
+    def dumps(self, value: typing.Any) -> str:
+        # use block style output for nested collections (flow style dumps nested dicts inline)
+        # omit explicit document end (...) included with simple values
+        return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
+
+
+# expose *instances* of the formats defined here for users to interact with, editable by calling them (see __call__)
+JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
 TOML: Format = _TOMLFormat(suffix='.toml', encoding='utf-8')
+YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
 
 __all__ = (
