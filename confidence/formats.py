@@ -1,14 +1,25 @@
 import json
+import logging
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
+from types import ModuleType
 
-import tomlkit
 import yaml
 
 from confidence.models import unwrap
+
+
+try:
+    import tomlkit
+except ImportError:
+    # tomlkit is an optional dependency, mark it as unavailable (type-cast it to appease the type checker)
+    tomlkit = typing.cast(ModuleType, False)
+
+
+LOG = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -91,33 +102,37 @@ JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
 YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
 
-@dataclass(frozen=True)
-class _TOMLFormat(Format):
-    suffix = '.toml'
-
-    def loads(self, string: str) -> typing.Any:
-        try:
-            # attempt to load the string as a TOML document
-            return tomlkit.loads(string)
-        except ValueError:
-            # fall back to loading it as a single value
-            return tomlkit.value(string)
-
-    def dumps(self, value: typing.Any) -> str:
-        try:
-            # attempt to dump the value as TOML document
-            return tomlkit.dumps(value)
-        except TypeError:
-            # fall back to stringifying it as a single value / item
-            return tomlkit.item(value).as_string()
+__all__ = sorted({'Format', 'JSON', 'YAML'})
 
 
-TOML: Format = _TOMLFormat(suffix='.toml', encoding='utf-8')
+if tomlkit:
+    # tomlkit is available, we can supply a TOML format implementation
 
+    @dataclass(frozen=True)
+    class _TOMLFormat(Format):
+        suffix = '.toml'  #: the default file suffix for the TOML format: .toml
 
-__all__ = (
-    'Format',
-    'JSON',
-    'TOML',
-    'YAML',
-)
+        def loads(self, string: str) -> typing.Any:
+            try:
+                # attempt to load the string as a TOML document
+                return tomlkit.loads(string)
+            except ValueError:
+                # fall back to loading it as a single value
+                return tomlkit.value(string)
+
+        def dumps(self, value: typing.Any) -> str:
+            value = unwrap(value)
+
+            try:
+                # attempt to dump the value as TOML document
+                return tomlkit.dumps(value)
+            except TypeError:
+                # fall back to stringifying it as a single value / item
+                return tomlkit.item(value).as_string()
+
+    # expose an instance of the format like the ones above
+    TOML: Format = _TOMLFormat(suffix='.toml', encoding='utf-8')
+    # make sure to include the additional format in __all__
+    __all__ = sorted({*__all__, 'TOML'})
+else:
+    LOG.debug('TOML format is not available, missing dependency "tomlkit" (available through the "toml" extra)')
