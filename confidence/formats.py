@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
-from types import ModuleType
 
 import yaml
 
@@ -14,9 +13,11 @@ from confidence.models import unwrap
 
 try:
     import tomlkit
+
+    _toml_available = True
 except ImportError:
-    # tomlkit is an optional dependency, mark it as unavailable (type-cast it to appease the type checker)
-    tomlkit = typing.cast(ModuleType, False)
+    # tomlkit is an optional dependency, mark it as unavailable
+    _toml_available = False
 
 
 LOG = logging.getLogger(__name__)
@@ -105,7 +106,7 @@ YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 __all__ = sorted({'Format', 'JSON', 'YAML'})
 
 
-if tomlkit:
+if _toml_available:
     # tomlkit is available, we can supply a TOML format implementation
 
     @dataclass(frozen=True)
