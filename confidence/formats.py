@@ -5,6 +5,7 @@ from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
 
+import tomlkit
 import yaml
 
 from confidence.models import unwrap
@@ -90,8 +91,33 @@ JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
 YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
 
+@dataclass(frozen=True)
+class _TOMLFormat(Format):
+    suffix = '.toml'
+
+    def loads(self, string: str) -> typing.Any:
+        try:
+            # attempt to load the string as a TOML document
+            return tomlkit.loads(string)
+        except ValueError:
+            # fall back to loading it as a single value
+            return tomlkit.value(string)
+
+    def dumps(self, value: typing.Any) -> str:
+        try:
+            # attempt to dump the value as TOML document
+            return tomlkit.dumps(value)
+        except TypeError:
+            # fall back to stringifying it as a single value / item
+            return tomlkit.item(value).as_string()
+
+
+TOML: Format = _TOMLFormat(suffix='.toml', encoding='utf-8')
+
+
 __all__ = (
     'Format',
     'JSON',
+    'TOML',
     'YAML',
 )
