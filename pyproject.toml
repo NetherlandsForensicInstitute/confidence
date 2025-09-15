@@ -75,6 +75,8 @@ lint.ignore = [
     "UP015",
 ]
 lint.isort.lines-after-imports = 2
+# ruff disagrees with the way __all__ is manipulated in the root module, ignore F401 (unused import) for that file
+lint.per-file-ignores = {"confidence/__init__.py" = ["F401"]}
 lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "I", "N", "PTH", "Q", "SIM", "UP"]
 
 [tool.mypy]
