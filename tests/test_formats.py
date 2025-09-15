@@ -2,17 +2,21 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from confidence.formats import JSON, YAML
+from confidence.formats import JSON, TOML, YAML
 
 
-@pytest.mark.parametrize('format', (JSON, YAML))
+@pytest.mark.parametrize('format', (JSON, TOML, YAML))
 @pytest.mark.parametrize('value', (None, True, 1, 42.0, 'a string'))
 def test_singular_value_roundtrip(format, value):
+    if (format, value) == (TOML, None):
+        # None / null / nil is not supported by the TOML spec, see https://github.com/toml-lang/toml/issues/30
+        pytest.skip('None is unsupported for TOML format')
+
     assert format.loads(format.dumps(value)) == value
 
 
-@pytest.mark.parametrize('format', (JSON, YAML, YAML(suffix='.conf', encoding='utf-32')))
-@pytest.mark.parametrize('value', ([], {}, [1, 2, 'a'], {'a': 1, 'b': 42.0, 'c': {'d': 'str'}}))
+@pytest.mark.parametrize('format', (JSON, TOML, YAML, YAML(suffix='.conf', encoding='utf-32')))
+@pytest.mark.parametrize('value', ([], {}, [1, 2, 'a'], {'a': 1, 'b': 42.0, 'c': {'d': 'str'}, 'e': [{'g': True}]}))
 def test_multiple_values_roundtrip(format, value, tmp_path):
     fname = tmp_path / f'config{format.suffix}'
 
