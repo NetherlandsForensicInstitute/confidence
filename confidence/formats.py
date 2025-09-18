@@ -33,7 +33,7 @@ class Format(ABC):
     def loads(self, string: str) -> typing.Any:
         raise NotImplementedError
 
-    def loadf(self, fpath: typing.Union[str, PathLike], encoding: typing.Optional[str] = None) -> typing.Any:
+    def loadf(self, fpath: str | PathLike, encoding: str | None = None) -> typing.Any:
         with Path(fpath).open('rt', encoding=encoding or self.encoding) as fp:
             return self.load(fp)
 
@@ -44,9 +44,7 @@ class Format(ABC):
     def dumps(self, value: typing.Any) -> str:
         raise NotImplementedError
 
-    def dumpf(
-        self, value: typing.Any, fname: typing.Union[str, PathLike], encoding: typing.Optional[str] = None
-    ) -> None:
+    def dumpf(self, value: typing.Any, fname: str | PathLike, encoding: str | None = None) -> None:
         with Path(fname).open('wt', encoding=encoding or self.encoding) as fp:
             return self.dump(value, fp)
 

@@ -157,7 +157,7 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-Loadable = typing.Union[str, typing.Callable[[str, Format], Configuration]]
+Loadable = str | typing.Callable[[str, Format], Configuration]
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
@@ -190,7 +190,7 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
 }
 
 
-def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Loadable]:
+def loaders(*specifiers: Locality | Loadable) -> typing.Iterable[Loadable]:
     """
     Generates loaders in the specified order.
 
@@ -247,7 +247,7 @@ def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missi
 
 
 def loadf(
-    *fnames: typing.Union[str, PathLike],
+    *fnames: str | PathLike,
     format: Format = YAML,
     default: typing.Any = NoDefault,
     missing: typing.Any = Missing.SILENT,
@@ -343,7 +343,7 @@ def load_name(
     return Configuration(*generate_sources(), missing=missing)
 
 
-def _check_format_encoding(format: Format, encoding: typing.Optional[str]) -> Format:
+def _check_format_encoding(format: Format, encoding: str | None) -> Format:
     if encoding:
         if format is YAML:
             warnings.warn(
@@ -373,7 +373,7 @@ def dump(
 
 def dumpf(
     value: typing.Any,
-    fname: typing.Union[str, PathLike],
+    fname: str | PathLike,
     format: Format = YAML,
     encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
 ) -> None:
