@@ -1,7 +1,8 @@
 import logging
 import re
 import warnings
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from enum import IntEnum
 from functools import partial
 from itertools import product
@@ -59,6 +60,33 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     config_home = Path(config_home) if config_home else Path(f'{home}/.config')
     # expand to full path to configuration file in XDG config path
     return loadf(config_home / f'{name}{format.suffix}', format=format, default=NOT_CONFIGURED)
+
+
+@dataclass(frozen=True)
+class PathGlobReader:
+    path: Path
+    pattern: str
+    case_sensitive: bool | None = None
+    include_hidden: bool = False
+
+    def expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
+        # TODO: maybe formatting al the steps of the path separately is better / safer?
+        path = Path(str(self.path).format(name=name, suffix=format.suffix))
+        pattern = self.pattern.format(name=name, suffix=format.suffix)
+        LOG.debug(f'expanded "{self.path / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
+
+        # TODO: use self.include_hidden
+        paths = sorted(path.glob(pattern, case_sensitive=self.case_sensitive))
+        LOG.debug(f'glob pattern "{path / pattern!s}" matched {len(paths)} paths')
+        return paths
+
+    def __call__(self, name: str, format: Format = YAML) -> Configuration:
+        if paths := self.expand(name, format):
+            # provide no default here, glob pattern does match files, these should be loadable
+            return loadf(*paths, format=format)
+        else:
+            # no paths, empty configuration
+            return NOT_CONFIGURED
 
 
 def read_envvars(name: str, format: Format = YAML) -> Configuration:
