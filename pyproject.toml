@@ -27,6 +27,14 @@ classifiers = [
     "Topic :: Utilities",
 ]
 
+[project.optional-dependencies]
+all = [
+    "confidence[toml]",
+]
+toml = [
+    "tomlkit>=0.13.3",
+]
+
 [project.urls]
 homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 
@@ -67,6 +75,8 @@ lint.ignore = [
     "UP015",
 ]
 lint.isort.lines-after-imports = 2
+# ruff disagrees with the way __all__ is manipulated in the root module, ignore F401 (unused import) for that file
+lint.per-file-ignores = {"confidence/__init__.py" = ["F401"]}
 lint.select = ["A", "B", "COM", "C4", "DTZ", "E", "F", "I", "N", "PTH", "Q", "SIM", "UP"]
 
 [tool.mypy]

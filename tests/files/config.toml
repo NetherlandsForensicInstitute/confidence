@@ -1,0 +1,6 @@
+key = "value"
+
+[some]
+other.key = [1, 2, 3]
+# a comment on some.thing
+thing = false

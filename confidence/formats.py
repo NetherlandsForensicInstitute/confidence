@@ -1,4 +1,5 @@
 import json
+import logging
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
@@ -8,6 +9,18 @@ from pathlib import Path
 import yaml
 
 from confidence.models import unwrap
+
+
+try:
+    import tomlkit
+
+    _toml_available = True
+except ImportError:
+    # tomlkit is an optional dependency, mark it as unavailable
+    _toml_available = False
+
+
+LOG = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -90,8 +103,37 @@ JSON: Format = _JSONFormat(suffix='.json', encoding='utf-8')
 YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
 
-__all__ = (
-    'Format',
-    'JSON',
-    'YAML',
-)
+__all__ = sorted({'Format', 'JSON', 'YAML'})
+
+
+if _toml_available:
+    # tomlkit is available, we can supply a TOML format implementation
+
+    @dataclass(frozen=True)
+    class _TOMLFormat(Format):
+        suffix = '.toml'  #: the default file suffix for the TOML format: .toml
+
+        def loads(self, string: str) -> typing.Any:
+            try:
+                # attempt to load the string as a TOML document
+                return tomlkit.loads(string)
+            except ValueError:
+                # fall back to loading it as a single value
+                return tomlkit.value(string)
+
+        def dumps(self, value: typing.Any) -> str:
+            value = unwrap(value)
+
+            try:
+                # attempt to dump the value as TOML document
+                return tomlkit.dumps(value)
+            except TypeError:
+                # fall back to stringifying it as a single value / item
+                return tomlkit.item(value).as_string()
+
+    # expose an instance of the format like the ones above
+    TOML: Format = _TOMLFormat(suffix='.toml', encoding='utf-8')
+    # make sure to include the additional format in __all__
+    __all__ = sorted({*__all__, 'TOML'})
+else:
+    LOG.debug('TOML format is not available, missing dependency "tomlkit" (available through the "toml" extra)')
