@@ -293,8 +293,7 @@ def loadf(
     def readf(fpath: Path) -> Mapping[str, Any]:
         try:
             return format.loadf(fpath)
-        except OSError:
-            # file does not exist or inaccessible
+        except FileNotFoundError:
             if default is NoDefault:
                 # no explicit default provided, continue original error
                 raise
