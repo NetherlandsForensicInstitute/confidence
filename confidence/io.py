@@ -2,6 +2,8 @@ import logging
 import re
 import typing
 import warnings
+from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import IntEnum
 from functools import partial
 from itertools import product
@@ -57,6 +59,33 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     config_home = Path(config_home) if config_home else Path(f'{home}/.config')
     # expand to full path to configuration file in XDG config path
     return loadf(config_home / f'{name}{format.suffix}', format=format, default=NotConfigured)
+
+
+@dataclass(frozen=True)
+class PathGlobReader:
+    path: Path
+    pattern: str
+    case_sensitive: bool | None = None
+    include_hidden: bool = False
+
+    def expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
+        # TODO: maybe formatting al the steps of the path separately is better / safer?
+        path = Path(str(self.path).format(name=name, suffix=format.suffix))
+        pattern = self.pattern.format(name=name, suffix=format.suffix)
+        LOG.debug(f'expanded "{self.path / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
+
+        # TODO: use self.include_hidden
+        paths = sorted(path.glob(pattern, case_sensitive=self.case_sensitive))
+        LOG.debug(f'glob pattern "{path / pattern!s}" matched {len(paths)} paths')
+        return paths
+
+    def __call__(self, name: str, format: Format = YAML) -> Configuration:
+        if paths := self.expand(name, format):
+            # provide no default here, glob pattern does match files, these should be loadable
+            return loadf(*paths, format=format)
+        else:
+            # no paths, empty configuration
+            return NotConfigured
 
 
 def read_envvars(name: str, format: Format = YAML) -> Configuration:
@@ -157,7 +186,7 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-Loadable = typing.Union[str, typing.Callable[[str, Format], Configuration]]
+Loadable = str | typing.Callable[[str, Format], Configuration]
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
@@ -190,7 +219,7 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
 }
 
 
-def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Loadable]:
+def loaders(*specifiers: Locality | Loadable) -> typing.Iterable[Loadable]:
     """
     Generates loaders in the specified order.
 
@@ -247,7 +276,7 @@ def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missi
 
 
 def loadf(
-    *fnames: typing.Union[str, PathLike],
+    *fnames: str | PathLike,
     format: Format = YAML,
     default: typing.Any = NoDefault,
     missing: typing.Any = Missing.SILENT,
@@ -343,7 +372,7 @@ def load_name(
     return Configuration(*generate_sources(), missing=missing)
 
 
-def _check_format_encoding(format: Format, encoding: typing.Optional[str]) -> Format:
+def _check_format_encoding(format: Format, encoding: str | None) -> Format:
     if encoding:
         if format is YAML:
             warnings.warn(
@@ -373,7 +402,7 @@ def dump(
 
 def dumpf(
     value: typing.Any,
-    fname: typing.Union[str, PathLike],
+    fname: str | PathLike,
     format: Format = YAML,
     encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
 ) -> None:

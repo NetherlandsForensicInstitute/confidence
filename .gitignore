@@ -73,3 +73,6 @@ dmypy.json
 
 # PyPI configuration file
 .pypirc
+
+# PyCharm
+.idea/
