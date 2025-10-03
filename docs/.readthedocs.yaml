@@ -1,0 +1,13 @@
+version: 2
+
+build:
+  os: ubuntu-lts-latest
+  tools:
+    python: latest
+  jobs:
+    pre_install:
+      - pip install pdm
+      - pdm install --global --project . --with docs
+
+mkdocs:
+  configuration: docs/mkdocs.yaml

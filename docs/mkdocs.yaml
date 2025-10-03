@@ -1,0 +1,66 @@
+site_name: Configure with confidence 😎
+
+docs_dir: .
+site_dir: ../site
+repo_url: https://github.com/NetherlandsForensicInstitute/confidence/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - toc.integrate
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:
+      permalink: '#'
+
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          show_root_heading: true
+          show_root_members_full_path: true
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
+          show_source: false
+          show_bases: false
+          docstring_style: sphinx
+          separate_signature: true
+          signature_crossrefs: true
+
+nav:
+  - Home:
+    - index.md
+  - Usage:
+    - usage/loading.md
+    - usage/runtime.md
+    - usage/advanced.md
+  - Reference:
+    - reference/loading.md
+    - reference/objects.md
+    - reference/manipulation.md
+    - reference/exceptions.md
+  - Development:
+    - changelog.md

@@ -67,7 +67,7 @@ def read_envvars(name: str, format: Format = YAML) -> Configuration:
     accessible in the resulting `Configuration` as
     ``c.spa_ce.key``, where ``c`` is the `Configuration` instance.
 
-    .. note::
+    !!! note
 
         An environment variable matching ``NAME_CONFIG_FILE`` (where the name
         part matches the *name* argument) is explicitly ignored here.
@@ -151,17 +151,25 @@ class Locality(IntEnum):
     variables.
     """
 
-    SYSTEM = 0  #: system-wide configuration locations
-    USER = 1  #: user-local configuration locations
-    APPLICATION = 2  #: application-local configuration locations (dependent on the current working directory)
-    ENVIRONMENT = 3  #: configuration from environment variables
+    SITE = 0
+    """System-wide configuration locations."""
+    SYSTEM = SITE
+
+    USER = 1
+    """User-local configuration locations."""
+
+    APPLICATION = 2
+    """Application-local configuration locations (dependent on the current working directory)."""
+
+    ENVIRONMENT = 3
+    """Configuration from environment variables."""
 
 
 Loadable = typing.Union[str, typing.Callable[[str, Format], Configuration]]
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
-    Locality.SYSTEM: (
+    Locality.SITE: (
         # system-wide locations
         read_xdg_config_dirs,
         '/etc/{name}/{name}{suffix}',
@@ -194,22 +202,22 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
     """
     Generates loaders in the specified order.
 
-    Arguments can be `Locality` instances, producing the loader(s) available
-    for that locality, `str` instances (used as file path templates) or
-    `callable` s. These can be mixed:
+    Arguments can be [Locality][confidence.Locality] instances, producing the
+    loader(s) available for that locality, `str` instances (used as file path
+    templates) or `callable` s. These can be mixed:
 
-    .. code-block:: python
+    ```python
+    # define a load order using predefined user-local locations,
+    # an explicit path, a template and a user-defined function
+    load_order = loaders(Locality.USER,
+                         '/etc/defaults/hard-coded.yaml',
+                         '/path/to/{name}{suffix}',
+                         my_loader)
 
-        # define a load order using predefined user-local locations,
-        # an explicit path, a template and a user-defined function
-        load_order = loaders(Locality.user,
-                             '/etc/defaults/hard-coded.yaml',
-                             '/path/to/{name}{suffix}',
-                             my_loader)
-
-        # load configuration for name 'my-application' using the load order
-        # defined above
-        config = load_name('my-application', load_order=load_order)
+    # load configuration for name 'my-application' using the load order
+    # defined above
+    config = load_name('my-application', load_order=load_order)
+    ```
 
     :param specifiers: loader specifiers, see description
     :yields: configuration loaders in the specified order
@@ -225,7 +233,7 @@ def loaders(*specifiers: typing.Union[Locality, Loadable]) -> typing.Iterable[Lo
 
 DEFAULT_LOAD_ORDER = tuple(
     loaders(
-        Locality.SYSTEM,
+        Locality.SITE,
         Locality.USER,
         Locality.APPLICATION,
         Locality.ENVIRONMENT,

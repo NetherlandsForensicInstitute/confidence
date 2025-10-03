@@ -45,11 +45,17 @@ test = [
     "coverage",
     "pytest",
 ]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+]
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
 check = {composite = ["check-lock", "format", "lint", "type-check"]}
 check-lock = "pdm lock --check"
+docs = "mkdocs build --config-file docs/mkdocs.yaml"
 format = "ruff format --diff confidence/ tests/"
 lint = "ruff check confidence/ tests/"
 test = "coverage run --branch --source confidence --module pytest --strict-markers tests/"
