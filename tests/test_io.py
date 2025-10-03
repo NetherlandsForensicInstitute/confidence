@@ -121,7 +121,7 @@ def test_loadf_defaults(test_files):
 
 
 def test_loadf_json(test_files):
-    _assert_values(loadf(path.join(test_files, 'config.json')))
+    _assert_values(loadf(path.join(test_files, 'config.json')))  # NB: JSON is valid YAML, the default format does fit
     _assert_values(loadf(path.join(test_files, 'config.json'), format=JSON))
 
 
