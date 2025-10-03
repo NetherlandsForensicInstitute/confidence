@@ -39,6 +39,14 @@ def tilde_home_user():
         yield expanduser
 
 
+json_str = """{
+    "key": "value",
+    "some": {
+        "other.key": [1, 2, 3]
+    },
+    "some.thing": false
+}"""
+
 yaml_str = """
     key: value
     some:
@@ -50,11 +58,14 @@ yaml_str = """
     some.thing: false
 """
 
-json_str = """{
-    "key": "value",
-    "some.other.key": [1, 2, 3],
-    "some.thing": false
-}"""
+toml_str = """
+key = "value"
+
+# a comment regarding the some table
+[some]
+other.key = [1, 2, 3]
+thing = false
+"""
 
 
 class str_containing:  # noqa: N801
@@ -83,32 +94,43 @@ def test_load_defaults(test_files):
         _assert_values(load(file))
 
 
-def test_load_yaml(test_files):
-    with open(path.join(test_files, 'config.yaml')) as file:
-        _assert_values(load(file))
-
-
 def test_load_json(test_files):
     with open(path.join(test_files, 'config.json')) as file:
-        _assert_values(load(file))
+        _assert_values(load(file, format=JSON))
+
+
+def test_load_toml(test_files):
+    with open(path.join(test_files, 'config.toml')) as file:
+        _assert_values(load(file, format=TOML))
+
+
+def test_load_yaml(test_files):
+    with open(path.join(test_files, 'config.yaml')) as file:
+        _assert_values(load(file, format=YAML))
 
 
 def test_load_multiple(test_files):
     with open(path.join(test_files, 'config.json')) as file1, open(path.join(test_files, 'config.yaml')) as file2:
+        # NB: JSON is valid YAML, the default format will read both files
         _assert_values(load(file1, file2))
 
 
 def test_loads_defaults():
     _assert_values(loads(json_str))
     _assert_values(loads(yaml_str))
+    # toml_str won't parse with the default format
 
 
 def test_loads_json():
-    _assert_values(loads(json_str))
+    _assert_values(loads(json_str, format=JSON))
 
 
 def test_loads_yaml():
-    _assert_values(loads(yaml_str))
+    _assert_values(loads(yaml_str, format=YAML))
+
+
+def test_loads_toml():
+    _assert_values(loads(toml_str, format=TOML))
 
 
 def test_loads_multiple():
