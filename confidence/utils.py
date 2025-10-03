@@ -18,7 +18,7 @@ class Conflict(IntEnum):
 def merge_into(
     left: typing.MutableMapping[str, typing.Any],
     right: typing.Mapping[str, typing.Any],
-    path: typing.Optional[list[str]] = None,
+    path: list[str] | None = None,
     conflict: Conflict = Conflict.ERROR,
 ) -> typing.Mapping[str, typing.Any]:
     """
@@ -60,7 +60,7 @@ def merge_into(
 
 def split_keys(
     mapping: typing.Mapping[str, typing.Any],
-    colliding: typing.Optional[typing.Container] = None,
+    colliding: typing.Container | None = None,
 ) -> typing.Mapping[str, typing.Any]:
     """
     Recursively walks *mapping* to split keys that contain a dot into nested
@@ -110,7 +110,7 @@ def split_keys(
 def merge(
     left: typing.MutableMapping[str, typing.Any],
     right: typing.Mapping[str, typing.Any],
-    path: typing.Optional[list[str]] = None,
+    path: list[str] | None = None,
     conflict: Conflict = Conflict.ERROR,
 ) -> typing.Mapping[str, typing.Any]:
     warnings.warn(

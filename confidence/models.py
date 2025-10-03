@@ -159,7 +159,7 @@ class Configuration(Mapping):
         path: str,
         default: typing.Any = None,
         *,
-        as_type: typing.Optional[typing.Callable] = None,
+        as_type: typing.Callable | None = None,
         resolve_references: bool = True,
     ) -> typing.Any:
         """
@@ -194,7 +194,7 @@ class Configuration(Mapping):
             elif isinstance(value, Mapping):
                 # wrap value in a Configuration
                 return self._wrap(value)
-            elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            elif isinstance(value, Sequence) and not isinstance(value, str | bytes):
                 # wrap value in a sequence that retains Configuration functionality
                 return ConfigurationSequence(value, self._root)
             elif resolve_references and isinstance(value, str):
@@ -338,13 +338,13 @@ class ConfigurationSequence(Sequence):
         self._source = source
         self._root = root
 
-    def __getitem__(self, item: typing.Union[int, slice], *, resolve_references: bool = True) -> typing.Any:
+    def __getitem__(self, item: int | slice, *, resolve_references: bool = True) -> typing.Any:
         # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
         value = self._source[item]
         if isinstance(value, Mapping):
             # let root wrap the value
             return self._root._wrap(value)
-        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        if isinstance(value, Sequence) and not isinstance(value, str | bytes):
             # wrap a sequence value with an 'instance of self'
             return type(self)(value, self._root)
         if isinstance(value, str) and resolve_references:
@@ -359,7 +359,7 @@ class ConfigurationSequence(Sequence):
         return len(self._source)
 
     def __add__(self, other: typing.Sequence[typing.Any]) -> 'ConfigurationSequence':
-        if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
+        if not isinstance(other, Sequence) or isinstance(other, str | bytes):
             # incompatible types, let Python resolve an action for this, like calling other.__radd__ or raising a
             # TypeError
             return NotImplemented
@@ -369,7 +369,7 @@ class ConfigurationSequence(Sequence):
         return type(self)(list(self._source) + list(other), root=self._root)
 
     def __radd__(self, other: typing.Sequence) -> typing.Sequence:
-        if not isinstance(other, Sequence) or isinstance(other, (str, bytes)):
+        if not isinstance(other, Sequence) or isinstance(other, str | bytes):
             # incompatible types, let Python resolve an action for this
             return NotImplemented
 
@@ -394,7 +394,7 @@ def _repr_value(value: typing.Any) -> str:
     if isinstance(value, Mapping):
         keys = ', '.join(_repr_value(key) for key in value)
         return f'mapping(keys=[{keys}])'
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+    if isinstance(value, Sequence) and not isinstance(value, str | bytes):
         return 'sequence([...])'
 
     # fall back to builtin repr
