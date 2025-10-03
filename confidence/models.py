@@ -9,8 +9,11 @@ from confidence.utils import Conflict, merge_into, split_keys
 
 
 class Missing(Enum):
-    SILENT = 'silent'  #: return `NotConfigured` for unconfigured keys, avoiding errors
-    ERROR = 'error'  #: raise an `AttributeError` for unconfigured keys
+    SILENT = 'silent'
+    """Return `NotConfigured` for unconfigured keys, avoiding errors."""
+
+    ERROR = 'error'
+    """Raise an `AttributeError` for unconfigured keys."""
 
 
 # define a sentinel value to indicate there is no default value specified (None would be a valid default value)

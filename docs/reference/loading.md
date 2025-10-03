@@ -12,4 +12,4 @@
 
 ::: confidence.DEFAULT_LOAD_ORDER
 
-::: confidence.io.Loadable
+::: confidence.Missing
