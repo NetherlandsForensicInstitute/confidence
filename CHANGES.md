@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (main)
-------------------
+0.17 (2025-10-08)
+-----------------
 
 - Drop support for Python 3.9.
 - Introduce `confidence.Format` with three concrete implementations: `confidence.JSON`, `confidence.TOML` and `confidence.YAML`, which can be customized before use (e.g. `format = YAML(suffix='.yml')`).
