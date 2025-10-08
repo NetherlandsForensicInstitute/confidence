@@ -78,9 +78,9 @@ configuration = confidence.load_name('app', load_order=confidence.loaders(
 
 configuration = confidence.load_name('app', format=YAML('.yml'))
 
-# it doesn't even need to be YAML, JSON is included:
+# it doesn't even need to be YAML, TOML is included:
 
-configuration = confidence.load('app', format=JSON('.conf'))
+configuration = confidence.load('app', format=TOML('.conf'))
 ~~~~
 
 While powerful, no set of convenience functions will ever satisfy
