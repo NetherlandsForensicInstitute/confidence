@@ -4,7 +4,7 @@ Changes
 development (main)
 ------------------
 
-- 
+- Avoid crashing on template loaders containing `{extension}`, issue a deprecation warning when this is used.
 
 0.17 (2025-10-08)
 -----------------
