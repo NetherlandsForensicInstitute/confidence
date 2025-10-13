@@ -442,6 +442,27 @@ def test_load_name_deprecated_extension():
         load_name('app', extension='jsn', format=JSON)
 
 
+def test_load_name_deprecated_extension_template(test_files):
+    with (
+        pytest.warns(DeprecationWarning, match='extension name in string template'),
+        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+    ):
+        load_name(
+            'app',
+            load_order=[
+                str(test_files / '{name}.{extension}'),
+                str(test_files / '{name}{suffix}'),
+            ],
+            format=TOML,
+        )
+
+    # should resolve to the same thing twice, while issuing a Deprecation warning
+    mocked_loadf.assert_has_calls([
+        call(test_files / 'app.toml', format=TOML, default=NotConfigured),
+        call(test_files / 'app.toml', format=TOML, default=NotConfigured),
+    ])
+
+
 def test_dumps():
     subject = dumps(Configuration({'ns.key': 42}))
 
