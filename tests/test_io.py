@@ -457,10 +457,12 @@ def test_load_name_deprecated_extension_template(test_files):
         )
 
     # should resolve to the same thing twice, while issuing a Deprecation warning
-    mocked_loadf.assert_has_calls([
-        call(test_files / 'app.toml', format=TOML, default=NotConfigured),
-        call(test_files / 'app.toml', format=TOML, default=NotConfigured),
-    ])
+    mocked_loadf.assert_has_calls(
+        [
+            call(test_files / 'app.toml', format=TOML, default=NotConfigured),
+            call(test_files / 'app.toml', format=TOML, default=NotConfigured),
+        ]
+    )
 
 
 def test_dumps():
