@@ -7,6 +7,7 @@ from functools import partial
 from itertools import product
 from os import PathLike, environ, pathsep
 from pathlib import Path
+from string import Formatter
 
 from confidence.formats import YAML, Format
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured
@@ -337,7 +338,16 @@ def load_name(
             if callable(source):
                 yield source(name, format)
             else:
-                candidate = Path(source.format(name=name, suffix=format.suffix))
+                if 'extension' in {name for _, name, *_ in Formatter().parse(source)}:
+                    warnings.warn(
+                        'extension name in string template loader has been deprecated, use suffix instead',
+                        category=DeprecationWarning,
+                        stacklevel=3,  # warn about user code calling load_name rather than generate_sources
+                    )
+                    candidate = Path(source.format(name=name, extension=format.suffix.lstrip('.')))
+                else:
+                    candidate = Path(source.format(name=name, suffix=format.suffix))
+
                 yield loadf(candidate, format=format, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
