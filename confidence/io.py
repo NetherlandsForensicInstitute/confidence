@@ -158,7 +158,7 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-Loadable = str | typing.Callable[[str, Format], Configuration]
+Loadable = str | Path | typing.Callable[[str, Format], Configuration]
 
 
 _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
@@ -234,6 +234,29 @@ DEFAULT_LOAD_ORDER = tuple(
 )
 
 
+def _format_source(source: str | Path, name: str, format: Format) -> Path:
+    match source:
+        case str():
+            # collect the field names in the format string, issue warning if "extension" is among them
+            if 'extension' in {span[1] for span in Formatter().parse(source)}:
+                warnings.warn(
+                    'using "{extension}" in string template loaders has been deprecated, use "{suffix}" instead',
+                    category=DeprecationWarning,
+                    stacklevel=4,  # warn about user code calling load_name rather than _resolve_source
+                )
+                return Path(source.format(name=name, extension=format.suffix.lstrip('.')))
+            else:
+                return Path(source.format(name=name, suffix=format.suffix))
+        case Path():
+            # format every part of the path separately, filling in name and suffix
+            # NB: checking for use of {extension} is omitted here, use of Path templates was added after the deprecation
+            #     of "extension" over "suffix"
+            return Path(*(part.format(name=name, suffix=format.suffix) for part in source.parts))
+        case _:
+            # any other type of source is invalid here
+            raise TypeError(f'cannot format source of type {type(source).__name__}')
+
+
 def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
@@ -299,7 +322,7 @@ def load_name(
     load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
     format: Format = YAML,
     missing: typing.Any = Missing.SILENT,
-    extension: None = None,  # NB: parameter is deprecated, see below
+    extension: None = None,  # NB: parameter is deprecated, see _format_source
 ) -> Configuration:
     """
     Read a `Configuration` instance by name, trying to read from files in
@@ -338,18 +361,8 @@ def load_name(
             if callable(source):
                 yield source(name, format)
             else:
-                # collect the field names in the format string, issue warning if "extension" is among them
-                if 'extension' in {span[1] for span in Formatter().parse(source)}:
-                    warnings.warn(
-                        'extension name in string template loader has been deprecated, use suffix instead',
-                        category=DeprecationWarning,
-                        stacklevel=3,  # warn about user code calling load_name rather than generate_sources
-                    )
-                    candidate = Path(source.format(name=name, extension=format.suffix.lstrip('.')))
-                else:
-                    candidate = Path(source.format(name=name, suffix=format.suffix))
-
-                yield loadf(candidate, format=format, default=NotConfigured)
+                source = _format_source(source, name, format)
+                yield loadf(source, format=format, default=NotConfigured)
 
     return Configuration(*generate_sources(), missing=missing)
 
