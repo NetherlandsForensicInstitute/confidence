@@ -165,23 +165,23 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
-        '/etc/{name}/{name}{suffix}',
-        '/etc/{name}{suffix}',
-        '/Library/Preferences/{name}/{name}{suffix}',
-        '/Library/Preferences/{name}{suffix}',
+        Path('/etc/{name}/{name}{suffix}'),
+        Path('/etc/{name}{suffix}'),
+        Path('/Library/Preferences/{name}/{name}{suffix}'),
+        Path('/Library/Preferences/{name}{suffix}'),
         partial(read_envvar_dir, 'PROGRAMDATA'),
     ),
     Locality.USER: (
         # user-local locations
         read_xdg_config_home,
-        '~/Library/Preferences/{name}{suffix}',
+        Path('~/Library/Preferences/{name}{suffix}'),
         partial(read_envvar_dir, 'APPDATA'),
         partial(read_envvar_dir, 'LOCALAPPDATA'),
-        '~/.{name}{suffix}',
+        Path('~/.{name}{suffix}'),
     ),
     Locality.APPLICATION: (
         # application-local locations
-        './{name}{suffix}',
+        Path('./{name}{suffix}'),
     ),
     Locality.ENVIRONMENT: (
         # application-specific environment variables
