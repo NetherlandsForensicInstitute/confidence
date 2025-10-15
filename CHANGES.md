@@ -4,7 +4,7 @@ Changes
 development (main)
 ------------------
 
--
+- Enable loaders in `load_name`'s load order to be `pathlib.Path` objects, which get formatted like string template loaders (e.g. `'/path/to/{name}{suffix}'` will be equivalent to `Path('/path/to/{name}{suffix}')`).
 
 0.17.1 (2025-10-15)
 -------------------
