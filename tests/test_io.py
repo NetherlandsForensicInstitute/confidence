@@ -208,7 +208,7 @@ def test_load_name_single(test_files):
 
 
 def test_load_name_multiple(test_files):
-    test_path = path.join(test_files, '{name}{suffix}')
+    test_path = test_files / '{name}{suffix}'
 
     # bar has precedence over foo
     subject = load_name('foo', 'fake', 'bar', load_order=(test_path,))
@@ -444,7 +444,7 @@ def test_load_name_deprecated_extension():
 
 def test_load_name_deprecated_extension_template(test_files):
     with (
-        pytest.warns(DeprecationWarning, match='extension name in string template'),
+        pytest.warns(DeprecationWarning, match='using "{extension}" in string template'),
         patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
     ):
         load_name(
@@ -463,6 +463,12 @@ def test_load_name_deprecated_extension_template(test_files):
             call(test_files / 'app.toml', format=TOML, default=NotConfigured),
         ]
     )
+
+
+def test_load_name_incompatible_loader_type(test_files):
+    incompatible = bytes(str(test_files / 'config.yaml'), 'utf-8')
+    with pytest.raises(TypeError, match='source of type bytes'):
+        load_name('app', load_order=(test_files / 'bar.yaml', test_files / '{name}{suffix}', incompatible))
 
 
 def test_dumps():
