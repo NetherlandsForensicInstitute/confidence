@@ -338,7 +338,8 @@ def load_name(
             if callable(source):
                 yield source(name, format)
             else:
-                if 'extension' in {name for _, name, *_ in Formatter().parse(source)}:
+                # collect the field names in the format string, issue warning if "extension" is among them
+                if 'extension' in {span[1] for span in Formatter().parse(source)}:
                     warnings.warn(
                         'extension name in string template loader has been deprecated, use suffix instead',
                         category=DeprecationWarning,
