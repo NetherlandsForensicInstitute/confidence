@@ -210,23 +210,23 @@ class Configuration(Mapping):
             if as_type:
                 # explicit type conversion requested
                 return as_type(value)
-            elif isinstance(value, Mapping):
-                value = self._wrap(value)
-                if self._secrets and self._secrets.matches(value):
+
+            match value:
+                case {} if self._secrets and self._secrets.matches(value):
                     # value is a secret, let the local secret handler resolve this
                     return self._secrets.resolve(value)
-                else:
-                    # any other regular mapping, or no secret handler available, provide as-is
+                case {}:
+                    # wrap value in a Configuration
+                    return self._wrap(value)
+                case list() | tuple():  # TODO: would we ever encounter other sequence types?
+                    # wrap value in a sequence that retains Configuration functionality
+                    return ConfigurationSequence(value, self._root)
+                case str() if resolve_references:
+                    # only resolve references in str-type values (the only way they can be expressed)
+                    return self._resolve(value)
+                case _:
+                    # a 'simple' value, nothing to do
                     return value
-            elif isinstance(value, Sequence) and not isinstance(value, str | bytes):
-                # wrap value in a sequence that retains Configuration functionality
-                return ConfigurationSequence(value, self._root)
-            elif resolve_references and isinstance(value, str):
-                # only resolve references in str-type values (the only way they can be expressed)
-                return self._resolve(value)
-            else:
-                # a 'simple' value, nothing to do
-                return value
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
             raise
