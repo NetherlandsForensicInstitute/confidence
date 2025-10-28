@@ -51,9 +51,9 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
-def merge(*sources: typing.Mapping[str, typing.Any],
-          missing: typing.Any = None,
-          secrets: typing.Any = None) -> 'Configuration':
+def merge(
+    *sources: typing.Mapping[str, typing.Any], missing: typing.Any = None, secrets: typing.Any = None
+) -> 'Configuration':
     """
     Merges *sources* into a union, keeping right-side precedence.
 
@@ -93,7 +93,12 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self, *sources: typing.Mapping[str, typing.Any], missing: typing.Any = Missing.SILENT, secrets: Secrets | None = None):
+    def __init__(
+        self,
+        *sources: typing.Mapping[str, typing.Any],
+        missing: typing.Any = Missing.SILENT,
+        secrets: Secrets | None = None,
+    ):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -112,7 +117,7 @@ class Configuration(Mapping):
                 Missing.ERROR: NoDefault,
             }[missing]
 
-        self._secrets: typing.Optional[Secrets] = secrets
+        self._secrets: Secrets | None = secrets
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:

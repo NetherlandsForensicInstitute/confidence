@@ -10,7 +10,7 @@ from pathlib import Path
 from string import Formatter
 
 from confidence.formats import YAML, Format
-from confidence.models import Configuration, Missing, NoDefault, NotConfigured, unwrap
+from confidence.models import Configuration, Missing, NoDefault, NotConfigured
 from confidence.secrets import SecretCallback, Secrets, to_secrets
 
 
@@ -298,7 +298,7 @@ def loads(
     *strings: str,
     format: Format = YAML,
     missing: typing.Any = Missing.SILENT,
-    secrets: Secrets | SecretCallback | None = None
+    secrets: Secrets | SecretCallback | None = None,
 ) -> Configuration:
     """
     Read a `Configuration` instance from strings.

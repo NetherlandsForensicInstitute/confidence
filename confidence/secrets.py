@@ -1,6 +1,6 @@
-from functools import partial
 import logging
 import typing
+from functools import partial
 
 
 LOG = logging.getLogger(__name__)
@@ -15,17 +15,14 @@ DEFAULT_SINGLE_KEY_ARGS = ('service', 'username')
 
 @typing.runtime_checkable
 class Secrets(typing.Protocol):
-    def matches(self, value: typing.Mapping[str, typing.Any]) -> bool:
-        ...
+    def matches(self, value: typing.Mapping[str, typing.Any]) -> bool: ...
 
-    def resolve(self, value: typing.Mapping[str, typing.Any]) -> typing.Any:
-        ...
+    def resolve(self, value: typing.Mapping[str, typing.Any]) -> typing.Any: ...
 
 
 @typing.runtime_checkable
 class SecretCallback(typing.Protocol):
-    def __call__(self, *args: str) -> str | None:
-        ...
+    def __call__(self, *args: str) -> str | None: ...
 
 
 def to_secrets(secrets: Secrets | SecretCallback | None) -> Secrets | None:
@@ -37,17 +34,13 @@ def to_secrets(secrets: Secrets | SecretCallback | None) -> Secrets | None:
         return secrets
 
 
-def is_single_key_secret(value: typing.Mapping[str, typing.Any],
-                         *,
-                         key: str) -> bool:
+def is_single_key_secret(value: typing.Mapping[str, typing.Any], *, key: str) -> bool:
     return len(value) == 1 and key in value
 
 
-def resolve_n_key_secret_callback(value: typing.Mapping[str, typing.Any],
-                                  *,
-                                  callback: SecretCallback,
-                                  single_key: str,
-                                  args: typing.Iterable[str]) -> str | None:
+def resolve_n_key_secret_callback(
+    value: typing.Mapping[str, typing.Any], *, callback: SecretCallback, single_key: str, args: typing.Iterable[str]
+) -> str | None:
     try:
         mapping = value[single_key]
         LOG.debug(f'getting values for ({", ".join(args)}) to use as secret retrieval parameters')
@@ -66,10 +59,12 @@ def resolve_n_key_secret_callback(value: typing.Mapping[str, typing.Any],
 
 
 class SingleKeyCallback:
-    def __init__(self,
-                 callback: SecretCallback,
-                 single_key: str = DEFAULT_SINGLE_KEY_IDENTIFIER,
-                 args: typing.Iterable[str] = DEFAULT_SINGLE_KEY_ARGS):
+    def __init__(
+        self,
+        callback: SecretCallback,
+        single_key: str = DEFAULT_SINGLE_KEY_IDENTIFIER,
+        args: typing.Iterable[str] = DEFAULT_SINGLE_KEY_ARGS,
+    ):
         # use is_single_key_secret and resolve_n_key_secret_callback to turn the callback we've been handed here into
         # something that will implement the Secrets protocol
         self.matches = partial(
