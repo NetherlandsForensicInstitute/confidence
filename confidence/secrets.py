@@ -6,23 +6,36 @@ from functools import partial
 LOG = logging.getLogger(__name__)
 
 
-# default key for a mapping with a single key that signals being a secret
-DEFAULT_SINGLE_KEY_IDENTIFIER = '$secret'
-# default keys within a secret mapping to be passed to a callback
-# (this deliberately mimics keyring's get_password function)
-DEFAULT_SINGLE_KEY_ARGS = ('service', 'username')
+@typing.runtime_checkable
+class Secrets(typing.Protocol):
+    def resolve(self, value: typing.Any) -> typing.Any: ...
 
 
 @typing.runtime_checkable
-class Secrets(typing.Protocol):
-    def matches(self, value: typing.Mapping[str, typing.Any]) -> bool: ...
+class MappingSecrets(Secrets, typing.Protocol):
+    # e.g. {"$secret": {"service": "github.com", "username": "akaIDIOT"}}
+    def matches_mapping(self, value: typing.Mapping[str, typing.Any]) -> bool: ...
 
-    def resolve(self, value: typing.Mapping[str, typing.Any]) -> typing.Any: ...
+
+@typing.runtime_checkable
+class SequenceSecrets(Secrets, typing.Protocol):
+    # e.g. ["$secret", "github.com", "akaIDIOT"]  # TODO: references inside of that sequence would likely not work?
+    def matches_sequence(self, value: typing.Sequence[typing.Any]) -> bool: ...
+
+
+@typing.runtime_checkable
+class StrSecrets(Secrets, typing.Protocol):
+    # e.g. "secret!akaIDIOT@github.com"  # TODO: references inside of that str would likely not work?
+    def matches_str(self, value: str) -> bool: ...
 
 
 @typing.runtime_checkable
 class SecretCallback(typing.Protocol):
-    def __call__(self, *args: str) -> str | None: ...
+    def __call__(self, *args: typing.Any) -> typing.Any: ...
+
+
+# FIXME: load_name(..., secrets=keyring.get_password) does not yet specify a matching value (type)
+# FIXME: the rest is very geared towards MappingSecrets
 
 
 def to_secrets(secrets: Secrets | SecretCallback | None) -> Secrets | None:
@@ -40,7 +53,7 @@ def is_single_key_secret(value: typing.Mapping[str, typing.Any], *, key: str) ->
 
 def resolve_n_key_secret_callback(
     value: typing.Mapping[str, typing.Any], *, callback: SecretCallback, single_key: str, args: typing.Iterable[str]
-) -> str | None:
+) -> typing.Any:
     try:
         mapping = value[single_key]
         LOG.debug(f'getting values for ({", ".join(args)}) to use as secret retrieval parameters')
@@ -62,12 +75,12 @@ class SingleKeyCallback:
     def __init__(
         self,
         callback: SecretCallback,
-        single_key: str = DEFAULT_SINGLE_KEY_IDENTIFIER,
-        args: typing.Iterable[str] = DEFAULT_SINGLE_KEY_ARGS,
+        single_key: str = '$secret',
+        args: typing.Iterable[str] = ('service', 'username'),
     ):
         # use is_single_key_secret and resolve_n_key_secret_callback to turn the callback we've been handed here into
         # something that will implement the Secrets protocol
-        self.matches = partial(
+        self.matches_mapping = partial(
             is_single_key_secret,
             key=single_key,
         )

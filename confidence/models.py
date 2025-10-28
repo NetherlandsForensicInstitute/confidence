@@ -1,3 +1,4 @@
+import logging
 import re
 import typing
 from collections.abc import Mapping, Sequence
@@ -5,8 +6,11 @@ from enum import Enum
 from itertools import chain
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
-from confidence.secrets import Secrets
+from confidence.secrets import MappingSecrets, Secrets, SequenceSecrets, StrSecrets
 from confidence.utils import Conflict, merge_into, split_keys
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Missing(Enum):
@@ -110,14 +114,13 @@ class Configuration(Mapping):
         """
         self._missing = missing
         self._root = self
+        self._secrets = secrets
 
         if isinstance(self._missing, Missing):
             self._missing = {
                 Missing.SILENT: NotConfigured,
                 Missing.ERROR: NoDefault,
             }[missing]
-
-        self._secrets: Secrets | None = secrets
 
         self._source: typing.MutableMapping[str, typing.Any] = {}
         for source in sources:
@@ -211,21 +214,34 @@ class Configuration(Mapping):
                 # explicit type conversion requested
                 return as_type(value)
 
-            match value:
-                case {} if self._secrets and self._secrets.matches(value):
+            match value, self._secrets:
+                case {}, MappingSecrets() if self._secrets.matches_mapping(value):
                     # value is a secret, let the local secret handler resolve this
+                    LOG.debug(f'resolving value for key "{path}" as a mapping type secret')
                     return self._secrets.resolve(value)
-                case {}:
+                case {}, _:
                     # wrap value in a Configuration
                     return self._wrap(value)
-                case list() | tuple():  # TODO: would we ever encounter other sequence types?
+
+                # TODO: could we ever encounter other sequence types?
+                case ((list() | tuple()), SequenceSecrets()) if self._secrets.matches_sequence(value):
+                    # value is a secret, let the local secret handler resolve this
+                    LOG.debug(f'resolving value for key "{path}" as a sequence type secret')
+                    return self._secrets.resolve(value)
+                case ((list() | tuple()), _):
                     # wrap value in a sequence that retains Configuration functionality
                     return ConfigurationSequence(value, self._root)
-                case str() if resolve_references:
+
+                case str(), StrSecrets() if self._secrets.matches_str(value):
+                    # value is a secret, let the local secret handler resolve this
+                    LOG.debug(f'resolving value for key "{path}" as a str type secret')
+                    return self._secrets.resolve(value)
+                case str(), _ if resolve_references:
                     # only resolve references in str-type values (the only way they can be expressed)
                     return self._resolve(value)
+
                 case _:
-                    # a 'simple' value, nothing to do
+                    # no action needed, just return value
                     return value
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
@@ -299,6 +315,8 @@ class Configuration(Mapping):
     def __repr__(self) -> str:
         keys = ', '.join(_repr_value(key) for key in self.keys())
         return f'{self.__class__.__module__}.{self.__class__.__name__}(keys=[{keys}])'
+
+    # FIXME: pickling roundtrips will likely break when a Secrets is supplied...
 
     def __getstate__(self) -> dict[str, typing.Any]:
         state = self.__dict__.copy()
