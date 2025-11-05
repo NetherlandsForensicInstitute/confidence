@@ -40,6 +40,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.benchmarks/
 
 # pdm
 # Project moved to pylock.toml, ignore old lock file
