@@ -43,6 +43,7 @@ check = [
 test = [
     "coverage",
     "pytest",
+    "pytest-benchmark",
 ]
 
 [tool.pdm.scripts]
