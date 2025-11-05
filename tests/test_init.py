@@ -30,10 +30,7 @@ def test_wrapped_source():
 
 
 def _items_dict(items):
-    return {
-        item: {item: 42}
-        for item in items
-    }
+    return {item: {item: 42} for item in items}
 
 
 def test_benchmark_init_no_overlap(benchmark):
