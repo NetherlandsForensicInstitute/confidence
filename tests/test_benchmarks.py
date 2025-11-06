@@ -8,9 +8,9 @@ def _items_dict(items):
 
 
 def _matrix_dict(items):
-    matrix = {i: 42 for i in items}
+    matrix = dict.fromkeys(items, 42)
     for _ in range(len(matrix) - 1):
-        matrix = {i: matrix for i in items}
+        matrix = dict.fromkeys(items, matrix)
 
     return matrix
 
@@ -36,7 +36,6 @@ def test_benchmark_init_full_overlap(benchmark):
     assert benchmark(Configuration, a, b) == a == b
 
 
-
 def test_benchmark_get(benchmark):
     def get_diagonals(config, steps):
         a = b = config
@@ -48,7 +47,7 @@ def test_benchmark_get(benchmark):
         return a, b
 
     letters = 'abcdef'
-    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) ==  (42, 42)
+    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) == (42, 42)
 
 
 def test_benchmark_get_dotted(benchmark):
@@ -56,7 +55,7 @@ def test_benchmark_get_dotted(benchmark):
         return config.get('.'.join(steps)), config.get('.'.join(reversed(steps)))
 
     letters = 'abcdef'
-    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) ==  (42, 42)
+    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) == (42, 42)
 
 
 def test_benchmark_getitem(benchmark):
@@ -70,7 +69,7 @@ def test_benchmark_getitem(benchmark):
         return a, b
 
     letters = 'abcdef'
-    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) ==  (42, 42)
+    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) == (42, 42)
 
 
 def test_benchmark_getitem_dotted(benchmark):
@@ -78,7 +77,7 @@ def test_benchmark_getitem_dotted(benchmark):
         return config['.'.join(steps)], config['.'.join(reversed(steps))]
 
     letters = 'abcdef'
-    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) ==  (42, 42)
+    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters)), letters) == (42, 42)
 
 
 def test_benchmark_getattr(benchmark):
@@ -86,4 +85,4 @@ def test_benchmark_getattr(benchmark):
         return config.a.b.c.d.e.f, config.f.e.d.c.b.a
 
     letters = 'abcdef'
-    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters))) ==  (42, 42)
+    assert benchmark(get_diagonals, Configuration(_matrix_dict(letters))) == (42, 42)
