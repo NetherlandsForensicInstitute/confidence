@@ -1,5 +1,3 @@
-import string
-
 from confidence import Configuration, NotConfigured, dumps, loads
 from confidence.models import ConfigurationSequence
 
