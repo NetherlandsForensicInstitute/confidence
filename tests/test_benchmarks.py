@@ -86,3 +86,31 @@ def test_benchmark_getattr(benchmark):
 
     letters = 'abcdef'
     assert benchmark(get_diagonals, Configuration(_matrix_dict(letters))) == (42, 42)
+
+
+def test_benchmark_unpack_kwargs(benchmark):
+    def sum_ab(a, b, **_):
+        return a + b
+
+    def unpack_kwargs(config):
+        return sum_ab(**config)
+
+    assert benchmark(unpack_kwargs, Configuration({'a': 21, 'b': 21, 'c': 21, 'd': 21})) == 42
+
+
+def test_benchmark_unpack_args(benchmark):
+    def sum_ab(a, b, *_):
+        return a + b
+
+    def unpack_args(config):
+        return sum_ab(*config.sequence)
+
+    assert benchmark(unpack_args, Configuration({'sequence': [21, 21, 21, -21]})) == 42
+
+
+def test_benchmark_unpack_tuple(benchmark):
+    def sum_sequence(config):
+        a, b, c, d = config.sequence
+        return a + b + c + d
+
+    assert benchmark(sum_sequence, Configuration({'sequence': [21, 21, 21, -21]})) == 42
