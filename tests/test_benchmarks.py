@@ -3,7 +3,7 @@ import string
 from confidence import Configuration
 
 
-def _items_dict(items):
+def _two_layer_dict(items):
     return {item: {item: 42} for item in items}
 
 
@@ -16,22 +16,22 @@ def _matrix_dict(items):
 
 
 def test_benchmark_init_no_overlap(benchmark):
-    a = _items_dict(string.ascii_lowercase)
-    b = _items_dict(string.ascii_uppercase)
+    a = _two_layer_dict(string.ascii_lowercase)
+    b = _two_layer_dict(string.ascii_uppercase)
 
     assert benchmark(Configuration, a, b) == a | b
 
 
 def test_benchmark_init_partial_overlap(benchmark):
-    a = _items_dict(string.ascii_letters)
-    b = _items_dict(string.ascii_lowercase)
+    a = _two_layer_dict(string.ascii_letters)
+    b = _two_layer_dict(string.ascii_lowercase)
 
     assert benchmark(Configuration, a, b) == a
 
 
 def test_benchmark_init_full_overlap(benchmark):
-    a = _items_dict(string.ascii_letters)
-    b = _items_dict(string.ascii_letters)
+    a = _two_layer_dict(string.ascii_letters)
+    b = _two_layer_dict(string.ascii_letters)
 
     assert benchmark(Configuration, a, b) == a == b
 
