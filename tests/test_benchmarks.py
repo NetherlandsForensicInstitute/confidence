@@ -1,4 +1,5 @@
 import string
+from itertools import pairwise
 
 from confidence import Configuration
 
@@ -114,3 +115,12 @@ def test_benchmark_unpack_tuple(benchmark):
         return a + b + c + d
 
     assert benchmark(sum_sequence, Configuration({'sequence': [21, 21, 21, -21]})) == 42
+
+
+def test_benchmark_reference_chain(benchmark):
+    def resolve_reference(config):
+        return config.reference
+
+    # create a reference chain from a → f, add f: 42 at the end
+    source = {left: f'${{{right}}}' for left, right in pairwise('abcdef')} | {'f': 42}
+    assert benchmark(resolve_reference, Configuration(source, {'reference': '${a}'})) == 42
