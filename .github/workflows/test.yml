@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           cache: true
           cache-dependency-path: 'pylock.toml'
       - name: Install check dependencies
@@ -36,3 +36,12 @@ jobs:
         run: pdm install --group test
       - name: Run tests
         run: pdm run test
+      - name: Run benchmarks
+        run: pdm run benchmark --benchmark-save '${{ matrix.python-version }}-${{ github.sha }}'
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'benchmarks-${{ matrix.python-version }}-${{ github.sha }}'
+          path: '.benchmarks/*/*.json'
+          include-hidden-files: true
+          retention-days: 3
