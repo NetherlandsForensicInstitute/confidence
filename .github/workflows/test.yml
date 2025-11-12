@@ -44,4 +44,4 @@ jobs:
           name: 'benchmarks-${{ matrix.python-version }}-${{ github.sha }}'
           path: '.benchmarks/*/*.json'
           include-hidden-files: true
-          retention-days: 3
+          retention-days: 1
