@@ -48,7 +48,7 @@ test = [
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
-benchmark = "pdm run test --benchmark-only"
+benchmark = "pdm run test --benchmark-only tests/"
 check = {composite = ["check-lock", "format", "lint", "type-check"]}
 check-lock = "pdm lock --check"
 format = "ruff format --diff confidence/ tests/"
