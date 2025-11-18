@@ -58,11 +58,10 @@ jobs:
           retention-days: 1
 
   compare-benchmarks:
-    if: ${{ github.event.pull_request }}
     runs-on: ubuntu-latest
     needs: test
+    if: ${{ github.event.pull_request }}
     steps:
-      - run: echo ${{ github.event.pull_request }}
       - uses: actions/checkout@v5
       - uses: pdm-project/setup-pdm@v4
         with:
@@ -76,4 +75,4 @@ jobs:
           pattern: benchmarks-*
           path: .benchmarks/
           merge-multiple: true
-      - run: ls -lR .benchmarks/
+      - run: pdm run .github/compare-benchmarks.py --old ${{ github.event.pull_request.base.sha }} --new ${{ github.sha }}
