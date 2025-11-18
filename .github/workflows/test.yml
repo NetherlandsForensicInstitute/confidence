@@ -6,6 +6,7 @@ on:
   pull_request:
 
 jobs:
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -19,6 +20,7 @@ jobs:
         run: pdm install --group check
       - name: Run checks
         run: pdm run check
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -54,3 +56,24 @@ jobs:
           path: '.benchmarks/*/*.json'
           include-hidden-files: true
           retention-days: 1
+
+  compare-benchmarks:
+    if: ${{ github.event.pull_request }}
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - run: echo ${{ github.event.pull_request }}
+      - uses: actions/checkout@v5
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.14'
+          cache: true
+          cache-dependency-path: 'pylock.toml'
+      - name: Install test dependencies
+        run: pdm install --group test
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: benchmarks-*
+          path: .benchmarks/
+          merge-multiple: true
+      - run: ls -lR .benchmarks/
