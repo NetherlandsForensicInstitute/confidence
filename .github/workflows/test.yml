@@ -75,4 +75,4 @@ jobs:
           pattern: benchmarks-*
           path: .benchmarks/
           merge-multiple: true
-      - run: pdm run .github/compare-benchmarks.py --old ${{ github.event.pull_request.base.sha }} --new ${{ github.sha }}
+      - run: pdm run .github/compare-benchmarks.py --old ${{ github.event.pull_request.base.sha }} --new ${{ github.sha }} --comment ./BENCHMARK_COMMENT
