@@ -7,6 +7,12 @@ from operator import itemgetter
 from tabulate import tabulate
 
 
+COMMENT_TEMPLATE = """
+Comparing *{stat}* metric between **base** {old} and **proposed** {new}:
+
+{table}
+"""
+
 def compare_benchmarks(benchmarks, old, new):
     for benchmark, python, by_commit in benchmarks:
         result_old, result_new = by_commit[old], by_commit[new]
@@ -58,6 +64,7 @@ if __name__ == '__main__':
     args.add_argument('--old', metavar='COMMIT', required=True)
     args.add_argument('--new', metavar='COMMIT', required=True)
     args.add_argument('--stat', default='median')
+    args.add_argument('--comment-file')
 
     args = args.parse_args()
 
@@ -65,4 +72,10 @@ if __name__ == '__main__':
     benchmarks = combine_runs(benchmarks, commits={args.old, args.new})
     benchmarks = compare_benchmarks(benchmarks, old=args.old, new=args.new)
     headers, table = to_table(benchmarks)
-    print(tabulate(table, headers=headers, tablefmt='github', floatfmt='+.0%'))
+
+    table = tabulate(table, headers=headers, tablefmt='github', floatfmt='+.0%')
+    print(table)
+
+    if args.comment_file:
+        with open(args.comment_file, 'wt') as comment_file:
+            comment_file.write(COMMENT_TEMPLATE.format(old=args.old, new=args.new, stat=args.stat, table=table))
