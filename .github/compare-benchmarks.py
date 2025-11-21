@@ -10,7 +10,7 @@ from tabulate import tabulate
 COMMENT_TEMPLATE = """
 <!-- compare-benchmarks.py -->
 
-Comparing *{stat}* metric between **base** {old} and **proposed** {new}:
+Comparing *{stat}* metric of benchmarks between **base** {old} and **proposed** {new}:
 
 {table}
 """
