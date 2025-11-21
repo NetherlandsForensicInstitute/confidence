@@ -30,9 +30,6 @@ classifiers = [
 [project.urls]
 homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 
-[tool.pdm]
-version = {source = "scm"}
-
 [dependency-groups]
 check = [
     "mypy",
@@ -44,7 +41,11 @@ test = [
     "coverage",
     "pytest",
     "pytest-benchmark",
+    "tabulate",
 ]
+
+[tool.pdm]
+version = {source = "scm"}
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}

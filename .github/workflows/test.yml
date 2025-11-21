@@ -6,6 +6,7 @@ on:
   pull_request:
 
 jobs:
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -19,13 +20,17 @@ jobs:
         run: pdm install --group check
       - name: Run checks
         run: pdm run check
+
   test:
     runs-on: ubuntu-latest
+    needs: check
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14', 'pypy-3.10', 'pypy-3.11']
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
@@ -38,10 +43,45 @@ jobs:
         run: pdm run test
       - name: Run benchmarks
         run: pdm run benchmark --benchmark-save '${{ matrix.python-version }}-${{ github.sha }}'
+      - name: Run benchmarks for target
+        if: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git switch --detach ${{ github.event.pull_request.base.sha }}
+          pdm run benchmark --benchmark-save '${{ matrix.python-version }}-${{ github.event.pull_request.base.sha }}'
+          git switch --detach -
       - name: Upload benchmark results
+        if: ${{ github.event.pull_request.base.sha }}
         uses: actions/upload-artifact@v4
         with:
-          name: 'benchmarks-${{ matrix.python-version }}-${{ github.sha }}'
+          name: 'benchmarks-${{ matrix.python-version }}'
           path: '.benchmarks/*/*.json'
           include-hidden-files: true
           retention-days: 1
+
+  compare-benchmarks:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ github.event.pull_request }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.14'
+          cache: true
+          cache-dependency-path: 'pylock.toml'
+      - name: Install test dependencies
+        run: pdm install --group test
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: benchmarks-*
+          path: .benchmarks/
+          merge-multiple: true
+      - name: Compare benchmarks
+        run: pdm run .github/compare-benchmarks.py --old ${{ github.event.pull_request.base.sha }} --new ${{ github.sha }} --comment ./BENCHMARK_COMMENT
+      - uses: edumserrano/find-create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: '<!-- compare-benchmarks.py -->'
+          comment-author: 'github-actions[bot]'
+          edit-mode: replace
+          body-path: './BENCHMARK_COMMENT'
