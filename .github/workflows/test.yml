@@ -75,4 +75,12 @@ jobs:
           pattern: benchmarks-*
           path: .benchmarks/
           merge-multiple: true
-      - run: pdm run .github/compare-benchmarks.py --old ${{ github.event.pull_request.base.sha }} --new ${{ github.sha }} --comment ./BENCHMARK_COMMENT
+      - name: Compare benchmarks
+        run: pdm run .github/compare-benchmarks.py --old ${{ github.event.pull_request.base.sha }} --new ${{ github.sha }} --comment ./BENCHMARK_COMMENT
+      - uses: edumserrano/find-create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: '<!-- compare-benchmarks.py -->'
+          comment-author: 'github-actions[bot]'
+          edit-mode: replace
+          body-path: './BENCHMARK_COMMENT'
