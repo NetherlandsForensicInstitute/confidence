@@ -2,6 +2,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
+from confidence import Configuration, unwrap
 from confidence.formats import JSON, TOML, YAML
 
 
@@ -16,12 +17,22 @@ def test_singular_value_roundtrip(format, value):
 
 
 @pytest.mark.parametrize('format', (JSON, TOML, YAML, YAML(suffix='.conf', encoding='utf-32')))
-@pytest.mark.parametrize('value', ([], {}, [1, 2, 'a'], {'a': 1, 'b': 42.0, 'c': {'d': 'str'}, 'e': [{'g': True}]}))
+@pytest.mark.parametrize(
+    'value',
+    (
+        [],
+        {},
+        [1, 2, 'a'],
+        {'a': 1, 'b': 42.0, 'c': {'d': 'str'}, 'e': [{'g': True}]},
+        Configuration({'a.b.c': 42}),
+        Configuration({'a.b': [1, 2, '${a}']}),
+    ),
+)
 def test_multiple_values_roundtrip(format, value, tmp_path):
     fname = tmp_path / f'config{format.suffix}'
 
     format.dumpf(value, fname)
-    assert format.loadf(fname) == value
+    assert format.loadf(fname) == unwrap(value)
 
 
 def test_edit_format():
