@@ -24,7 +24,9 @@ def test_singular_value_roundtrip(format, value):
         {},
         [1, 2, 'a'],
         {'a': 1, 'b': 42.0, 'c': {'d': 'str'}, 'e': [{'g': True}]},
+        # nested configuration object should get unwrapped before serialization
         Configuration({'a.b.c': 42}),
+        # serialization should not be trying to resolve references, this one would cause a recursion error if it does
         Configuration({'a.b': [1, 2, '${a}']}),
     ),
 )
