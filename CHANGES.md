@@ -4,7 +4,7 @@ Changes
 development (main)
 ------------------
 
--
+- Fix dump functions failing to write nested `Configuration` instances in TOML format.
 
 0.17.1 (2025-10-15)
 -------------------
