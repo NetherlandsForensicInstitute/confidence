@@ -84,6 +84,7 @@ class _TOMLFormat(Format):
             return tomlkit.value(string)
 
     def dumps(self, value: typing.Any) -> str:
+        value = unwrap(value)
         try:
             # attempt to dump the value as TOML document
             return tomlkit.dumps(value)
