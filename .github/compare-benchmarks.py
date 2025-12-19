@@ -10,10 +10,17 @@ from tabulate import tabulate
 COMMENT_TEMPLATE = """
 <!-- compare-benchmarks.py -->
 
-Comparing *{stat}* metric of benchmarks between **base** {old} and **proposed** {new}:
+Comparing *{stat}* ({better} is better) metric of benchmarks between this PR's target ({old}) and the HEAD of this PR ({new}):
 
 {table}
+
+This comment will be updated on subsequent pushes.
 """
+
+BETTER = {
+    'median': 'lower',
+    'ops': 'higher',
+}
 
 def compare_benchmarks(benchmarks, old, new):
     for benchmark, python, by_commit in benchmarks:
@@ -80,4 +87,12 @@ if __name__ == '__main__':
 
     if args.comment_file:
         with open(args.comment_file, 'wt') as comment_file:
-            comment_file.write(COMMENT_TEMPLATE.format(old=args.old, new=args.new, stat=args.stat, table=table))
+            comment_file.write(
+                COMMENT_TEMPLATE.format(
+                    old=args.old,
+                    new=args.new,
+                    stat=args.stat,
+                    better=BETTER.get(args.stat, 'lower'),
+                    table=table,
+                )
+            )
