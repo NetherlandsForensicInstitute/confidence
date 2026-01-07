@@ -1,4 +1,5 @@
 import json
+import subprocess
 from argparse import ArgumentParser
 from glob import iglob
 from itertools import chain, groupby
@@ -70,12 +71,16 @@ def to_table(benchmarks):
 
 if __name__ == '__main__':
     args = ArgumentParser()
-    args.add_argument('--old', metavar='COMMIT', required=True)
-    args.add_argument('--new', metavar='COMMIT', required=True)
+    args.add_argument('--old', metavar='REF', required=True)
+    args.add_argument('--new', metavar='REF', default='HEAD')
     args.add_argument('--stat', default='median')
     args.add_argument('--comment-file')
 
     args = args.parse_args()
+
+    # pytest-benchmark will store full commit hashes, git rev-parse the old and new references to get the commit hashes
+    args.old = subprocess.check_output(('git', 'rev-parse', args.old), text=True).strip()
+    args.new = subprocess.check_output(('git', 'rev-parse', args.new), text=True).strip()
 
     benchmarks = (read_run(loadf(f), stat=args.stat) for f in iglob('.benchmarks/*/*.json'))
     benchmarks = combine_runs(benchmarks, commits={args.old, args.new})

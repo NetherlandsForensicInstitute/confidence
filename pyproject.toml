@@ -56,6 +56,7 @@ benchmark-against = {keep_going = true, composite = [
     "git switch --detach {args}",
     "pdm run benchmark",
     "git switch -",
+    "pdm run python .github/compare-benchmarks.py --old {args}"
 ]}
 check = {composite = ["check-lock", "format", "lint", "type-check"]}
 check-lock = "pdm lock --check"
