@@ -14,7 +14,7 @@ Comparing *{stat}* ({better} is better) metric of benchmarks between this PR's t
 
 {table}
 
-This comment will be updated on subsequent pushes.
+*(This comment will be updated on subsequent pushes)*
 """
 
 BETTER = {

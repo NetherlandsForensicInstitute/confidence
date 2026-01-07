@@ -50,6 +50,13 @@ version = {source = "scm"}
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
 benchmark = "pdm run test --benchmark-only --benchmark-autosave tests/"
+benchmark-against = {keep_going = true, composite = [
+    "git rev-parse {args}",
+    "pdm run benchmark",
+    "git switch --detach {args}",
+    "pdm run benchmark",
+    "git switch -",
+]}
 check = {composite = ["check-lock", "format", "lint", "type-check"]}
 check-lock = "pdm lock --check"
 format = "ruff format --diff confidence/ tests/"
