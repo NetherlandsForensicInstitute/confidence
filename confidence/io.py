@@ -236,22 +236,22 @@ DEFAULT_LOAD_ORDER = tuple(
 
 def _format_source(source: str | Path, name: str, format: Format) -> Path:
     match source:
-        case str():
-            # collect the field names in the format string, issue warning if "extension" is among them
-            if 'extension' in {span[1] for span in Formatter().parse(source)}:
-                warnings.warn(
-                    'using "{extension}" in string template loaders has been deprecated, use "{suffix}" instead',
-                    category=DeprecationWarning,
-                    stacklevel=4,  # warn about user code calling load_name rather than _resolve_source
-                )
-                return Path(source.format(name=name, extension=format.suffix.lstrip('.')))
-            else:
-                return Path(source.format(name=name, suffix=format.suffix))
         case Path():
             # format every part of the path separately, filling in name and suffix
             # NB: checking for use of {extension} is omitted here, use of Path templates was added after the deprecation
             #     of "extension" over "suffix"
             return Path(*(part.format(name=name, suffix=format.suffix) for part in source.parts))
+        case str():
+            # issue warning if "extension" is used as a field name (second element in the parsed spans) in source
+            if any(span[1] == 'extension' for span in Formatter().parse(source)):
+                warnings.warn(
+                    'using "{extension}" in string template loaders has been deprecated, use "{suffix}" instead',
+                    category=DeprecationWarning,
+                    stacklevel=4,  # warn about user code calling load_name rather than _format_source
+                )
+                return Path(source.format(name=name, extension=format.suffix.lstrip('.')))
+            else:
+                return Path(source.format(name=name, suffix=format.suffix))
         case _:
             # any other type of source is invalid here
             raise TypeError(f'cannot format source of type {type(source).__name__}')
