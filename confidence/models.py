@@ -1,3 +1,4 @@
+import logging
 import re
 import typing
 from collections.abc import Mapping, Sequence
@@ -5,7 +6,11 @@ from enum import Enum
 from itertools import chain
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
+from confidence.secrets import MappingSecrets, Secrets, SequenceSecrets, StrSecrets
 from confidence.utils import Conflict, merge_into, split_keys
+
+
+LOG = logging.getLogger(__name__)
 
 
 class Missing(Enum):
@@ -50,7 +55,9 @@ def unwrap(source: typing.Any) -> typing.Any:
     return source
 
 
-def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None) -> 'Configuration':
+def merge(
+    *sources: typing.Mapping[str, typing.Any], missing: typing.Any = None, secrets: typing.Any = None
+) -> 'Configuration':
     """
     Merges *sources* into a union, keeping right-side precedence.
 
@@ -58,9 +65,11 @@ def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None)
         most significance
     :param missing: policy for the resulting `Configuration` (defaults to
         `Missing.SILENT`)
+    :param secrets: an optional provider of secret values (defaults to `None`)
     :return: a `Configuration` instance that encompasses all of the keys and
         values in *sources*
-    :raises ValueError: when the missing policies of *source* cannot be aligned
+    :raises ValueError: when the missing policies or secrets implementation of
+        *sources* cannot be aligned
     """
     if missing is None:
         # no explicit missing setting, collect settings from arguments, should be either nothing if sources are not
@@ -70,7 +79,13 @@ def merge(*sources: typing.Mapping[str, typing.Any], missing: typing.Any = None)
         # use the one remaining missing setting, or default to Missing.SILENT
         missing = missing.pop() if missing else Missing.SILENT
 
-    return Configuration(*sources, missing=missing)
+    if secrets is None:
+        # no explicit secrets handler, use the same approach as with missing
+        if len(secrets := {source._secrets for source in sources if isinstance(source, Configuration)}) > 1:
+            raise ValueError(f'no union for incompatible instances: {secrets}')
+        secrets = secrets.pop() if secrets else None
+
+    return Configuration(*sources, missing=missing, secrets=secrets)
 
 
 class Configuration(Mapping):
@@ -82,7 +97,12 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self, *sources: typing.Mapping[str, typing.Any], missing: typing.Any = Missing.SILENT):
+    def __init__(
+        self,
+        *sources: typing.Mapping[str, typing.Any],
+        missing: typing.Any = Missing.SILENT,
+        secrets: Secrets | None = None,
+    ):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -90,9 +110,11 @@ class Configuration(Mapping):
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
             either as a `Missing` instance or a default value
+        :param secrets: an optional `Secrets` implementation
         """
         self._missing = missing
         self._root = self
+        self._secrets = secrets
 
         if isinstance(self._missing, Missing):
             self._missing = {
@@ -113,7 +135,7 @@ class Configuration(Mapping):
 
     def _wrap(self, value: typing.Mapping[str, typing.Any]) -> 'Configuration':
         # create an instance of our current type, copying 'configured' properties / policies
-        namespace = type(self)(missing=self._missing)
+        namespace = type(self)(missing=self._missing, secrets=self._secrets)
         namespace._source = value  # type: ignore  # mutability isn't needed after init
         # carry the root object from namespace to namespace, references are always resolved from root
         namespace._root = self._root
@@ -180,7 +202,7 @@ class Configuration(Mapping):
             *default* was ``NoDefault``
         :raises ConfiguredReferenceError: when a reference could not be resolved
         """
-        value = self._source
+        value: Mapping[str, typing.Any] = self._source
         steps_taken = []
         try:
             # walk through the values dictionary
@@ -191,18 +213,36 @@ class Configuration(Mapping):
             if as_type:
                 # explicit type conversion requested
                 return as_type(value)
-            elif isinstance(value, Mapping):
-                # wrap value in a Configuration
-                return self._wrap(value)
-            elif isinstance(value, Sequence) and not isinstance(value, str | bytes):
-                # wrap value in a sequence that retains Configuration functionality
-                return ConfigurationSequence(value, self._root)
-            elif resolve_references and isinstance(value, str):
-                # only resolve references in str-type values (the only way they can be expressed)
-                return self._resolve(value)
-            else:
-                # a 'simple' value, nothing to do
-                return value
+
+            match value, self._secrets:
+                case {}, MappingSecrets() if self._secrets.matches_mapping(value):
+                    # value is a secret, let the local secret handler resolve this
+                    LOG.debug(f'resolving value for key "{path}" as a mapping type secret')
+                    return self._secrets.resolve(value)
+                case {}, _:
+                    # wrap value in a Configuration
+                    return self._wrap(value)
+
+                # TODO: could we ever encounter other sequence types?
+                case ((list() | tuple()), SequenceSecrets()) if self._secrets.matches_sequence(value):
+                    # value is a secret, let the local secret handler resolve this
+                    LOG.debug(f'resolving value for key "{path}" as a sequence type secret')
+                    return self._secrets.resolve(value)
+                case ((list() | tuple()), _):
+                    # wrap value in a sequence that retains Configuration functionality
+                    return ConfigurationSequence(value, self._root)
+
+                case str(), StrSecrets() if self._secrets.matches_str(value):
+                    # value is a secret, let the local secret handler resolve this
+                    LOG.debug(f'resolving value for key "{path}" as a str type secret')
+                    return self._secrets.resolve(value)
+                case str(), _ if resolve_references:
+                    # only resolve references in str-type values (the only way they can be expressed)
+                    return self._resolve(value)
+
+                case _:
+                    # no action needed, just return value
+                    return value
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
             raise
@@ -275,6 +315,8 @@ class Configuration(Mapping):
     def __repr__(self) -> str:
         keys = ', '.join(_repr_value(key) for key in self.keys())
         return f'{self.__class__.__module__}.{self.__class__.__name__}(keys=[{keys}])'
+
+    # FIXME: pickling roundtrips will likely break when a Secrets is supplied...
 
     def __getstate__(self) -> dict[str, typing.Any]:
         state = self.__dict__.copy()

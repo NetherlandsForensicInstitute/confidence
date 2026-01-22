@@ -11,6 +11,7 @@ from string import Formatter
 
 from confidence.formats import YAML, Format
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured
+from confidence.secrets import SecretCallback, Secrets, to_secrets
 
 
 LOG = logging.getLogger(__name__)
@@ -234,7 +235,12 @@ DEFAULT_LOAD_ORDER = tuple(
 )
 
 
-def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
+def load(
+    *fps: typing.TextIO,
+    format: Format = YAML,
+    missing: typing.Any = Missing.SILENT,
+    secrets: Secrets | SecretCallback | None = None,
+) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
 
@@ -242,9 +248,10 @@ def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missi
     :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instance providing values from *fps*
     """
-    return Configuration(*(format.load(fp) for fp in fps), missing=missing)
+    return Configuration(*(format.load(fp) for fp in fps), missing=missing, secrets=to_secrets(secrets))
 
 
 def loadf(
@@ -252,6 +259,7 @@ def loadf(
     format: Format = YAML,
     default: typing.Any = NoDefault,
     missing: typing.Any = Missing.SILENT,
+    secrets: Secrets | SecretCallback | None = None,
 ) -> Configuration:
     """
     Read a `Configuration` instance from named files.
@@ -262,6 +270,7 @@ def loadf(
         exist (default is to raise a `FileNotFoundError`)
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instance providing values from *fnames*
     """
 
@@ -278,10 +287,19 @@ def loadf(
                 return default
 
     # expand the user directories here, format is not in charge of the file paths
-    return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
+    return Configuration(
+        *(readf(Path(fname).expanduser()) for fname in fnames),
+        missing=missing,
+        secrets=to_secrets(secrets),
+    )
 
 
-def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
+def loads(
+    *strings: str,
+    format: Format = YAML,
+    missing: typing.Any = Missing.SILENT,
+    secrets: Secrets | SecretCallback | None = None,
+) -> Configuration:
     """
     Read a `Configuration` instance from strings.
 
@@ -289,9 +307,14 @@ def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SI
     :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instance providing values from *strings*
     """
-    return Configuration(*(format.loads(string) for string in strings), missing=missing)
+    return Configuration(
+        *(format.loads(string) for string in strings),
+        missing=missing,
+        secrets=to_secrets(secrets),
+    )
 
 
 def load_name(
@@ -299,6 +322,7 @@ def load_name(
     load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
     format: Format = YAML,
     missing: typing.Any = Missing.SILENT,
+    secrets: Secrets | SecretCallback | None = None,
     extension: None = None,  # NB: parameter is deprecated, see below
 ) -> Configuration:
     """
@@ -317,6 +341,7 @@ def load_name(
     :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param secrets: an optional `Secrets` implementation or callback function
     :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
@@ -351,7 +376,7 @@ def load_name(
 
                 yield loadf(candidate, format=format, default=NotConfigured)
 
-    return Configuration(*generate_sources(), missing=missing)
+    return Configuration(*generate_sources(), missing=missing, secrets=to_secrets(secrets))
 
 
 def _check_format_encoding(format: Format, encoding: str | None) -> Format:
