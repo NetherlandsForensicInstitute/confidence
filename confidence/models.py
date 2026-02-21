@@ -196,7 +196,7 @@ class Configuration(Mapping):
                 case {}:
                     # wrap value in a Configuration
                     return self._wrap(value)
-                case [] | [*_]:
+                case [*_]:
                     # wrap value in a sequence that retains Configuration functionality
                     return ConfigurationSequence(value, self._root)
                 case str() if resolve_references:
@@ -350,7 +350,7 @@ class ConfigurationSequence(Sequence):
             case {}:
                 # let root wrap the value
                 return self._root._wrap(value)  # type: ignore
-            case [] | [*_]:
+            case [*_]:
                 # wrap a sequence value with an 'instance of self'
                 return type(self)(value, self._root)
             case str() if resolve_references:
@@ -366,7 +366,7 @@ class ConfigurationSequence(Sequence):
 
     def __add__(self, other: Sequence[Any]) -> 'ConfigurationSequence':
         match other:
-            case [] | [*_]:
+            case [*_]:
                 # left-hand operand is self, expect return value to be the same as left-hand operand
                 # create a new sequence with extended source, assuming self's type will retain the 'magic'
                 return type(self)(list(self._source) + list(other), root=self._root)
@@ -376,7 +376,7 @@ class ConfigurationSequence(Sequence):
 
     def __radd__(self, other: Sequence) -> Sequence:
         match other:
-            case [] | [*_]:
+            case [*_]:
                 # left-hand operand is other, expect return value to be the same as left-hand operand
                 # list(self) ensures all mapping type values in self._source are wrapped by factory, retaining the
                 # 'magic'
@@ -403,7 +403,7 @@ def _repr_value(value: Any) -> str:
         case {}:
             keys = ', '.join(_repr_value(key) for key in value)
             return f'mapping(keys=[{keys}])'
-        case [] | [*_]:
+        case [*_]:
             return 'sequence([...])'
         case _:
             # fall back to builtin repr
