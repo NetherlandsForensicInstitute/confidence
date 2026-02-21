@@ -38,16 +38,16 @@ def unwrap(source: Any) -> Any:
         # unwrap a Configuration into its source attribute
         source = source._source
 
-    if isinstance(source, ConfigurationSequence):
-        # sequence will resolve references, unwrap values in its source
-        return [unwrap(value) for value in source._source]
-
-    if isinstance(source, Mapping):
-        # mapping type can no longer be a Configuration, use .items() to unwrap values
-        return {key: unwrap(value) for key, value in source.items()}
-
-    # nothing needed, use value as-is
-    return source
+    match source:
+        case ConfigurationSequence():
+            # sequence will resolve references, unwrap values in its source
+            return [unwrap(value) for value in source._source]
+        case {}:
+            # mapping type can no longer be a Configuration, use .items() to unwrap values
+            return {key: unwrap(value) for key, value in source.items()}
+        case _:
+            # nothing needed, use value as-is
+            return source
 
 
 def merge(*sources: Mapping[str, Any], missing: Any = None) -> 'Configuration':
@@ -191,18 +191,20 @@ class Configuration(Mapping):
             if as_type:
                 # explicit type conversion requested
                 return as_type(value)
-            elif isinstance(value, Mapping):
-                # wrap value in a Configuration
-                return self._wrap(value)
-            elif isinstance(value, Sequence) and not isinstance(value, str | bytes):
-                # wrap value in a sequence that retains Configuration functionality
-                return ConfigurationSequence(value, self._root)
-            elif resolve_references and isinstance(value, str):
-                # only resolve references in str-type values (the only way they can be expressed)
-                return self._resolve(value)
-            else:
-                # a 'simple' value, nothing to do
-                return value
+
+            match value:
+                case {}:
+                    # wrap value in a Configuration
+                    return self._wrap(value)
+                case [] | [*_]:
+                    # wrap value in a sequence that retains Configuration functionality
+                    return ConfigurationSequence(value, self._root)
+                case str() if resolve_references:
+                    # only resolve references in str-type values (the only way they can be expressed)
+                    return self._resolve(value)
+                case _:
+                    # a 'simple' value, nothing to do
+                    return value
         except ConfiguredReferenceError:
             # also a KeyError, but this one should bubble to caller
             raise
@@ -258,16 +260,20 @@ class Configuration(Mapping):
         return iter(self._source)
 
     def __or__(self, other: Mapping[str, Any]) -> 'Configuration':
-        if not isinstance(other, Mapping):
-            # operation not supported for these types (let the interpreter handle the potential reverse and type error)
-            return NotImplemented
-        return merge(self, other)
+        match other:
+            case {}:
+                return merge(self, other)
+            case _:
+                # operation not supported for these types (let the interpreter handle the reverse or type error)
+                return NotImplemented
 
     def __ror__(self, other: Mapping[str, Any]) -> 'Configuration':
-        if not isinstance(other, Mapping):
-            # operation not supported for these types (let the interpreter handle the potential reverse and type error)
-            return NotImplemented
-        return merge(other, self)
+        match other:
+            case {}:
+                return merge(other, self)
+            case _:
+                # operation not supported for these types (let the interpreter handle the reverse or type error)
+                return NotImplemented
 
     def __dir__(self) -> Iterable[str]:
         return sorted(set(chain(super().__dir__(), self.keys())))
@@ -339,44 +345,46 @@ class ConfigurationSequence(Sequence):
         self._root = root
 
     def __getitem__(self, item: int | slice, *, resolve_references: bool = True) -> Any:
-        # retrieve value of interest (NB: item can be a slice, but we'll let _source take care of that)
-        value = self._source[item]
-        if isinstance(value, Mapping):
-            # let root wrap the value
-            return self._root._wrap(value)
-        if isinstance(value, Sequence) and not isinstance(value, str | bytes):
-            # wrap a sequence value with an 'instance of self'
-            return type(self)(value, self._root)
-        if isinstance(value, str) and resolve_references:
-            # let root resolve references in str-type values
-            return self._root._resolve(value)
-
-        # a 'simple' value, nothing to do
-        return value
+        # NB: item can be a slice, but we'll let _source take care of that
+        match value := self._source[item]:
+            case {}:
+                # let root wrap the value
+                return self._root._wrap(value)  # type: ignore
+            case [] | [*_]:
+                # wrap a sequence value with an 'instance of self'
+                return type(self)(value, self._root)
+            case str() if resolve_references:
+                # let root resolve references in str-type values
+                return self._root._resolve(value)
+            case _:
+                # a 'simple' value, nothing to do
+                return value
 
     def __len__(self) -> int:
         # emulating a simple sequence, delegate length to _source
         return len(self._source)
 
     def __add__(self, other: Sequence[Any]) -> 'ConfigurationSequence':
-        if not isinstance(other, Sequence) or isinstance(other, str | bytes):
-            # incompatible types, let Python resolve an action for this, like calling other.__radd__ or raising a
-            # TypeError
-            return NotImplemented
-
-        # left-hand operand is self, expect return value to be the same as left-hand operand
-        # create a new sequence with extended source, assuming self's type will retain the 'magic'
-        return type(self)(list(self._source) + list(other), root=self._root)
+        match other:
+            case [] | [*_]:
+                # left-hand operand is self, expect return value to be the same as left-hand operand
+                # create a new sequence with extended source, assuming self's type will retain the 'magic'
+                return type(self)(list(self._source) + list(other), root=self._root)
+            case _:
+                # operation not supported for these types (let the interpreter handle the reverse or type error)
+                return NotImplemented
 
     def __radd__(self, other: Sequence) -> Sequence:
-        if not isinstance(other, Sequence) or isinstance(other, str | bytes):
-            # incompatible types, let Python resolve an action for this
-            return NotImplemented
-
-        # left-hand operand is other, expect return value to be the same as left-hand operand
-        # list(self) ensures all mapping type values in self._source are wrapped by factory, retaining the 'magic'
-        # NB: assumes other's type will have a single-argument __init__ accepting a list
-        return type(other)(list(other) + list(self))  # type: ignore
+        match other:
+            case [] | [*_]:
+                # left-hand operand is other, expect return value to be the same as left-hand operand
+                # list(self) ensures all mapping type values in self._source are wrapped by factory, retaining the
+                # 'magic'
+                # NB: assumes other's type will have a single-argument __init__ accepting a list
+                return type(other)(list(other) + list(self))  # type: ignore
+            case _:
+                # operation not supported for these types (let the interpreter handle the reverse or type error)
+                return NotImplemented
 
     def __repr__(self) -> str:
         # use _source to avoid wrapping and resolving values
@@ -391,11 +399,12 @@ def _repr_value(value: Any) -> str:
     :param value: an object to represent
     :return: a string-representation of *value*
     """
-    if isinstance(value, Mapping):
-        keys = ', '.join(_repr_value(key) for key in value)
-        return f'mapping(keys=[{keys}])'
-    if isinstance(value, Sequence) and not isinstance(value, str | bytes):
-        return 'sequence([...])'
-
-    # fall back to builtin repr
-    return repr(value)
+    match value:
+        case {}:
+            keys = ', '.join(_repr_value(key) for key in value)
+            return f'mapping(keys=[{keys}])'
+        case [] | [*_]:
+            return 'sequence([...])'
+        case _:
+            # fall back to builtin repr
+            return repr(value)
