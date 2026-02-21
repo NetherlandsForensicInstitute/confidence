@@ -217,12 +217,13 @@ def loaders(*specifiers: Locality | Loadable) -> Iterable[Loadable]:
     :yields: configuration loaders in the specified order
     """
     for specifier in specifiers:
-        if isinstance(specifier, Locality):
-            # localities can carry multiple loaders, flatten this
-            yield from _LOADERS[specifier]
-        else:
-            # something not a locality, pass along verbatim
-            yield specifier
+        match specifier:
+            case Locality():
+                # localities can carry multiple loaders, flatten this
+                yield from _LOADERS[specifier]
+            case _:
+                # something not a locality, pass along verbatim
+                yield specifier
 
 
 DEFAULT_LOAD_ORDER = tuple(
