@@ -1,8 +1,8 @@
 import logging
-import typing
 import warnings
-from collections.abc import Mapping
+from collections.abc import Container, Mapping, MutableMapping
 from enum import IntEnum
+from typing import Any
 
 from confidence.exceptions import MergeConflictError
 
@@ -16,11 +16,11 @@ class Conflict(IntEnum):
 
 
 def merge_into(
-    left: typing.MutableMapping[str, typing.Any],
-    right: typing.Mapping[str, typing.Any],
+    left: MutableMapping[str, Any],
+    right: Mapping[str, Any],
     path: list[str] | None = None,
     conflict: Conflict = Conflict.ERROR,
-) -> typing.Mapping[str, typing.Any]:
+) -> Mapping[str, Any]:
     """
     Merges values in place from *right* into *left*.
 
@@ -59,9 +59,9 @@ def merge_into(
 
 
 def split_keys(
-    mapping: typing.Mapping[str, typing.Any],
-    colliding: typing.Container | None = None,
-) -> typing.Mapping[str, typing.Any]:
+    mapping: Mapping[str, Any],
+    colliding: Container | None = None,
+) -> Mapping[str, Any]:
     """
     Recursively walks *mapping* to split keys that contain a dot into nested
     mappings.
@@ -77,7 +77,7 @@ def split_keys(
         mappings
     :raises ValueError: when a non-str type key is encountered
     """
-    result: typing.MutableMapping[str, typing.Any] = {}
+    result: MutableMapping[str, Any] = {}
 
     for key, value in mapping.items():
         if isinstance(value, Mapping):
@@ -108,11 +108,11 @@ def split_keys(
 
 # retained to compatibility only (warn about the rename, though)
 def merge(
-    left: typing.MutableMapping[str, typing.Any],
-    right: typing.Mapping[str, typing.Any],
+    left: MutableMapping[str, Any],
+    right: Mapping[str, Any],
     path: list[str] | None = None,
     conflict: Conflict = Conflict.ERROR,
-) -> typing.Mapping[str, typing.Any]:
+) -> Mapping[str, Any]:
     warnings.warn(
         'confidence.utils.merge has been renamed to confidence.utils.merge_into '
         'and will be removed in a future version',

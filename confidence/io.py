@@ -1,13 +1,14 @@
 import logging
 import re
-import typing
 import warnings
+from collections.abc import Callable, Iterable, Mapping
 from enum import IntEnum
 from functools import partial
 from itertools import product
 from os import PathLike, environ, pathsep
 from pathlib import Path
 from string import Formatter
+from typing import Any, TextIO
 
 from confidence.formats import YAML, Format
 from confidence.models import Configuration, Missing, NoDefault, NotConfigured
@@ -158,10 +159,10 @@ class Locality(IntEnum):
     ENVIRONMENT = 3  #: configuration from environment variables
 
 
-Loadable = str | Path | typing.Callable[[str, Format], Configuration]
+Loadable = str | Path | Callable[[str, Format], Configuration]
 
 
-_LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
+_LOADERS: Mapping[Locality, Iterable[Loadable]] = {
     Locality.SYSTEM: (
         # system-wide locations
         read_xdg_config_dirs,
@@ -191,7 +192,7 @@ _LOADERS: typing.Mapping[Locality, typing.Iterable[Loadable]] = {
 }
 
 
-def loaders(*specifiers: Locality | Loadable) -> typing.Iterable[Loadable]:
+def loaders(*specifiers: Locality | Loadable) -> Iterable[Loadable]:
     """
     Generates loaders in the specified order.
 
@@ -257,7 +258,7 @@ def _format_source(source: str | Path, name: str, format: Format) -> Path:
             raise TypeError(f'cannot format source of type {type(source).__name__}')
 
 
-def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
+def load(*fps: TextIO, format: Format = YAML, missing: Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from file-like objects.
 
@@ -273,8 +274,8 @@ def load(*fps: typing.TextIO, format: Format = YAML, missing: typing.Any = Missi
 def loadf(
     *fnames: str | PathLike,
     format: Format = YAML,
-    default: typing.Any = NoDefault,
-    missing: typing.Any = Missing.SILENT,
+    default: Any = NoDefault,
+    missing: Any = Missing.SILENT,
 ) -> Configuration:
     """
     Read a `Configuration` instance from named files.
@@ -288,7 +289,7 @@ def loadf(
     :returns: a `Configuration` instance providing values from *fnames*
     """
 
-    def readf(fpath: Path) -> typing.Mapping[str, typing.Any]:
+    def readf(fpath: Path) -> Mapping[str, Any]:
         try:
             return format.loadf(fpath)
         except OSError:
@@ -304,7 +305,7 @@ def loadf(
     return Configuration(*(readf(Path(fname).expanduser()) for fname in fnames), missing=missing)
 
 
-def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SILENT) -> Configuration:
+def loads(*strings: str, format: Format = YAML, missing: Any = Missing.SILENT) -> Configuration:
     """
     Read a `Configuration` instance from strings.
 
@@ -319,9 +320,9 @@ def loads(*strings: str, format: Format = YAML, missing: typing.Any = Missing.SI
 
 def load_name(
     *names: str,
-    load_order: typing.Iterable[Loadable] = DEFAULT_LOAD_ORDER,
+    load_order: Iterable[Loadable] = DEFAULT_LOAD_ORDER,
     format: Format = YAML,
-    missing: typing.Any = Missing.SILENT,
+    missing: Any = Missing.SILENT,
     extension: None = None,  # NB: parameter is deprecated, see _format_source
 ) -> Configuration:
     """
@@ -354,7 +355,7 @@ def load_name(
         else:
             raise ValueError("format and extension cannot be combined, use format's suffix")
 
-    def generate_sources() -> typing.Iterable[typing.Mapping[str, typing.Any]]:
+    def generate_sources() -> Iterable[Mapping[str, Any]]:
         # argument order for product matters, for names "foo" and "bar":
         # /etc/foo.yaml before /etc/bar.yaml, but both of them before ~/.foo.yaml and ~/.bar.yaml
         for source, name in product(load_order, names):
@@ -383,8 +384,8 @@ def _check_format_encoding(format: Format, encoding: str | None) -> Format:
 
 
 def dump(
-    value: typing.Any,
-    fp: typing.TextIO,
+    value: Any,
+    fp: TextIO,
     format: Format = YAML,
     encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
 ) -> None:
@@ -396,7 +397,7 @@ def dump(
 
 
 def dumpf(
-    value: typing.Any,
+    value: Any,
     fname: str | PathLike,
     format: Format = YAML,
     encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
@@ -409,7 +410,7 @@ def dumpf(
     format.dumpf(value, Path(fname).expanduser())
 
 
-def dumps(value: typing.Any, format: Format = YAML) -> str:
+def dumps(value: Any, format: Format = YAML) -> str:
     """
     Shorthand for `format.dumps(value)`.
     """
