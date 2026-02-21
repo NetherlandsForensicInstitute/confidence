@@ -37,23 +37,23 @@ def merge_into(
     path = path or []
     conflict = Conflict(conflict)
 
-    for key in right:
-        if key in left:
-            if isinstance(left[key], Mapping) and isinstance(right[key], Mapping):
+    for key, rvalue in right.items():
+        if lvalue := left.get(key):
+            if isinstance(lvalue, MutableMapping) and isinstance(rvalue, Mapping):
                 # recurse, merge left and right dict values, update path for current 'step'
-                merge_into(left[key], right[key], path + [key], conflict=conflict)
-            elif left[key] != right[key]:
+                merge_into(lvalue, rvalue, path + [key], conflict=conflict)
+            elif lvalue != rvalue:
                 if conflict is Conflict.ERROR:
                     # not both dicts we could merge, but also not the same, this doesn't work
                     conflict_path = '.'.join(path + [key])
                     raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
                 else:
                     # overwrite left value with right value
-                    left[key] = right[key]
-            # else: left[key] is already equal to right[key], no action needed
+                    left[key] = rvalue
+            # else: lvalue is already equal to rvalue, no action needed
         else:
             # key not yet in left or not considering conflicts, simple addition of right's mapping to left
-            left[key] = right[key]
+            left[key] = rvalue
 
     return left
 
