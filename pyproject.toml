@@ -58,12 +58,17 @@ benchmark-against = {keep_going = true, composite = [
     "git switch -",
     "pdm run python .github/compare-benchmarks.py --old {args}"
 ]}
-check = {composite = ["check-lock", "format", "lint", "type-check"]}
-check-lock = "pdm lock --check"
-format = "ruff format --diff confidence/ tests/"
-lint = "ruff check confidence/ tests/"
+check = {composite = [
+    "pdm lock --check",
+    "ruff format --diff confidence/ tests/",
+    "ruff check confidence/ tests/",
+    "mypy confidence/",
+]}
+fix = {composite = [
+    "ruff format confidence/ tests/",
+    "ruff check --fix confidence/ tests/",
+]}
 test = "coverage run --branch --source confidence --module pytest --strict-markers --benchmark-skip tests/"
-type-check = "mypy confidence/"
 update-lock = "pdm lock --group :all"
 
 [tool.ruff]
