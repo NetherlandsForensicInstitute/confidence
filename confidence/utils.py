@@ -38,7 +38,7 @@ def merge_into(
     conflict = Conflict(conflict)
 
     for key, rvalue in right.items():
-        if lvalue := left.get(key):
+        if (lvalue := left.get(key)) is not None:
             if isinstance(lvalue, MutableMapping) and isinstance(rvalue, Mapping):
                 # recurse, merge left and right dict values, update path for current 'step'
                 merge_into(lvalue, rvalue, path + [key], conflict=conflict)
