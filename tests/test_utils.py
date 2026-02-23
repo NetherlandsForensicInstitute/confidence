@@ -2,6 +2,7 @@ from datetime import date
 
 import pytest
 
+from confidence import MergeConflictError
 from confidence.utils import Conflict, merge, merge_into, split_keys
 
 
@@ -73,6 +74,14 @@ def test_merge_conflict_overwrite():
     assert len(merged) == 1
     assert len(merged['parent']) == 3
     assert merged['parent']['first'] == 4
+
+
+def test_merge_into_falsy():
+    left = {'parent': {'first': 0, 'second': False}}
+    right = {'parent': {'first': 0, 'second': True}}
+
+    with pytest.raises(MergeConflictError):
+        merge_into(left, right, conflict=Conflict.ERROR)
 
 
 def test_split_none():
