@@ -38,20 +38,22 @@ def merge_into(
     conflict = Conflict(conflict)
 
     for key, rvalue in right.items():
-        match (lvalue := left.get(key)), rvalue, conflict:
-            case None, _, _:
+        match (lvalue := left.get(key)), rvalue:
+            case None, _:
                 # no such key in left, assign rvalue into left
                 left[key] = rvalue
-            case {}, {}, _:
+            case {}, {}:
                 # recurse, merge left and right dict values, update path for current 'step'
                 merge_into(lvalue, rvalue, path + [key], conflict=conflict)  # type: ignore
-            case _, _, Conflict.OVERWRITE if lvalue != rvalue:
-                # no merge, conflict set to overwrite
-                left[key] = rvalue
-            case _, _, Conflict.ERROR if lvalue != rvalue:
-                # no merge, conflict set to error
-                conflict_path = '.'.join(path + [key])
-                raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
+            case _, _ if lvalue != rvalue:
+                match conflict:
+                    case Conflict.OVERWRITE:
+                        # no merge, conflict set to overwrite
+                        left[key] = rvalue
+                    case Conflict.ERROR:
+                        # no merge, conflict set to error
+                        conflict_path = '.'.join(path + [key])
+                        raise MergeConflictError(f'merge conflict at {conflict_path}', key=conflict_path)
             # default case requires no action
 
     return left
