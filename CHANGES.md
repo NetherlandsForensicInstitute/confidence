@@ -6,6 +6,7 @@ development (main)
 
 - Enable loaders in `load_name`'s load order to be `pathlib.Path` objects, which get formatted like string template loaders (e.g. `'/path/to/{name}{suffix}'` is equivalent to `Path('/path/to/{name}{suffix}')`).
 - Use pattern matching over type checks, speeding up a lot of things.
+- Align key sorting behaviour between bundled formats when dumping, all of which now keep iteration order of the value being dumped.
 
 0.17.2 (2025-11-25)
 -------------------
