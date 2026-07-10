@@ -68,7 +68,7 @@ class _JSONFormat(Format):
         return json.loads(string)
 
     def dumps(self, value: typing.Any) -> str:
-        return json.dumps(unwrap(value))
+        return json.dumps(unwrap(value), sort_keys=False)
 
 
 @dataclass(frozen=True)
@@ -87,7 +87,7 @@ class _TOMLFormat(Format):
         value = unwrap(value)
         try:
             # attempt to dump the value as TOML document
-            return tomlkit.dumps(value)
+            return tomlkit.dumps(value, sort_keys=False)
         except TypeError:
             # fall back to stringifying it as a single value / item
             return tomlkit.item(value).as_string()
@@ -103,7 +103,7 @@ class _YAMLFormat(Format):
     def dumps(self, value: typing.Any) -> str:
         # use block style output for nested collections (flow style dumps nested dicts inline)
         # omit explicit document end (...) included with simple values
-        return yaml.safe_dump(unwrap(value), default_flow_style=False).removesuffix('\n...\n')
+        return yaml.safe_dump(unwrap(value), default_flow_style=False, sort_keys=False).removesuffix('\n...\n')
 
 
 # expose *instances* of the formats defined here for users to interact with, editable by calling them (see __call__)
