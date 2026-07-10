@@ -1,4 +1,5 @@
 from dataclasses import FrozenInstanceError
+from itertools import pairwise
 
 import pytest
 
@@ -35,6 +36,23 @@ def test_multiple_values_roundtrip(format, value, tmp_path):
 
     format.dumpf(value, fname)
     assert format.loadf(fname) == unwrap(value)
+
+
+@pytest.mark.parametrize('format', (JSON, TOML, YAML))
+def test_dumps_retain_key_order(format):
+    # NB: keys deliberately not in ascending or descending order
+    value = {
+        'ccccc': 12,
+        'aaaaa': 34,
+        'bbbbb': 56,
+    }
+
+    assert list(value.keys()) == ['ccccc', 'aaaaa', 'bbbbb']
+    serialized = format.dumps(value)
+    # collect reversed locations of the same keys in the serialized result
+    indices = [serialized.index(key) for key in ['ccccc', 'aaaaa', 'bbbbb']]
+    for low, high in pairwise(indices):
+        assert low < high
 
 
 def test_edit_format():
