@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (main)
-------------------
+0.18 (2026-07-13)
+-----------------
 
 - Enable loaders in `load_name`'s load order to be `pathlib.Path` objects, which get formatted like string template loaders (e.g. `'/path/to/{name}{suffix}'` is equivalent to `Path('/path/to/{name}{suffix}')`).
 - Use pattern matching over type checks, speeding up a lot of things.

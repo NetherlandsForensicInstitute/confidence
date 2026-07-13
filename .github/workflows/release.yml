@@ -17,11 +17,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pdm-project/setup-pdm@v4
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           cache: true
           cache-dependency-path: 'pylock.toml'
       - name: Check lock file
-        run: pdm run check-lock
+        run: pdm run check
       - name: Create build artifact
         run: pdm build --no-sdist
       - name: Publish package distributions to PyPI
