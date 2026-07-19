@@ -10,9 +10,9 @@ import yaml
 
 from confidence import (
     DEFAULT_LOAD_ORDER,
+    NOT_CONFIGURED,
     Configuration,
     Locality,
-    NotConfigured,
     load,
     load_name,
     loaders,
@@ -83,7 +83,7 @@ def _assert_values(conf):
     assert conf.key == 'value'
     assert isinstance(conf.some, Configuration)
     assert conf.some.thing is False
-    assert conf.does_not.exist is NotConfigured
+    assert conf.does_not.exist is NOT_CONFIGURED
 
 
 def test_load_defaults(test_files):
@@ -239,7 +239,7 @@ def test_load_name_order(tilde_home_user):
 
     with (
         patch('confidence.io.environ', env),
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
         subject = load_name('foo', 'bar')
         assert len(subject) == 1
@@ -247,28 +247,28 @@ def test_load_name_order(tilde_home_user):
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/foo/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/bar/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/Library/Preferences/foo/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/Library/Preferences/bar/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/Library/Preferences/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/foo/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/bar/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/Library/Preferences/foo/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/Library/Preferences/bar/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/Library/Preferences/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/Library/Preferences/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
             # loadf is usually the one to expand ~ to /home/user here, but we've mocked it, so the value being passed
             # will still contain the ~
-            call(Path('~/Library/Preferences/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('~/Library/Preferences/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('C:/Users/user/AppData/Local/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('C:/Users/user/AppData/Local/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('~/.foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('~/.bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('./foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('./bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('~/Library/Preferences/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('~/Library/Preferences/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('C:/Users/user/AppData/Local/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('C:/Users/user/AppData/Local/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('~/.foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('~/.bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('./foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('./bar.yaml'), format=YAML, default=NOT_CONFIGURED),
         ],
         any_order=False,
     )
@@ -281,14 +281,14 @@ def test_load_name_xdg_config_dirs():
 
     with (
         patch('confidence.io.environ', env),
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/etc/not-xdg/foo.yaml'), Path('/etc/xdg-desktop/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/not-xdg/bar.yaml'), Path('/etc/xdg-desktop/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/not-xdg/foo.yaml'), Path('/etc/xdg-desktop/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/not-xdg/bar.yaml'), Path('/etc/xdg-desktop/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
         ],
         any_order=False,
     )
@@ -296,15 +296,15 @@ def test_load_name_xdg_config_dirs():
 
 def test_load_name_xdg_config_dirs_fallback():
     with (
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
         patch('confidence.io.environ', {}),
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
         ],
         any_order=False,
     )
@@ -315,14 +315,14 @@ def test_load_name_xdg_config_home(tilde_home_user):
 
     with (
         patch('confidence.io.environ', env),
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/home/user/.not-config/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/.not-config/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.not-config/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/home/user/.not-config/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
         ],
         any_order=False,
     )
@@ -333,14 +333,14 @@ def test_load_name_xdg_config_home_fallback(tilde_home_user):
 
     with (
         patch('confidence.io.environ', env),
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
         ],
         any_order=False,
     )
@@ -399,9 +399,9 @@ def test_load_name_overlapping_envvars(test_files):
 
     assert subject.key == 'bar'
     assert subject.ns.key == 'value'
-    assert subject.foo.config.file is NotConfigured
-    assert subject.bar.config.file is NotConfigured
-    assert subject.config.file is NotConfigured
+    assert subject.foo.config.file is NOT_CONFIGURED
+    assert subject.bar.config.file is NOT_CONFIGURED
+    assert subject.config.file is NOT_CONFIGURED
     assert len(subject.semi.overlapping) == 2
     assert subject.semi.overlapping.foo is True
     assert subject.semi.overlapping.bar is False
@@ -416,16 +416,16 @@ def test_load_name_envvar_dir(tilde_home_user):
 
     with (
         patch('confidence.io.environ', env),
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
         assert len(load_name('foo', 'bar', load_order=load_order)) == 0
 
     mocked_loadf.assert_has_calls(
         [
-            call(Path('C:/ProgramData/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('C:/ProgramData/bar.yaml'), format=YAML, default=NotConfigured),
-            call(Path('D:/Users/user/AppData/Roaming/foo.yaml'), format=YAML, default=NotConfigured),
-            call(Path('D:/Users/user/AppData/Roaming/bar.yaml'), format=YAML, default=NotConfigured),
+            call(Path('C:/ProgramData/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('C:/ProgramData/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('D:/Users/user/AppData/Roaming/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
+            call(Path('D:/Users/user/AppData/Roaming/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
         ],
         any_order=False,
     )
@@ -445,7 +445,7 @@ def test_load_name_deprecated_extension():
 def test_load_name_deprecated_extension_template(test_files):
     with (
         pytest.warns(DeprecationWarning, match='using "{extension}" in string template'),
-        patch('confidence.io.loadf', return_value=NotConfigured) as mocked_loadf,
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
         load_name(
             'app',
@@ -459,8 +459,8 @@ def test_load_name_deprecated_extension_template(test_files):
     # should resolve to the same thing twice, while issuing a Deprecation warning
     mocked_loadf.assert_has_calls(
         [
-            call(test_files / 'app.toml', format=TOML, default=NotConfigured),
-            call(test_files / 'app.toml', format=TOML, default=NotConfigured),
+            call(test_files / 'app.toml', format=TOML, default=NOT_CONFIGURED),
+            call(test_files / 'app.toml', format=TOML, default=NOT_CONFIGURED),
         ]
     )
 

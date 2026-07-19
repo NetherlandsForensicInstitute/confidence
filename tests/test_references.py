@@ -1,6 +1,6 @@
 import pytest
 
-from confidence import Configuration, ConfigurationError, ConfiguredReferenceError, NotConfigured, loadf
+from confidence import NOT_CONFIGURED, Configuration, ConfigurationError, ConfiguredReferenceError, loadf
 
 
 def test_reference_syntax():
@@ -19,7 +19,7 @@ def test_reference_syntax():
         }
     )
 
-    assert config.reference is NotConfigured
+    assert config.reference is NOT_CONFIGURED
     assert '$' in config.key1
     assert '$' in config.key2
     assert '$' in config.key3

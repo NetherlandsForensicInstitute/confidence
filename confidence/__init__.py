@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from confidence.exceptions import ConfigurationError, ConfiguredReferenceError, MergeConflictError, NotConfiguredError
 from confidence.formats import JSON, TOML, YAML, Format
 from confidence.io import DEFAULT_LOAD_ORDER, Locality, dump, dumpf, dumps, load, load_name, loaders, loadf, loads
-from confidence.models import Configuration, Missing, NotConfigured, merge, unwrap
+from confidence.models import NOT_CONFIGURED, Configuration, Missing, NotConfigured, merge, unwrap
 
 
 __all__: Sequence[str] = sorted(
@@ -18,6 +18,7 @@ __all__: Sequence[str] = sorted(
         'Locality',
         'MergeConflictError',
         'Missing',
+        'NOT_CONFIGURED',
         'NotConfigured',
         'NotConfiguredError',
         'TOML',

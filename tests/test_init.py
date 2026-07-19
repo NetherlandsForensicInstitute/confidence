@@ -1,11 +1,11 @@
-from confidence import Configuration, NotConfigured, dumps, loads
+from confidence import NOT_CONFIGURED, Configuration, dumps, loads
 from confidence.models import ConfigurationSequence
 
 
 def test_constructor_defaults():
     subject = Configuration()
 
-    assert subject._missing == NotConfigured
+    assert subject._missing == NOT_CONFIGURED
     assert len(subject) == len(subject._source) == 0
     assert list(subject) == []
 
