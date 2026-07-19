@@ -2,7 +2,7 @@ import re
 from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
 from enum import Enum
 from itertools import chain
-from typing import Any
+from typing import Any, Self
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import Conflict, merge_into, split_keys
@@ -302,23 +302,33 @@ class Configuration(Mapping):
             self._missing = {Missing.SILENT: NotConfigured, Missing.ERROR: NoDefault}[self._missing]
 
 
-# define NotConfigured as a class first (using type() to keep the type checker happy)
-NotConfigured = type(
-    'NotConfigured',
-    (Configuration,),
-    {
-        '__bool__': lambda self: False,
-        '__repr__': lambda self: '(not configured)',
-        '__str__': lambda self: '(not configured)',
-        '__doc__': 'Sentinel value to signal there is no value for a requested key.',
-        '__hash__': lambda self: hash((type(self), None)),
-    },
-)
-# overwrite the NotConfigured type as an instance of itself, serving as a sentinel value that some requested key was
-# not configured, while still acting like a Configuration object
-NotConfigured = NotConfigured()
-# NotConfigured._missing refers to the NotConfigured *type* at this point, overwrite it with the sentinel value
-NotConfigured._missing = NotConfigured  # type: ignore
+class _NotConfigured(Configuration):
+    _instance: Self | None = None
+
+    def __new__(cls) -> Self:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+
+        return cls._instance
+
+    def __init__(self) -> None:
+        super().__init__(missing=self)
+
+    def __bool__(self) -> bool:
+        return False
+
+    def __str__(self) -> str:
+        return '(not configured)'
+
+    def __repr__(self) -> str:
+        return '(not configured)'
+
+    def __hash__(self) -> int:
+        return hash((self.__class__, None))
+
+
+# set NotConfigured as the singleton signalling instance of _NotConfigured
+NotConfigured = _NotConfigured()
 
 
 # collect the names of all defined members of a Configuration instance to be used to warn for configured keys that
