@@ -32,7 +32,7 @@ homepage = "https://github.com/NetherlandsForensicInstitute/confidence/"
 
 [dependency-groups]
 check = [
-    "mypy<2",
+    "mypy",
     "ruff",
     # dependency-specific typing information
     "types-pyyaml",
