@@ -1,6 +1,7 @@
 import json
 import typing
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
@@ -111,9 +112,11 @@ TOML: Format = _TOMLFormat(suffix='.toml', encoding='utf-8')
 YAML: Format = _YAMLFormat(suffix='.yaml', encoding='utf-8')
 
 
-__all__ = (
-    'Format',
-    'JSON',
-    'TOML',
-    'YAML',
+__all__: Sequence[str] = sorted(
+    {
+        'Format',
+        'JSON',
+        'TOML',
+        'YAML',
+    }
 )
