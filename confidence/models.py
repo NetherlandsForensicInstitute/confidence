@@ -415,3 +415,16 @@ def _repr_value(value: Any) -> str:
         case _:
             # fall back to builtin repr
             return repr(value)
+
+
+__all__: Sequence[str] = sorted(
+    {
+        'Configuration',
+        'ConfigurationSequence',
+        'Missing',
+        'NO_DEFAULT',
+        'NotConfigured',
+        'merge',
+        'unwrap',
+    }
+)
