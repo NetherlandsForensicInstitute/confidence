@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 import pytest
 
 from confidence import Configuration, loadf
-from confidence.models import NoDefault
+from confidence.models import NO_DEFAULT
 
 
 def test_empty():
@@ -46,7 +46,7 @@ def test_as_type():
 
 
 def test_no_default_doc_friendly():
-    assert 'raise' in repr(NoDefault)
+    assert 'raise' in repr(NO_DEFAULT)
 
 
 def test_key_types_from_file(test_files):

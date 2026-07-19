@@ -1,7 +1,7 @@
 import pytest
 
 from confidence import Configuration, Missing, NotConfigured, merge
-from confidence.models import NoDefault
+from confidence.models import NO_DEFAULT
 
 
 def test_multiple_sources():
@@ -85,8 +85,8 @@ def test_merge_settings():
     assert merge(source, source)._missing is NotConfigured
     assert merge(source, source, missing=Missing.SILENT)._missing is NotConfigured
     assert merge(silent, source)._missing is (silent | source)._missing is NotConfigured
-    assert merge(silent, error, value, missing=Missing.ERROR)._missing is NoDefault
-    assert merge(error, source)._missing is (error | source)._missing is NoDefault
+    assert merge(silent, error, value, missing=Missing.ERROR)._missing is NO_DEFAULT
+    assert merge(error, source)._missing is (error | source)._missing is NO_DEFAULT
     assert merge(value, source)._missing == (value | source)._missing == 5
 
     with pytest.raises(ValueError):

@@ -11,7 +11,7 @@ from string import Formatter
 from typing import Any, TextIO
 
 from confidence.formats import YAML, Format
-from confidence.models import Configuration, Missing, NoDefault, NotConfigured
+from confidence.models import NO_DEFAULT, Configuration, Missing, NotConfigured
 
 
 LOG = logging.getLogger(__name__)
@@ -275,7 +275,7 @@ def load(*fps: TextIO, format: Format = YAML, missing: Any = Missing.SILENT) -> 
 def loadf(
     *fnames: str | PathLike,
     format: Format = YAML,
-    default: Any = NoDefault,
+    default: Any = NO_DEFAULT,
     missing: Any = Missing.SILENT,
 ) -> Configuration:
     """
@@ -294,7 +294,7 @@ def loadf(
         try:
             return format.loadf(fpath)
         except FileNotFoundError:
-            if default is NoDefault:
+            if default is NO_DEFAULT:
                 # no explicit default provided, continue original error
                 raise
             else:
