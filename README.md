@@ -31,7 +31,7 @@ function(**configuration.foo)
 value = configuration.foo.bar
 # they're even safe when values might be missing
 value = configuration.foo.whoopsie
-if value is NotConfigured:
+if value is NOT_CONFIGURED:
     value = 42
 # or, similar
 value = configuration.foo.whoopsie or 42

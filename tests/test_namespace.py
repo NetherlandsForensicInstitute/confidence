@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 import pytest
 
-from confidence import Configuration, Missing, NotConfigured
+from confidence import NOT_CONFIGURED, Configuration, Missing
 
 
 def test_empty():
     def run_test(subject):
-        assert subject.key is NotConfigured
-        assert subject.deeper.key is NotConfigured
+        assert subject.key is NOT_CONFIGURED
+        assert subject.deeper.key is NOT_CONFIGURED
         assert '(keys=[])' in repr(subject)
 
     run_test(Configuration())
@@ -44,11 +44,11 @@ def test_not_configured():
     subject = Configuration({'key': 'value'}, missing=Missing.SILENT)
 
     assert subject.key == 'value'
-    assert subject.does_nope_exist is NotConfigured
-    assert subject.does.nope.exist is NotConfigured
+    assert subject.does_nope_exist is NOT_CONFIGURED
+    assert subject.does.nope.exist is NOT_CONFIGURED
     assert subject.does_nope_exist is subject.does.nope.exist
-    assert not NotConfigured
-    assert bool(NotConfigured) is False
+    assert not NOT_CONFIGURED
+    assert bool(NOT_CONFIGURED) is False
     assert (subject.does_not_exist or 'default') == 'default'
     assert 'not configured' in str(subject.does_nope.exist)
     assert str(subject.does_nope_exist) == repr(subject.does.nope.exist)

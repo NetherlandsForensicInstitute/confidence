@@ -11,7 +11,7 @@ from string import Formatter
 from typing import Any, TextIO
 
 from confidence.formats import YAML, Format
-from confidence.models import NO_DEFAULT, Configuration, Missing, NotConfigured
+from confidence.models import NO_DEFAULT, NOT_CONFIGURED, Configuration, Missing
 
 
 LOG = logging.getLogger(__name__)
@@ -33,11 +33,11 @@ def read_xdg_config_dirs(name: str, format: Format = YAML) -> Configuration:
     # PATH-like env vars operate in decreasing precedence, reverse this path set to mimic the end result
     config_dirs = reversed(config_dirs.split(pathsep))
 
-    # load a file from all config dirs, default to NotConfigured
+    # load a file from all config dirs, default to NOT_CONFIGURED
     return loadf(
         *(Path(config_dir) / f'{name}{format.suffix}' for config_dir in config_dirs),
         format=format,
-        default=NotConfigured,
+        default=NOT_CONFIGURED,
     )
 
 
@@ -49,7 +49,7 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
 
     :param name: application or configuration set name
     :param format: configuration (file) format to use
-    :returns: a `Configuration` instance, possibly `NotConfigured`
+    :returns: a `Configuration` instance, possibly `NOT_CONFIGURED`
     """
     # find optional value of ${XDG_CONFIG_HOME}
     # XDG spec: "If $XDG_CONFIG_HOME is either not set or empty, a default equal to $HOME/.config should be used."
@@ -58,7 +58,7 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     config_home = environ.get('XDG_CONFIG_HOME')
     config_home = Path(config_home) if config_home else Path(f'{home}/.config')
     # expand to full path to configuration file in XDG config path
-    return loadf(config_home / f'{name}{format.suffix}', format=format, default=NotConfigured)
+    return loadf(config_home / f'{name}{format.suffix}', format=format, default=NOT_CONFIGURED)
 
 
 def read_envvars(name: str, format: Format = YAML) -> Configuration:
@@ -78,7 +78,7 @@ def read_envvars(name: str, format: Format = YAML) -> Configuration:
 
     :param name: environment variable prefix to look for (without the ``_``)
     :param format: configuration (file) format to use
-    :returns: a `Configuration` instance, possibly `NotConfigured`
+    :returns: a `Configuration` instance, possibly `NOT_CONFIGURED`
     """
     prefix = f'{name}_'
     prefix_len = len(prefix)
@@ -90,7 +90,7 @@ def read_envvars(name: str, format: Format = YAML) -> Configuration:
         if var.lower().startswith(prefix) and var.lower() != envvar_file
     }
     if not values:
-        return NotConfigured
+        return NOT_CONFIGURED
 
     def dotted(name: str) -> str:
         # replace 'regular' underscores (those between alphanumeric characters) with dots first
@@ -113,7 +113,7 @@ def read_envvar_file(name: str, format: Format = YAML) -> Configuration:
     :param name: environment variable prefix to look for (without the
         ``_CONFIG_FILE``)
     :param format: configuration (file) format to use
-    :returns: a `Configuration`, possibly `NotConfigured`
+    :returns: a `Configuration`, possibly `NOT_CONFIGURED`
     """
     envvar_file = environ.get(f'{name}_config_file'.upper())
     if envvar_file:
@@ -121,7 +121,7 @@ def read_envvar_file(name: str, format: Format = YAML) -> Configuration:
         return loadf(envvar_file, format=format)
     else:
         # envvar not set, return an empty source
-        return NotConfigured
+        return NOT_CONFIGURED
 
 
 def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configuration:
@@ -129,21 +129,21 @@ def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configurat
     Read values from a file located in a directory specified by a particular
     environment file. ``read_envvar_dir('HOME', 'example', format=YAML)`` would
     look for a file at ``/home/user/example.yaml``. When the environment
-    variable isn't set or the file does not exist, `NotConfigured` will be
+    variable isn't set or the file does not exist, `NOT_CONFIGURED` will be
     returned.
 
     :param envvar: the environment variable to interpret as a directory
     :param name: application or configuration set name
     :param format: configuration (file) format to use
-    :returns: a `Configuration`, possibly `NotConfigured`
+    :returns: a `Configuration`, possibly `NOT_CONFIGURED`
     """
     config_dir = environ.get(envvar)
     if not config_dir:
-        return NotConfigured
+        return NOT_CONFIGURED
 
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
     config_path = Path(config_dir).expanduser() / f'{name}{format.suffix}'
-    return loadf(config_path, format=format, default=NotConfigured)
+    return loadf(config_path, format=format, default=NOT_CONFIGURED)
 
 
 class Locality(IntEnum):
@@ -363,7 +363,7 @@ def load_name(
                 yield source(name, format)
             else:
                 source = _format_source(source, name, format)
-                yield loadf(source, format=format, default=NotConfigured)
+                yield loadf(source, format=format, default=NOT_CONFIGURED)
 
     return Configuration(*generate_sources(), missing=missing)
 

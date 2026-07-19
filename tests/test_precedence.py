@@ -1,6 +1,6 @@
 import pytest
 
-from confidence import Configuration, Missing, NotConfigured, merge
+from confidence import NOT_CONFIGURED, Configuration, Missing, merge
 from confidence.models import NO_DEFAULT
 
 
@@ -82,9 +82,9 @@ def test_merge_settings():
     error = Configuration(source, missing=Missing.ERROR)
     value = Configuration(source, missing=5)
 
-    assert merge(source, source)._missing is NotConfigured
-    assert merge(source, source, missing=Missing.SILENT)._missing is NotConfigured
-    assert merge(silent, source)._missing is (silent | source)._missing is NotConfigured
+    assert merge(source, source)._missing is NOT_CONFIGURED
+    assert merge(source, source, missing=Missing.SILENT)._missing is NOT_CONFIGURED
+    assert merge(silent, source)._missing is (silent | source)._missing is NOT_CONFIGURED
     assert merge(silent, error, value, missing=Missing.ERROR)._missing is NO_DEFAULT
     assert merge(error, source)._missing is (error | source)._missing is NO_DEFAULT
     assert merge(value, source)._missing == (value | source)._missing == 5
@@ -104,10 +104,10 @@ def test_merge_direction():
     assert (Configuration(a) | b).key == 'b'
     assert (a | Configuration(b)).key == 'b'
     # NotConfigured should support the operator, but never contribute content
-    assert NotConfigured | a == a
-    assert a | NotConfigured == a
-    assert NotConfigured | b == b
-    assert b | NotConfigured == b
+    assert NOT_CONFIGURED | a == a
+    assert a | NOT_CONFIGURED == a
+    assert NOT_CONFIGURED | b == b
+    assert b | NOT_CONFIGURED == b
 
     with pytest.raises(TypeError):
         assert not Configuration(a) | 5

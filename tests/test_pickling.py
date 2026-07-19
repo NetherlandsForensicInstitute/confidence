@@ -2,7 +2,7 @@ import pickle
 
 import pytest
 
-from confidence.models import Configuration, Missing, NotConfigured
+from confidence.models import NOT_CONFIGURED, Configuration, Missing
 
 
 def test_empty():
@@ -22,12 +22,12 @@ def test_simple():
 
     assert subject.testing == reencoded.testing == 123
     assert subject.get('testing') == reencoded.get('testing') == 123
-    assert subject.not_there is reencoded.not_there is NotConfigured
+    assert subject.not_there is reencoded.not_there is NOT_CONFIGURED
     assert reencoded._root is reencoded
 
 
 def test_not_configured():
-    assert pickle.loads(pickle.dumps(NotConfigured)) is NotConfigured
+    assert pickle.loads(pickle.dumps(NOT_CONFIGURED)) is NOT_CONFIGURED
 
 
 def test_missing_error():

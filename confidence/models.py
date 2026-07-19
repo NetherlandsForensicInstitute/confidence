@@ -11,7 +11,7 @@ from confidence.utils import Conflict, merge_into, split_keys
 
 
 class Missing(Enum):
-    SILENT = 'silent'  #: return `NotConfigured` for unconfigured keys, avoiding errors
+    SILENT = 'silent'  #: return `NOT_CONFIGURED` for unconfigured keys, avoiding errors
     ERROR = 'error'  #: raise an `AttributeError` for unconfigured keys
 
 
@@ -93,7 +93,7 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             self._missing = {
-                Missing.SILENT: NotConfigured,
+                Missing.SILENT: NOT_CONFIGURED,
                 Missing.ERROR: NO_DEFAULT,
             }[missing]
 
@@ -284,7 +284,7 @@ class Configuration(Mapping):
 
         # NB: both 'magic missing values' are required to be the same specific instances at runtime, encode them as
         #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
-        if state['_missing'] is NotConfigured:
+        if state['_missing'] is NOT_CONFIGURED:
             state['_missing'] = Missing.SILENT
         elif state['_missing'] is NO_DEFAULT:
             state['_missing'] = Missing.ERROR
@@ -296,7 +296,7 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = {Missing.SILENT: NotConfigured, Missing.ERROR: NO_DEFAULT}[self._missing]
+            self._missing = {Missing.SILENT: NOT_CONFIGURED, Missing.ERROR: NO_DEFAULT}[self._missing]
 
 
 class _NotConfigured(Configuration):
@@ -324,8 +324,10 @@ class _NotConfigured(Configuration):
         return hash((self.__class__, None))
 
 
-# set NotConfigured as the singleton instance of _NotConfigured
-NotConfigured = _NotConfigured()
+# set NOT_CONFIGURED as the singleton instance of _NotConfigured
+NOT_CONFIGURED = _NotConfigured()
+# retain old name for backwards compatibility
+NotConfigured = NOT_CONFIGURED
 
 
 # collect the names of all defined members of a Configuration instance to be used to warn for configured keys that
@@ -423,7 +425,7 @@ __all__: Sequence[str] = sorted(
         'ConfigurationSequence',
         'Missing',
         'NO_DEFAULT',
-        'NotConfigured',
+        'NOT_CONFIGURED',
         'merge',
         'unwrap',
     }

@@ -4,7 +4,7 @@ Changes
 development (main)
 ------------------
 
--
+- Rename the 'empty' fallback value to `NOT_CONFIGURED` (old name `NotConfigured` is retained for backwards compatibility).
 
 0.18 (2026-07-13)
 -----------------
