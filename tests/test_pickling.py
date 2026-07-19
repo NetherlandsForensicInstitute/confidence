@@ -26,6 +26,10 @@ def test_simple():
     assert reencoded._root is reencoded
 
 
+def test_not_configured():
+    assert pickle.loads(pickle.dumps(NotConfigured)) is NotConfigured
+
+
 def test_missing_error():
     subject = Configuration({'testing': 123}, missing=Missing.ERROR)
 
