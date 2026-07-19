@@ -4,7 +4,7 @@ from enum import Enum
 from itertools import chain
 from typing import Any
 
-from typing_extensions import Self
+from typing_extensions import Self, sentinel
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import Conflict, merge_into, split_keys
@@ -17,15 +17,10 @@ class Missing(Enum):
 
 # define a sentinel value to indicate there is no default value specified (None would be a valid default value)
 # as this is used as an argument default to indicate that an error should be raised when a value is not found, make
-# sure that the repr-value of NoDefault shows up as '(raise)' in documentation
-NoDefault = type(
-    'NoDefault',
-    (object,),
-    {
-        '__repr__': lambda self: '(raise)',
-        '__str__': lambda self: '(raise)',
-    },
-)()  # create instance of that new type to assign to NoDefault
+# sure that the repr-value of NO_DEFAULT shows up as '(raise)' in documentation
+NO_DEFAULT = sentinel('NO_DEFAULT', repr='(raise)')
+# retain old name for backwards compatibility
+NoDefault = NO_DEFAULT
 
 
 def unwrap(source: Any) -> Any:
@@ -99,7 +94,7 @@ class Configuration(Mapping):
         if isinstance(self._missing, Missing):
             self._missing = {
                 Missing.SILENT: NotConfigured,
-                Missing.ERROR: NoDefault,
+                Missing.ERROR: NO_DEFAULT,
             }[missing]
 
         self._source: MutableMapping[str, Any] = {}
@@ -132,7 +127,7 @@ class Configuration(Mapping):
                 if path in references:
                     raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
 
-                reference = self._root.get(path, default=NoDefault, resolve_references=False)
+                reference = self._root.get(path, default=NO_DEFAULT, resolve_references=False)
 
                 if match.span(0) != (0, len(value)):
                     # matched a reference inside of another value (template)
@@ -170,7 +165,7 @@ class Configuration(Mapping):
         :param path: the configuration key to fetch a value for, steps
             separated by a dot (``.``)
         :param default: a value to return if no value is found for the
-            supplied path (defaults to ``None``, use ``NoDefault`` to trigger a
+            supplied path (defaults to ``None``, use ``NO_DEFAULT`` to trigger a
             ``KeyError`` for a non-existing)
         :param as_type: an optional callable to apply to the value found for
             the supplied path (possibly raising exceptions of its own if the
@@ -179,7 +174,7 @@ class Configuration(Mapping):
         :returns: the value associated with the supplied configuration key, if
             available, or a supplied default value if the key was not found
         :raises NotConfiguredError: when no value was found for *path* and
-            *default* was ``NoDefault``
+            *default* was ``NO_DEFAULT``
         :raises ConfiguredReferenceError: when a reference could not be resolved
         """
         value = self._source
@@ -211,7 +206,7 @@ class Configuration(Mapping):
             # also a KeyError, but this one should bubble to caller
             raise
         except KeyError as e:
-            if default is not NoDefault:
+            if default is not NO_DEFAULT:
                 return default
             else:
                 missing_key = '.'.join(steps_taken)
@@ -254,9 +249,9 @@ class Configuration(Mapping):
         return len(self._source)
 
     def __getitem__(self, item: str) -> Any:
-        # emulate the way dict would handle this: explicitly pass NoDefault to trigger a KeyError when item is not
+        # emulate the way dict would handle this: explicitly pass NO_DEFAULT to trigger a KeyError when item is not
         # available
-        return self.get(item, default=NoDefault)
+        return self.get(item, default=NO_DEFAULT)
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._source)
@@ -291,7 +286,7 @@ class Configuration(Mapping):
         #     their corresponding Missing instances for pickling (but leave them as-is otherwise)
         if state['_missing'] is NotConfigured:
             state['_missing'] = Missing.SILENT
-        elif state['_missing'] is NoDefault:
+        elif state['_missing'] is NO_DEFAULT:
             state['_missing'] = Missing.ERROR
 
         return state
@@ -301,7 +296,7 @@ class Configuration(Mapping):
 
         if isinstance(self._missing, Missing):
             # reverse the Missing encoding done in __getstate__
-            self._missing = {Missing.SILENT: NotConfigured, Missing.ERROR: NoDefault}[self._missing]
+            self._missing = {Missing.SILENT: NotConfigured, Missing.ERROR: NO_DEFAULT}[self._missing]
 
 
 class _NotConfigured(Configuration):
@@ -329,7 +324,7 @@ class _NotConfigured(Configuration):
         return hash((self.__class__, None))
 
 
-# set NotConfigured as the singleton signalling instance of _NotConfigured
+# set NotConfigured as the singleton instance of _NotConfigured
 NotConfigured = _NotConfigured()
 
 
