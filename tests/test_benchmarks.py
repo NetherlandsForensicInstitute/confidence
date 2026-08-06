@@ -116,3 +116,12 @@ def test_benchmark_reference_chain(benchmark):
     # create a reference chain from a → f, add f: 42 at the end
     source = {left: f'${{{right}}}' for left, right in pairwise('abcdef')} | {'f': 42}
     assert benchmark(resolve_reference, Configuration(source, {'reference': '${a}'})) == 42
+
+
+def test_benchmark_match_mapping(benchmark):
+    def match_mapping(config):
+        match config:
+            case {'a.b.c': value1, 'c.b.a': value2, 'b': {'b': {'b': value3}}}:
+                return value1 + value2 + value3
+
+    assert benchmark(match_mapping, Configuration(_matrix_dict('abc'))) == 126
