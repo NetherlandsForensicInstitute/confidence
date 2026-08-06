@@ -66,7 +66,6 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
 class PathGlobReader:
     path: Path
     pattern: str
-    case_sensitive: bool | None = None
     include_hidden: bool = False
 
     def _select(self, paths: Iterable[Path]) -> Iterable[Path]:
@@ -83,7 +82,7 @@ class PathGlobReader:
         LOG.debug(f'expanded "{self.path / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
 
         # glob the pattern, potentially drop dotfiles and sort the result to force a deterministic ordering
-        paths = sorted(self._select(path.glob(pattern, case_sensitive=self.case_sensitive)))
+        paths = sorted(self._select(path.glob(pattern)))
         LOG.debug(f'glob pattern "{path / pattern!s}" matched {len(paths)} paths')
         return paths
 
