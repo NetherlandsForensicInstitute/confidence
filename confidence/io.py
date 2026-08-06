@@ -69,19 +69,26 @@ class PathGlobReader:
     case_sensitive: bool | None = None
     include_hidden: bool = False
 
-    def expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
-        # TODO: maybe formatting al the steps of the path separately is better / safer?
-        path = Path(str(self.path).format(name=name, suffix=format.suffix))
+    def _select(self, paths: Iterable[Path]) -> Iterable[Path]:
+        for path in paths:
+            if not path.is_dir() and (self.include_hidden or not path.name.startswith('.')):
+                # path is not a directory, and not hidden, or we should be keeping hidden files
+                # TODO: is Path.is_dir() good enough? a symlink could still point to a dir, whose fault is that?
+                yield path
+
+    def _expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
+        # format path parts separately to avoid clobbering slashes
+        path = Path(*(part.format(name=name, suffix=format.suffix) for part in self.path.parts))
         pattern = self.pattern.format(name=name, suffix=format.suffix)
         LOG.debug(f'expanded "{self.path / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
 
-        # TODO: use self.include_hidden
-        paths = sorted(path.glob(pattern, case_sensitive=self.case_sensitive))
+        # glob the pattern, potentially drop dotfiles and sort the result to force a deterministic ordering
+        paths = sorted(self._select(path.glob(pattern, case_sensitive=self.case_sensitive)))
         LOG.debug(f'glob pattern "{path / pattern!s}" matched {len(paths)} paths')
         return paths
 
     def __call__(self, name: str, format: Format = YAML) -> Configuration:
-        if paths := self.expand(name, format):
+        if paths := self._expand(name, format):
             # provide no default here, glob pattern does match files, these should be loadable
             return loadf(*paths, format=format)
         else:
