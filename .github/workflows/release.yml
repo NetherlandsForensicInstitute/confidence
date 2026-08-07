@@ -14,7 +14,7 @@ jobs:
       contents: write  # required by action-gh-release to create release
       id-token: write  # required by gh-action-pypi-publish to publish release on pypi
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pdm-project/setup-pdm@v4
         with:
           python-version: '3.14'
@@ -28,7 +28,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
       - name: Select latest changes from CHANGES.md
         run: python .github/latest-changes.py
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/confidence-*.whl
           body_path: LATEST-CHANGES.md
