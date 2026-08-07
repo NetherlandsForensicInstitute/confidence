@@ -7,7 +7,42 @@ from confidence import Configuration, unwrap
 from confidence.formats import JSON, TOML, YAML
 
 
-@pytest.mark.parametrize('format', (JSON, TOML, YAML))
+@pytest.mark.parametrize(
+    'format',
+    (
+        pytest.param(JSON, id='json'),
+        pytest.param(TOML, id='toml'),
+        pytest.param(YAML, id='yaml'),
+    ),
+)
+@pytest.mark.parametrize(
+    ('string', 'value'),
+    [
+        ('null', None),
+        ('true', True),
+        ('1', 1),
+        ('42.0', 42.0),
+        ('a string', 'a string'),
+        ("single'quote", "single'quote"),
+        ('double"quote', 'double"quote'),
+    ],
+)
+def test_singular_value_from_string(format, string, value):
+    if (format, value) == (TOML, None):
+        # None / null / nil is not supported by the TOML spec, see https://github.com/toml-lang/toml/issues/30
+        pytest.skip('None is unsupported for TOML format')
+
+    assert format.loads(string) == value
+
+
+@pytest.mark.parametrize(
+    'format',
+    (
+        pytest.param(JSON, id='json'),
+        pytest.param(TOML, id='toml'),
+        pytest.param(YAML, id='yaml'),
+    ),
+)
 @pytest.mark.parametrize('value', (None, True, 1, 42.0, 'a string'))
 def test_singular_value_roundtrip(format, value):
     if (format, value) == (TOML, None):
@@ -17,7 +52,15 @@ def test_singular_value_roundtrip(format, value):
     assert format.loads(format.dumps(value)) == value
 
 
-@pytest.mark.parametrize('format', (JSON, TOML, YAML, YAML(suffix='.conf', encoding='utf-32')))
+@pytest.mark.parametrize(
+    'format',
+    (
+        pytest.param(JSON, id='json'),
+        pytest.param(TOML, id='toml'),
+        pytest.param(YAML, id='yaml'),
+        pytest.param(YAML(suffix='.conf', encoding='utf-32'), id='yaml-conf-32'),
+    ),
+)
 @pytest.mark.parametrize(
     'value',
     (
