@@ -370,6 +370,35 @@ def test_load_name_envvars():
         assert not load_name('foo', 'bar', load_order=(read_envvars,))
 
 
+@pytest.mark.parametrize(
+    'format',
+    (
+        pytest.param(JSON, id='json'),
+        pytest.param(TOML, id='toml'),
+        pytest.param(YAML, id='yaml'),
+    ),
+)
+def test_load_name_envvars_value_types(format):
+    env = {
+        'FOO_KEY': 'foo',
+        'FOO_TYPES_NUM': '42',
+        'FOO_TYPES_FLT': '42.0',
+        'FOO_TYPES_BOL': 'true',
+        'FOO_TYPES_ST1': 'str',
+        'FOO_TYPES_ST2': '"str"',
+    }
+
+    with patch('confidence.io.environ', env):
+        config = load_name('foo', load_order=(read_envvars,), format=format)
+
+    assert config.key == 'foo'
+    assert config.types.num == 42
+    assert config.types.flt == 42.0
+    assert config.types.bol is True
+    assert config.types.st1 == 'str'
+    assert config.types.st2 == 'str'
+
+
 def test_load_name_envvar_file(test_files):
     env = {
         'FOO_CONFIG_FILE': path.join(test_files, 'foo.yaml'),
