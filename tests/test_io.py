@@ -446,28 +446,23 @@ def test_load_name_glob_pattern(test_files):
     reference = unwrap(loadf(test_files / 'bar.yaml', test_files / 'foo.yaml'))
     # load the same two files, symlinked from a dot-d folder with two different path + patterns expanding to the same
     assert unwrap(
-        load_name('example', format=YAML, load_order=loaders(glob_pattern(test_files, '{name}{suffix}.d/*{suffix}')))
-    ) == unwrap(reference)
-    assert unwrap(
-        load_name(
-            'example', format=YAML, load_order=loaders(glob_pattern(test_files / '{name}{suffix}.d/', '*{suffix}'))
-        )
+        load_name('example', format=YAML, load_order=loaders(glob_pattern(test_files / '{name}{suffix}.d/*{suffix}')))
     ) == unwrap(reference)
     # TODO: needing unwrap() here is silly, maybe `Configuration` objects should implement __eq__? see #145
 
 
 def test_glob_pattern_dotfiles(test_files):
     # would encounter "example.yaml.d", a directory
-    assert len(load_name('example', format=TOML, load_order=loaders(glob_pattern(test_files, '{name}*')))) == 0
+    assert len(load_name('example', format=TOML, load_order=loaders(glob_pattern(test_files / '{name}*')))) == 0
     # would encounter ".name.toml", a hidden file
     assert (
-        len(load_name('example', format=TOML, load_order=loaders(glob_pattern(test_files, '{name}*/*{suffix}')))) == 0
+        len(load_name('example', format=TOML, load_order=loaders(glob_pattern(test_files / '{name}*/*{suffix}')))) == 0
     )
     # will also encounter ".name.toml", but hidden files are to be included
     config = load_name(
         'example',
         format=TOML,
-        load_order=loaders(glob_pattern(test_files, '{name}*/*{suffix}', include_hidden=True)),
+        load_order=loaders(glob_pattern(test_files / '{name}*/*{suffix}', include_hidden=True)),
     )
     assert config.key == 'value'
 

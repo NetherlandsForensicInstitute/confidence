@@ -180,34 +180,34 @@ def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configurat
     return loadf(config_path, format=format, default=NOT_CONFIGURED)
 
 
-def glob_pattern(path: PathLike, pattern: str, include_hidden: bool = False) -> Callable[[str, Format], Configuration]:
+def glob_pattern(pattern: PathLike, include_hidden: bool = False) -> Callable[[str, Format], Configuration]:
     """
-    Create a loader that applies ``pattern`` inside ``path`` to load multiple
-    files into a `Configuration`.
+    Create a loader that applies ``pattern`` to load multiple files into a
+    `Configuration`.
 
     The result of this will still apply the loader arguments like ``name`` and
     ``format``, use this in conjunction with `load_name` and / or ``loaders`.
-    To mimic the behaviour of something like ``apt``, which will load
-    ``.conf`` files in an application specific format from a 'dot-d' folder,
-    while still allowing overrides through environment variables, something
-    along the following lines can be used:
+    To mimic the behaviour of something like ``apt``, for example, which will
+    load ``.conf`` files in an application specific format from a 'dot-d'
+    folder, while still allowing overrides through environment variables,
+    something along the following lines can be used:
+
+    .. code-block:: python
 
         config = load_name('my-app', format=APT(suffix='.conf'), load_order=loaders(
-            glob_pattern('/etc/{name}/{name}{suffix}.d/', '*{suffix}'),
+            glob_pattern('/etc/{name}/{name}{suffix}.d/*{suffix}'),
             Locality.ENVIRONMENT,
         ))
 
-    NB: while both the ``path`` and ``pattern`` can use ``{name}`` and
-        ``{suffix}`` placeholders, only the ``pattern`` argument is expanded
-        as part of the glob, see `pathlib.Path.glob()`
-
-    :param path: the base path of the glob pattern (without any wildcards)
-    :param pattern: the wildcard pattern to glob inside ``path``
+    :param pattern: the glob / wildcard pattern
     :param include_hidden: whether to include dotfiles as part of the glob
         pattern
     :returns: a `Loadable` to be part of a load order to `load_name`
     """
-    return PathGlobReader(Path(path), pattern, include_hidden=include_hidden)
+    # split pattern into a root and a pattern to be able to use Path.glob() later
+    pattern = Path(pattern)
+    root = Path(pattern.root)
+    return PathGlobReader(root, str(pattern.relative_to(root)), include_hidden=include_hidden)
 
 
 class Locality(IntEnum):
