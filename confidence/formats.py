@@ -1,7 +1,7 @@
 import json
 import typing
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from os import PathLike
 from pathlib import Path
@@ -26,6 +26,7 @@ class Format(ABC):
 
     suffix: str = ''  #: the default file path suffix for a configuration file of this Format
     encoding: str = 'utf-8'  #: the default text encoding for reading from binary I/O
+    value_fallback: Callable[[str], typing.Any] = str  #: the fallback 'factory' for unparseable single values
 
     def load(self, fp: typing.TextIO) -> typing.Any:
         return self.loads(fp.read())
@@ -37,6 +38,14 @@ class Format(ABC):
     def loadf(self, fpath: str | PathLike, encoding: str | None = None) -> typing.Any:
         with Path(fpath).open('rt', encoding=encoding or self.encoding) as fp:
             return self.load(fp)
+
+    def loadv(self, string: str) -> typing.Any:
+        try:
+            # hope the format implementation will be able to read string as a value formatted value
+            return self.loads(string)
+        except ValueError:
+            # use the fallback otherwise
+            return self.value_fallback(string)
 
     def dump(self, value: typing.Any, fp: typing.TextIO) -> None:
         fp.write(self.dumps(value))
