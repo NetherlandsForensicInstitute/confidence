@@ -1,7 +1,8 @@
 import logging
 import re
 import warnings
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass
 from enum import IntEnum
 from functools import partial
 from itertools import product
@@ -59,6 +60,39 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
     config_home = Path(config_home) if config_home else Path(f'{home}/.config')
     # expand to full path to configuration file in XDG config path
     return loadf(config_home / f'{name}{format.suffix}', format=format, default=NOT_CONFIGURED)
+
+
+@dataclass(frozen=True)
+class PathGlobReader:
+    path: Path
+    pattern: str
+    include_hidden: bool = False
+
+    def _select(self, paths: Iterable[Path]) -> Iterable[Path]:
+        for path in paths:
+            if not path.is_dir() and (self.include_hidden or not path.name.startswith('.')):
+                # path is not a directory, and not hidden, or we should be keeping hidden files
+                # TODO: is Path.is_dir() good enough? a symlink could still point to a dir, whose fault is that?
+                yield path
+
+    def _expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
+        # format path parts separately to avoid clobbering slashes
+        path = Path(*(part.format(name=name, suffix=format.suffix) for part in self.path.parts))
+        pattern = self.pattern.format(name=name, suffix=format.suffix)
+        LOG.debug(f'expanded "{self.path / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
+
+        # glob the pattern, potentially drop dotfiles and sort the result to force a deterministic ordering
+        paths = sorted(self._select(path.glob(pattern)))
+        LOG.debug(f'glob pattern "{path / pattern!s}" matched {len(paths)} paths')
+        return paths
+
+    def __call__(self, name: str, format: Format = YAML) -> Configuration:
+        if paths := self._expand(name, format):
+            # provide no default here, glob pattern does match files, these should be loadable
+            return loadf(*paths, format=format)
+        else:
+            # no paths, empty configuration
+            return NOT_CONFIGURED
 
 
 def read_envvars(name: str, format: Format = YAML) -> Configuration:
@@ -144,6 +178,36 @@ def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configurat
     # envvar is set, construct full file path, expanding user to allow the envvar containing a value like ~/config
     config_path = Path(config_dir).expanduser() / f'{name}{format.suffix}'
     return loadf(config_path, format=format, default=NOT_CONFIGURED)
+
+
+def glob_pattern(pattern: PathLike, include_hidden: bool = False) -> Callable[[str, Format], Configuration]:
+    """
+    Create a loader that applies ``pattern`` to load multiple files into a
+    `Configuration`.
+
+    The result of this will still apply the loader arguments like ``name`` and
+    ``format``, use this in conjunction with `load_name` and / or ``loaders`.
+    To mimic the behaviour of something like ``apt``, for example, which will
+    load ``.conf`` files in an application specific format from a 'dot-d'
+    folder, while still allowing overrides through environment variables,
+    something along the following lines can be used:
+
+    .. code-block:: python
+
+        config = load_name('my-app', format=APT(suffix='.conf'), load_order=loaders(
+            glob_pattern('/etc/{name}/{name}{suffix}.d/*{suffix}'),
+            Locality.ENVIRONMENT,
+        ))
+
+    :param pattern: the glob / wildcard pattern
+    :param include_hidden: whether to include dotfiles as part of the glob
+        pattern
+    :returns: a `Loadable` to be part of a load order to `load_name`
+    """
+    # split pattern into a root and a pattern to be able to use Path.glob() later
+    pattern = Path(pattern)
+    root = Path(pattern.root)
+    return PathGlobReader(root, str(pattern.relative_to(root)), include_hidden=include_hidden)
 
 
 class Locality(IntEnum):
