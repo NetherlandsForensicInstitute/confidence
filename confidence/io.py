@@ -101,8 +101,8 @@ def read_envvars(name: str, format: Format = YAML) -> Configuration:
     # include the number of variables matched for debugging purposes
     LOG.info(f'reading configuration from {len(values)} {prefix}* environment variables')
 
-    # pass value to yaml.safe_load to align data type transformation with reading values from files
-    return Configuration({dotted(name): format.loads(value) for name, value in values.items()})
+    # pass value to format.loadv to align data type transformation with reading values from files
+    return Configuration({dotted(name): format.loadv(value) for name, value in values.items()})
 
 
 def read_envvar_file(name: str, format: Format = YAML) -> Configuration:

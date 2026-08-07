@@ -394,7 +394,7 @@ def test_load_name_envvars_value_types(format):
     assert config.key == 'foo'
     assert config.types.num == 42
     assert config.types.flt == 42.0
-    assert config.types.bol is True
+    assert config.types.bol == True  # noqa: E712 (tomlkit uses a customized type that not is True but == True)
     assert config.types.st1 == 'str'
     assert config.types.st2 == 'str'
 

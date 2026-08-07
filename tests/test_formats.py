@@ -32,7 +32,7 @@ def test_singular_value_from_string(format, string, value):
         # None / null / nil is not supported by the TOML spec, see https://github.com/toml-lang/toml/issues/30
         pytest.skip('None is unsupported for TOML format')
 
-    assert format.loads(string) == value
+    assert format.loadv(string) == value
 
 
 @pytest.mark.parametrize(
