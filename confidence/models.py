@@ -79,7 +79,12 @@ class Configuration(Mapping):
     # match a reference as ${key.to.be.resolved}
     _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
 
-    def __init__(self, *sources: Mapping[str, Any], missing: Any = Missing.SILENT):
+    def __init__(
+        self,
+        *sources: Mapping[str, Any],
+        missing: Any = Missing.SILENT,
+        callbacks: Mapping[str, Callable] | None = None,
+    ):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -87,8 +92,10 @@ class Configuration(Mapping):
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
             either as a `Missing` instance or a default value
+        :param callbacks: TODO: document me
         """
         self._missing = missing
+        self._callbacks = callbacks or {}
         self._root = self
 
         if isinstance(self._missing, Missing):

@@ -323,6 +323,7 @@ def load_name(
     load_order: Iterable[Loadable] = DEFAULT_LOAD_ORDER,
     format: Format = YAML,
     missing: Any = Missing.SILENT,
+    callbacks: Mapping[str, Callable] | None = None,
     extension: None = None,  # NB: parameter is deprecated, see _format_source
 ) -> Configuration:
     """
@@ -341,6 +342,7 @@ def load_name(
     :param format: configuration (file) format to use
     :param missing: policy to be used when a configured key is missing, either
         as a `Missing` instance or a default value
+    :param callbacks: TODO: document me
     :returns: a `Configuration` instances providing values loaded from *names*
         in *load_order* ordering
     """
@@ -365,7 +367,7 @@ def load_name(
                 source = _format_source(source, name, format)
                 yield loadf(source, format=format, default=NOT_CONFIGURED)
 
-    return Configuration(*generate_sources(), missing=missing)
+    return Configuration(*generate_sources(), missing=missing, callbacks=callbacks)
 
 
 def _check_format_encoding(format: Format, encoding: str | None) -> Format:
