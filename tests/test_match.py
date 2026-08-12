@@ -3,6 +3,7 @@ from collections.abc import Sequence
 import pytest
 
 from confidence import Configuration
+from tests.helpers import equivalent
 
 
 def test_match_mapping_simple():
@@ -66,16 +67,13 @@ def test_match_sequence_simple():
 
     match config:
         case {'a': [*nums]}:
-            # TODO: a ConfigurationSequence is not equal to a similar sequence
-            #       (though a list and a tuple are not equal either, so maybe that's ok?)
-            assert list(config.a) == nums == [1, 2, 3]
+            assert equivalent(config.a, nums, [1, 2, 3])
         case _:
             pytest.fail()
 
     match config:
         case {'b': [] as empty}:
-            # TODO: two empty ConfigurationSequences are not equal
-            assert list(config.b) == list(empty)
+            assert equivalent(config.b, empty)
         case _:
             pytest.fail()
 
