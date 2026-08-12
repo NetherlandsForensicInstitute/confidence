@@ -7,14 +7,14 @@ from confidence.models import NO_DEFAULT
 
 
 def test_empty():
-    def run_test(subject):
-        assert subject.get('path.without.value', default=None) is None
-        assert subject.get('another.path.without.value', default=4) == 4
-        assert subject.get('some_long.path') is None
+    def run_test(config):
+        assert config.get('path.without.value', default=None) is None
+        assert config.get('another.path.without.value', default=4) == 4
+        assert config.get('some_long.path') is None
         with pytest.raises(KeyError, match='some_long'):
-            subject['some_long']
+            config['some_long']
         with pytest.raises(KeyError, match='some_long') as e:
-            subject['some_long.path']
+            config['some_long.path']
         assert 'path' not in str(e.value)
 
     run_test(Configuration())
@@ -22,8 +22,8 @@ def test_empty():
 
 
 def test_value_types():
-    def run_test(subject, key, expected_type):
-        assert isinstance(subject.get(key), expected_type), f'key {key} not of type {expected_type}'
+    def run_test(config, key, expected_type):
+        assert isinstance(config.get(key), expected_type), f'key {key} not of type {expected_type}'
 
     run_test(Configuration({'just': 'string'}), 'just', str)
     run_test(Configuration({'a': 42}), 'a', int)
@@ -35,14 +35,14 @@ def test_value_types():
 
 
 def test_as_type():
-    subject = Configuration({'as_int': 5, 'as_str': '5'})
+    config = Configuration({'as_int': 5, 'as_str': '5'})
 
-    assert subject.get('as_int') == 5
-    assert subject.get('as_str') == '5'
-    assert subject.get('as_str', as_type=str) == '5'
-    assert subject.get('as_str', as_type=int) == 5
-    assert subject.get('as_str', as_type=bool) is True
-    assert subject.get('as_str', as_type=lambda value: int(value) - 2) == 3
+    assert config.get('as_int') == 5
+    assert config.get('as_str') == '5'
+    assert config.get('as_str', as_type=str) == '5'
+    assert config.get('as_str', as_type=int) == 5
+    assert config.get('as_str', as_type=bool) is True
+    assert config.get('as_str', as_type=lambda value: int(value) - 2) == 3
 
 
 def test_no_default_doc_friendly():

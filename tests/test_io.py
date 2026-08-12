@@ -211,20 +211,20 @@ def test_load_name_multiple(test_files):
     test_path = test_files / '{name}{suffix}'
 
     # bar has precedence over foo
-    subject = load_name('foo', 'fake', 'bar', load_order=(test_path,))
+    config = load_name('foo', 'fake', 'bar', load_order=(test_path,))
 
-    assert len(subject.semi.overlapping) == 2
-    assert subject.semi.overlapping.foo is True
-    assert subject.semi.overlapping.bar is False
-    assert subject.overlapping.fully == 'bar'
+    assert len(config.semi.overlapping) == 2
+    assert config.semi.overlapping.foo is True
+    assert config.semi.overlapping.bar is False
+    assert config.overlapping.fully == 'bar'
 
     # foo has precedence over bar
-    subject = load_name('fake', 'bar', 'foo', load_order=(test_path,))
+    config = load_name('fake', 'bar', 'foo', load_order=(test_path,))
 
-    assert len(subject.semi.overlapping) == 2
-    assert subject.semi.overlapping.foo is True
-    assert subject.semi.overlapping.bar is False
-    assert subject.overlapping.fully == 'foo'
+    assert len(config.semi.overlapping) == 2
+    assert config.semi.overlapping.foo is True
+    assert config.semi.overlapping.bar is False
+    assert config.overlapping.fully == 'foo'
 
 
 def test_load_name_order(tilde_home_user):
@@ -241,9 +241,9 @@ def test_load_name_order(tilde_home_user):
         patch('confidence.io.environ', env),
         patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
     ):
-        subject = load_name('foo', 'bar')
-        assert len(subject) == 1
-        assert subject.test == 42
+        config = load_name('foo', 'bar')
+        assert len(config) == 1
+        assert config.test == 42
 
     mocked_loadf.assert_has_calls(
         [
@@ -357,13 +357,13 @@ def test_load_name_envvars():
     }
 
     with patch('confidence.io.environ', env):
-        subject = load_name('foo', 'bar', load_order=(read_envvars,))
+        config = load_name('foo', 'bar', load_order=(read_envvars,))
 
-    assert subject.key == 'bar'
-    assert subject.ns.key == 'value'
-    assert subject.n_s.key == 'space'
-    assert subject.types.num == 42
-    assert subject.types.maybe is True
+    assert config.key == 'bar'
+    assert config.ns.key == 'value'
+    assert config.n_s.key == 'space'
+    assert config.types.num == 42
+    assert config.types.maybe is True
 
     with patch('confidence.io.environ', {'KEY_FOO': 'foo', 'BAR_CONFIG_FILE': '/tmp/bar.conf'}):
         # neither environment variable should be hit here
@@ -377,12 +377,12 @@ def test_load_name_envvar_file(test_files):
     }
 
     with patch('confidence.io.environ', env):
-        subject = load_name('foo', 'bar', load_order=(read_envvar_file,))
+        config = load_name('foo', 'bar', load_order=(read_envvar_file,))
 
-    assert len(subject.semi.overlapping) == 2
-    assert subject.semi.overlapping.foo is True
-    assert subject.semi.overlapping.bar is False
-    assert subject.overlapping.fully == 'bar'
+    assert len(config.semi.overlapping) == 2
+    assert config.semi.overlapping.foo is True
+    assert config.semi.overlapping.bar is False
+    assert config.overlapping.fully == 'bar'
 
 
 def test_load_name_overlapping_envvars(test_files):
@@ -395,17 +395,17 @@ def test_load_name_overlapping_envvars(test_files):
     }
 
     with patch('confidence.io.environ', env):
-        subject = load_name('foo', 'bar', load_order=loaders(Locality.ENVIRONMENT))
+        config = load_name('foo', 'bar', load_order=loaders(Locality.ENVIRONMENT))
 
-    assert subject.key == 'bar'
-    assert subject.ns.key == 'value'
-    assert subject.foo.config.file is NOT_CONFIGURED
-    assert subject.bar.config.file is NOT_CONFIGURED
-    assert subject.config.file is NOT_CONFIGURED
-    assert len(subject.semi.overlapping) == 2
-    assert subject.semi.overlapping.foo is True
-    assert subject.semi.overlapping.bar is False
-    assert subject.overlapping.fully == 'bar'
+    assert config.key == 'bar'
+    assert config.ns.key == 'value'
+    assert config.foo.config.file is NOT_CONFIGURED
+    assert config.bar.config.file is NOT_CONFIGURED
+    assert config.config.file is NOT_CONFIGURED
+    assert len(config.semi.overlapping) == 2
+    assert config.semi.overlapping.foo is True
+    assert config.semi.overlapping.bar is False
+    assert config.overlapping.fully == 'bar'
 
 
 def test_load_name_envvar_dir(tilde_home_user):
@@ -472,18 +472,18 @@ def test_load_name_incompatible_loader_type(test_files):
 
 
 def test_dumps():
-    subject = dumps(Configuration({'ns.key': 42}))
+    config = dumps(Configuration({'ns.key': 42}))
 
-    assert 'ns:' in subject
-    assert 'key: 42' in subject
-    assert '{' not in subject and '}' not in subject
+    assert 'ns:' in config
+    assert 'key: 42' in config
+    assert '{' not in config and '}' not in config
 
-    subject = dumps(Configuration({'ns.key1': True, 'ns.key2': None}))
+    config = dumps(Configuration({'ns.key1': True, 'ns.key2': None}))
 
-    assert subject.count('ns') == 1
-    assert 'key1: true' in subject
-    assert 'key2: null' in subject
-    assert '{' not in subject and '}' not in subject
+    assert config.count('ns') == 1
+    assert 'key1: true' in config
+    assert 'key2: null' in config
+    assert '{' not in config and '}' not in config
 
 
 def test_dumpf():

@@ -3,25 +3,25 @@ from confidence.models import ConfigurationSequence
 
 
 def test_constructor_defaults():
-    subject = Configuration()
+    config = Configuration()
 
-    assert subject._missing == NOT_CONFIGURED
-    assert len(subject) == len(subject._source) == 0
-    assert list(subject) == []
+    assert config._missing == NOT_CONFIGURED
+    assert len(config) == len(config._source) == 0
+    assert list(config) == []
 
 
 def test_wrapped_source():
     left = Configuration({'a': 'a', 'b': [2, 2]})
     right = Configuration({'a': [1], 'b': Configuration({'c': 42})})
 
-    subject = Configuration({'left': left, 'middle': right.a, 'right': right})
+    config = Configuration({'left': left, 'middle': right.a, 'right': right})
 
-    assert not isinstance(subject._source['left'], Configuration)
-    assert not isinstance(subject._source['middle'], ConfigurationSequence)
-    assert not isinstance(subject._source['right']['b'], Configuration)
-    assert not isinstance(subject._source['right']['a'], ConfigurationSequence)
+    assert not isinstance(config._source['left'], Configuration)
+    assert not isinstance(config._source['middle'], ConfigurationSequence)
+    assert not isinstance(config._source['right']['b'], Configuration)
+    assert not isinstance(config._source['right']['a'], ConfigurationSequence)
 
-    assert subject.right.b.c == 42
-    assert len(left.b) == len(subject.left.b) == 2
-    assert len(right.a) == len(subject.middle) == 1
-    assert subject._source == loads(dumps(subject))._source
+    assert config.right.b.c == 42
+    assert len(left.b) == len(config.left.b) == 2
+    assert len(right.a) == len(config.middle) == 1
+    assert config._source == loads(dumps(config))._source

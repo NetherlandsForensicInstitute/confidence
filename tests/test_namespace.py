@@ -7,17 +7,17 @@ from confidence import NOT_CONFIGURED, Configuration, Missing
 
 
 def test_empty():
-    def run_test(subject):
-        assert subject.key is NOT_CONFIGURED
-        assert subject.deeper.key is NOT_CONFIGURED
-        assert '(keys=[])' in repr(subject)
+    def run_test(config):
+        assert config.key is NOT_CONFIGURED
+        assert config.deeper.key is NOT_CONFIGURED
+        assert '(keys=[])' in repr(config)
 
     run_test(Configuration())
     run_test(Configuration({}))
 
 
 def test_value_types():
-    subject = Configuration(
+    config = Configuration(
         {
             'a_string': 'just',
             'an_int': 42,
@@ -28,102 +28,102 @@ def test_value_types():
         }
     )
 
-    assert isinstance(subject.a_string, str)
-    assert isinstance(subject.an_int, int)
-    assert isinstance(subject.a_float, float)
-    assert isinstance(subject.a_boolean, bool)
-    assert isinstance(subject.a_list, Sequence)
-    assert isinstance(subject.we_must, Mapping)
+    assert isinstance(config.a_string, str)
+    assert isinstance(config.an_int, int)
+    assert isinstance(config.a_float, float)
+    assert isinstance(config.a_boolean, bool)
+    assert isinstance(config.a_list, Sequence)
+    assert isinstance(config.we_must, Mapping)
 
-    assert 'a_string' in repr(subject)
-    assert 'just' not in repr(subject)
-    assert 'go_deeper' not in repr(subject)
+    assert 'a_string' in repr(config)
+    assert 'just' not in repr(config)
+    assert 'go_deeper' not in repr(config)
 
 
 def test_not_configured():
-    subject = Configuration({'key': 'value'}, missing=Missing.SILENT)
+    config = Configuration({'key': 'value'}, missing=Missing.SILENT)
 
-    assert subject.key == 'value'
-    assert subject.does_nope_exist is NOT_CONFIGURED
-    assert subject.does.nope.exist is NOT_CONFIGURED
-    assert subject.does_nope_exist is subject.does.nope.exist
+    assert config.key == 'value'
+    assert config.does_nope_exist is NOT_CONFIGURED
+    assert config.does.nope.exist is NOT_CONFIGURED
+    assert config.does_nope_exist is config.does.nope.exist
     assert not NOT_CONFIGURED
     assert bool(NOT_CONFIGURED) is False
-    assert (subject.does_not_exist or 'default') == 'default'
-    assert 'not configured' in str(subject.does_nope.exist)
-    assert str(subject.does_nope_exist) == repr(subject.does.nope.exist)
+    assert (config.does_not_exist or 'default') == 'default'
+    assert 'not configured' in str(config.does_nope.exist)
+    assert str(config.does_nope_exist) == repr(config.does.nope.exist)
 
 
 def test_collisions():
     with patch('confidence.utils.LOG') as logger:
-        subject = Configuration({'key': 'value', 'keys': [1, 2], '_missing': 'error'})
+        config = Configuration({'key': 'value', 'keys': [1, 2], '_missing': 'error'})
 
     for collision in ('keys', '_missing'):
         logger.warning.assert_any_call(
             'key "%s" collides with a named member, use the get() method to retrieve its value', collision
         )
 
-    assert subject.key == 'value'
-    assert callable(subject.keys)
+    assert config.key == 'value'
+    assert callable(config.keys)
 
 
 def test_dir():
-    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False})
+    config = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False})
 
-    assert 'keys' in dir(subject)
-    assert 'key1' in dir(subject)
-    assert 'namespace' in dir(subject)
-    assert 'key3' in dir(subject.namespace)
+    assert 'keys' in dir(config)
+    assert 'key1' in dir(config)
+    assert 'namespace' in dir(config)
+    assert 'key3' in dir(config.namespace)
 
 
 def test_assignments():
-    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False})
+    config = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False})
 
-    subject._private = 42
-    subject.__very_private = 43
+    config._private = 42
+    config.__very_private = 43
 
-    assert subject._private == 42
-    assert subject.__very_private == 43
+    assert config._private == 42
+    assert config.__very_private == 43
 
     with pytest.raises(AttributeError) as e:
-        subject.non_existent = True
+        config.non_existent = True
     assert 'assignment not supported' in str(e.value) and 'non_existent' in str(e.value)
 
     with pytest.raises(AttributeError) as e:
-        subject.key1 = True
+        config.key1 = True
     assert 'assignment not supported' in str(e.value) and 'key1' in str(e.value)
 
     with pytest.raises(AttributeError) as e:
-        subject.namespace.key3 = True
+        config.namespace.key3 = True
     assert 'assignment not supported' in str(e.value) and 'key3' in str(e.value)
 
     with pytest.raises(AttributeError) as e:
-        subject.namespace.key4 = True
+        config.namespace.key4 = True
     assert 'assignment not supported' in str(e.value) and 'key4' in str(e.value)
 
     with pytest.raises(AttributeError) as e:
-        subject.non_existent.key6 = True
+        config.non_existent.key6 = True
     assert 'assignment not supported' in str(e.value) and 'key6' in str(e.value)
 
     with pytest.raises(AttributeError) as e:
-        subject.we.must.go.deeper = True
+        config.we.must.go.deeper = True
     assert 'assignment not supported' in str(e.value) and 'deeper' in str(e.value)
 
 
 def test_missing_error():
-    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing=Missing.ERROR)
+    config = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing=Missing.ERROR)
 
-    assert subject.key1 == 'value'
+    assert config.key1 == 'value'
 
     with pytest.raises(AttributeError) as e:
-        assert subject.namespace.key3 is False
-        assert not subject.key3
+        assert config.namespace.key3 is False
+        assert not config.key3
 
     assert 'key3' in str(e.value)
 
 
 def test_missing_default():
-    subject = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing='just a default')
+    config = Configuration({'key1': 'value', 'key2': 5, 'namespace.key3': False}, missing='just a default')
 
-    assert subject.namespace.key3 is False
-    assert subject.key3 == 'just a default'
+    assert config.namespace.key3 is False
+    assert config.key3 == 'just a default'
