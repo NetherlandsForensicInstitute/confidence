@@ -130,6 +130,23 @@ def test_reference_ns():
     assert 'cannot insert namespace' in str(e.value)
 
 
+def test_callback_reference():
+    config = Configuration(
+        {'police': '${call:the:police}'},
+        {'home': '${call:${mother}}', 'mother': 'mom'},
+        {'escape': r'${call:escape\:prison}'},
+        {'fun': '${fun:with:flags}'},
+        callbacks={'call': lambda *args: f'call({", ".join(args)})'},
+    )
+
+    assert config.police == 'call(the, police)'
+    assert config.home == 'call(mom)'
+    assert config.escape == 'call(escape:prison)'
+
+    with pytest.raises(ConfiguredReferenceError, match='no such callback'):
+        assert not config.fun
+
+
 def test_missing_reference():
     config = Configuration(
         {
