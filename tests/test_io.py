@@ -3,7 +3,7 @@
 from functools import partial
 from os import path
 from pathlib import Path
-from unittest.mock import MagicMock, call, mock_open, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 import yaml
@@ -21,6 +21,7 @@ from confidence import (
 )
 from confidence.formats import JSON, TOML, YAML
 from confidence.io import dump, dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
+from tests.helpers import assert_loadf_paths
 
 
 @pytest.fixture(autouse=True)
@@ -245,32 +246,32 @@ def test_load_name_order(tilde_home_user):
         assert len(config) == 1
         assert config.test == 42
 
-    mocked_loadf.assert_has_calls(
+    assert_loadf_paths(
+        mocked_loadf,
         [
-            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/foo/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/bar/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/Library/Preferences/foo/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/Library/Preferences/bar/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/Library/Preferences/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/Library/Preferences/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            '/etc/xdg/foo.yaml',
+            '/etc/xdg/bar.yaml',
+            '/etc/foo/foo.yaml',
+            '/etc/bar/bar.yaml',
+            '/etc/foo.yaml',
+            '/etc/bar.yaml',
+            '/Library/Preferences/foo/foo.yaml',
+            '/Library/Preferences/bar/bar.yaml',
+            '/Library/Preferences/foo.yaml',
+            '/Library/Preferences/bar.yaml',
+            '/home/user/.config/foo.yaml',
+            '/home/user/.config/bar.yaml',
             # loadf is usually the one to expand ~ to /home/user here, but we've mocked it, so the value being passed
             # will still contain the ~
-            call(Path('~/Library/Preferences/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('~/Library/Preferences/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('C:/Users/user/AppData/Local/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('C:/Users/user/AppData/Local/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('~/.foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('~/.bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('./foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('./bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            '~/Library/Preferences/foo.yaml',
+            '~/Library/Preferences/bar.yaml',
+            'C:/Users/user/AppData/Local/foo.yaml',
+            'C:/Users/user/AppData/Local/bar.yaml',
+            '~/.foo.yaml',
+            '~/.bar.yaml',
+            './foo.yaml',
+            './bar.yaml',
         ],
-        any_order=False,
     )
 
 
@@ -285,12 +286,12 @@ def test_load_name_xdg_config_dirs():
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
-    mocked_loadf.assert_has_calls(
+    assert_loadf_paths(
+        mocked_loadf,
         [
-            call(Path('/etc/not-xdg/foo.yaml'), Path('/etc/xdg-desktop/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/not-xdg/bar.yaml'), Path('/etc/xdg-desktop/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            ('/etc/not-xdg/foo.yaml', '/etc/xdg-desktop/foo.yaml'),
+            ('/etc/not-xdg/bar.yaml', '/etc/xdg-desktop/bar.yaml'),
         ],
-        any_order=False,
     )
 
 
@@ -301,13 +302,7 @@ def test_load_name_xdg_config_dirs_fallback():
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_dirs,))) == 0
 
-    mocked_loadf.assert_has_calls(
-        [
-            call(Path('/etc/xdg/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/etc/xdg/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-        ],
-        any_order=False,
-    )
+    assert_loadf_paths(mocked_loadf, ['/etc/xdg/foo.yaml', '/etc/xdg/bar.yaml'])
 
 
 def test_load_name_xdg_config_home(tilde_home_user):
@@ -319,13 +314,7 @@ def test_load_name_xdg_config_home(tilde_home_user):
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
-    mocked_loadf.assert_has_calls(
-        [
-            call(Path('/home/user/.not-config/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/home/user/.not-config/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-        ],
-        any_order=False,
-    )
+    assert_loadf_paths(mocked_loadf, ['/home/user/.not-config/foo.yaml', '/home/user/.not-config/bar.yaml'])
 
 
 def test_load_name_xdg_config_home_fallback(tilde_home_user):
@@ -337,13 +326,7 @@ def test_load_name_xdg_config_home_fallback(tilde_home_user):
     ):
         assert len(load_name('foo', 'bar', load_order=(read_xdg_config_home,))) == 0
 
-    mocked_loadf.assert_has_calls(
-        [
-            call(Path('/home/user/.config/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('/home/user/.config/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-        ],
-        any_order=False,
-    )
+    assert_loadf_paths(mocked_loadf, ['/home/user/.config/foo.yaml', '/home/user/.config/bar.yaml'])
 
 
 def test_load_name_envvars():
@@ -420,14 +403,14 @@ def test_load_name_envvar_dir(tilde_home_user):
     ):
         assert len(load_name('foo', 'bar', load_order=load_order)) == 0
 
-    mocked_loadf.assert_has_calls(
+    assert_loadf_paths(
+        mocked_loadf,
         [
-            call(Path('C:/ProgramData/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('C:/ProgramData/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('D:/Users/user/AppData/Roaming/foo.yaml'), format=YAML, default=NOT_CONFIGURED),
-            call(Path('D:/Users/user/AppData/Roaming/bar.yaml'), format=YAML, default=NOT_CONFIGURED),
+            'C:/ProgramData/foo.yaml',
+            'C:/ProgramData/bar.yaml',
+            'D:/Users/user/AppData/Roaming/foo.yaml',
+            'D:/Users/user/AppData/Roaming/bar.yaml',
         ],
-        any_order=False,
     )
 
 
@@ -457,12 +440,7 @@ def test_load_name_deprecated_extension_template(test_files):
         )
 
     # should resolve to the same thing twice, while issuing a Deprecation warning
-    mocked_loadf.assert_has_calls(
-        [
-            call(test_files / 'app.toml', format=TOML, default=NOT_CONFIGURED),
-            call(test_files / 'app.toml', format=TOML, default=NOT_CONFIGURED),
-        ]
-    )
+    assert_loadf_paths(mocked_loadf, [test_files / 'app.toml', test_files / 'app.toml'], format=TOML)
 
 
 def test_load_name_incompatible_loader_type(test_files):
