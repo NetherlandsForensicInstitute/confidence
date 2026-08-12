@@ -85,25 +85,25 @@ def test_merge_into_falsy():
 
 
 def test_split_none():
-    subject = {'key': 'value', 'another_key': 123}
+    config = {'key': 'value', 'another_key': 123}
 
-    separated = split_keys(subject)
+    separated = split_keys(config)
 
-    assert subject == separated
+    assert config == separated
 
 
 def test_split_trivial():
-    subject = {'dotted.key': 42}
+    config = {'dotted.key': 42}
 
-    separated = split_keys(subject)
+    separated = split_keys(config)
 
     assert separated['dotted']['key'] == 42
 
 
 def test_split_multiple():
-    subject = {'dotted.key': 123, 'another.dotted.key': 456}
+    config = {'dotted.key': 123, 'another.dotted.key': 456}
 
-    separated = split_keys(subject)
+    separated = split_keys(config)
 
     assert len(separated) == 2
     assert separated['dotted']['key'] == 123
@@ -111,9 +111,9 @@ def test_split_multiple():
 
 
 def test_split_overlap_simple():
-    subject = {'dotted.key': 123, 'dotted.something_else': 456}
+    config = {'dotted.key': 123, 'dotted.something_else': 456}
 
-    separated = split_keys(subject)
+    separated = split_keys(config)
 
     assert len(separated) == 1
     assert len(separated['dotted']) == 2
@@ -121,7 +121,7 @@ def test_split_overlap_simple():
 
 
 def test_split_overlap_complex():
-    subject = {
+    config = {
         'dotted': {'key': 1},
         'dotted.something_else': {'again': 2},
         'dotted.something_else.entirely': 3,
@@ -129,7 +129,7 @@ def test_split_overlap_complex():
         'key': {'thing.another_key': 5},
     }
 
-    separated = split_keys(subject)
+    separated = split_keys(config)
 
     assert separated == {
         'dotted': {'key': 1, 'something_else': {'again': 2, 'entirely': 3}},
@@ -138,18 +138,18 @@ def test_split_overlap_complex():
 
 
 def test_split_key_types():
-    subject = {'ns.1234.key': 42, 'ns': {1234: {'key2': 43}}}
+    config = {'ns.1234.key': 42, 'ns': {1234: {'key2': 43}}}
 
     with pytest.raises(ValueError) as e:
-        assert not split_keys(subject)
+        assert not split_keys(config)
 
     assert '1234' in str(e.value)
     assert 'int' in str(e.value)
 
-    subject = {'ns.2019-04-01.key': 42, 'ns': {date(2019, 4, 1): {'key2': 43}}}
+    config = {'ns.2019-04-01.key': 42, 'ns': {date(2019, 4, 1): {'key2': 43}}}
 
     with pytest.raises(ValueError) as e:
-        assert not split_keys(subject)
+        assert not split_keys(config)
 
     assert '2019-04-01' in str(e.value)
     assert 'datetime.date' in str(e.value)
