@@ -2,8 +2,9 @@ from datetime import date
 
 import pytest
 
-from confidence import MergeConflictError
+from confidence import NOT_CONFIGURED, Configuration, MergeConflictError
 from confidence.utils import Conflict, merge, merge_into, split_keys
+from tests.helpers import equivalent
 
 
 def test_merge_trivial():
@@ -158,3 +159,23 @@ def test_split_key_types():
 def test_merge_deprecation():
     with pytest.warns(DeprecationWarning, match='renamed'):
         assert merge({}, {'a': 5}) == {'a': 5}
+
+
+def test_equivalent():
+    assert equivalent(1, 1)
+    assert equivalent('a', 'a')
+    assert equivalent({}, {})
+    assert equivalent(Configuration(), {}, NOT_CONFIGURED)
+    assert equivalent([], [], (), ())
+    assert equivalent({'a': 1}, {'a': 1})
+    assert equivalent([1], (1,))
+    assert equivalent([(1,)], ([1],))
+    assert equivalent([[[1, 2]]], (((1, 2),),))
+    assert equivalent({1, 2}, {2, 1})
+
+    config = Configuration({'a': [1, 2, 3], 'b': (1, 2, 3), 'c': '${a}'})
+    assert equivalent(config.a, config.b, config.c)
+
+    assert not equivalent(1, 2)
+    assert not equivalent([1], [2])
+    assert not equivalent({}, 'a')
