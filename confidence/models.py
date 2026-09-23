@@ -6,7 +6,7 @@ from typing import Any
 
 from typing_extensions import Self, sentinel
 
-from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
+from confidence.exceptions import ConfigurationError, ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import Conflict, merge_into, split_keys
 
 
@@ -76,10 +76,15 @@ class Configuration(Mapping):
     or attributes.
     """
 
-    # match a reference as ${key.to.be.resolved}
-    _reference_pattern = re.compile(r'\${(?P<path>[^${}]+?)}')
+    # match a reference as either ${key.to.be.resolved} or ${callback:arg1:arg2}
+    _reference_pattern = re.compile(r'\${(?:(?P<path>[^${}:]+?)|(?P<callback>\w+?):(?P<arguments>[^${}]+?))}')
 
-    def __init__(self, *sources: Mapping[str, Any], missing: Any = Missing.SILENT):
+    def __init__(
+        self,
+        *sources: Mapping[str, Any],
+        missing: Any = Missing.SILENT,
+        callbacks: Mapping[str, Callable] | None = None,
+    ):
         """
         Create a new `Configuration`, based on one or multiple source mappings.
 
@@ -87,8 +92,10 @@ class Configuration(Mapping):
             ordered from least to most significant
         :param missing: policy to be used when a configured key is missing,
             either as a `Missing` instance or a default value
+        :param callbacks: TODO: document me
         """
         self._missing = missing
+        self._callbacks = callbacks or {}
         self._root = self
 
         if isinstance(self._missing, Missing):
@@ -122,29 +129,42 @@ class Configuration(Mapping):
         try:
             # keep resolving references until we're at a non-str value or a str-value without references
             while isinstance(value, str) and (match := self._reference_pattern.search(value)):
-                path = match.group('path')
-                # avoid resolving references recursively (breaks reference tracking)
-                if path in references:
-                    raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
+                match match.groupdict():
+                    case {'path': path, 'callback': None}:
+                        # avoid resolving references recursively (breaks reference tracking)
+                        if path in references:
+                            raise ConfiguredReferenceError(f'cannot resolve recursive reference {path}', key=path)
 
-                reference = self._root.get(path, default=NO_DEFAULT, resolve_references=False)
+                        resolved = self._root.get(path, default=NO_DEFAULT, resolve_references=False)
 
-                if match.span(0) != (0, len(value)):
-                    # matched a reference inside of another value (template)
-                    if isinstance(reference, Configuration):
-                        raise ConfiguredReferenceError(
-                            f'cannot insert namespace at {path} into referring value',
-                            key=path,
-                        )
+                        if match.span(0) != (0, len(value)):
+                            # matched a reference inside of another value (template)
+                            if isinstance(resolved, Configuration):
+                                raise ConfiguredReferenceError(
+                                    f'cannot insert namespace at {path} into referring value',
+                                    key=path,
+                                )
 
-                    # reformat the value with the reference replaced with the referenced value
-                    value = f'{value[: match.start(0)]}{reference}{value[match.end(0) :]}'
-                else:
-                    # value is only a reference, avoid rendering a template (keep referenced value type)
-                    value = reference
+                            # reformat the value with the reference path replaced with the resolved value
+                            value = f'{value[: match.start(0)]}{resolved}{value[match.end(0) :]}'
+                        else:
+                            # value is only a reference, avoid rendering a template (keep referenced value type)
+                            value = resolved
 
-                # track that we've seen path
-                references.add(path)
+                        # track that we've seen path
+                        references.add(path)
+                    case {'callback': callback, 'arguments': arguments, 'path': None}:
+                        if function := self._callbacks.get(callback):
+                            # split the arguments by : (allow it to be escaped with a \)
+                            arguments = re.split(r'(?<!\\):', arguments)
+                            arguments = (argument.replace(r'\:', ':') for argument in arguments)
+                            # call the resolved function with the prepped arguments
+                            value = function(*arguments)
+                        else:
+                            raise ConfiguredReferenceError(f'no such callback function: {callback}', key=callback)
+                    case _:
+                        # TODO: better error / message
+                        raise ConfigurationError
 
             return value
         except NotConfiguredError as e:
