@@ -450,6 +450,19 @@ def test_glob_pattern_dotfiles(test_files):
     assert config.key == 'value'
 
 
+def test_glob_pattern_expansion(test_files):
+    with (
+        patch.object(Path, 'expanduser', lambda self: Path(str(self).replace('~', str(test_files)))),
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
+    ):
+        # re-use example.yaml.d folder, ~/ will translate to the test_files fixture
+        load_name('example', load_order=loaders(glob_pattern('~/{name}{suffix}.d/*{suffix}')), format=YAML)
+
+    mocked_loadf.assert_called_once_with(
+        test_files / 'example.yaml.d/bar.yaml', test_files / 'example.yaml.d/foo.yaml', format=YAML
+    )
+
+
 def test_load_name_deprecated_extension():
     loader = MagicMock()
 
