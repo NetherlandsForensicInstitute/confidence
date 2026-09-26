@@ -205,7 +205,8 @@ def glob_pattern(pattern: PathLike, include_hidden: bool = False) -> Callable[[s
     :returns: a `Loadable` to be part of a load order to `load_name`
     """
     # split pattern into a root and a pattern to be able to use Path.glob() later
-    pattern = Path(pattern)
+    # make sure to expand user paths now to enable a sensible split
+    pattern = Path(pattern).expanduser()
     root = Path(pattern.root)
     return PathGlobReader(root, str(pattern.relative_to(root)), include_hidden=include_hidden)
 
