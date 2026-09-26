@@ -31,7 +31,7 @@ from confidence.io import (
     read_xdg_config_dirs,
     read_xdg_config_home,
 )
-from tests.helpers import assert_loadf_paths
+from tests.helpers import assert_loadf_paths, equivalent
 
 
 @pytest.fixture(autouse=True)
@@ -428,10 +428,10 @@ def test_load_name_glob_pattern(test_files):
     # overlay two files with known content (order should be alphabetical!)
     reference = unwrap(loadf(test_files / 'bar.yaml', test_files / 'foo.yaml'))
     # load the same two files, symlinked from a dot-d folder with two different path + patterns expanding to the same
-    assert unwrap(
-        load_name('example', format=YAML, load_order=loaders(glob_pattern(test_files / '{name}{suffix}.d/*{suffix}')))
-    ) == unwrap(reference)
-    # TODO: needing unwrap() here is silly, maybe `Configuration` objects should implement __eq__? see #145
+    assert equivalent(
+        load_name('example', format=YAML, load_order=loaders(glob_pattern(test_files / '{name}{suffix}.d/*{suffix}'))),
+        reference,
+    )
 
 
 def test_glob_pattern_dotfiles(test_files):
