@@ -6,6 +6,7 @@ development (main)
 
 - Drop support for Python 3.10.
 - Rename the 'empty' fallback value to `NOT_CONFIGURED` (old name `NotConfigured` is retained for backwards compatibility).
+- Add `glob_pattern` loader to enable loading patterns like `~/.config/app/*.toml`.
 
 0.18 (2026-07-13)
 -----------------
