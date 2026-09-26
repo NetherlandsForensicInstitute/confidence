@@ -18,10 +18,20 @@ from confidence import (
     loaders,
     loadf,
     loads,
+    unwrap,
 )
 from confidence.formats import JSON, TOML, YAML
-from confidence.io import dump, dumpf, dumps, read_envvar_file, read_envvars, read_xdg_config_dirs, read_xdg_config_home
-from tests.helpers import assert_loadf_paths
+from confidence.io import (
+    dump,
+    dumpf,
+    dumps,
+    glob_pattern,
+    read_envvar_file,
+    read_envvars,
+    read_xdg_config_dirs,
+    read_xdg_config_home,
+)
+from tests.helpers import assert_loadf_paths, equivalent
 
 
 @pytest.fixture(autouse=True)
@@ -411,6 +421,45 @@ def test_load_name_envvar_dir(tilde_home_user):
             'D:/Users/user/AppData/Roaming/foo.yaml',
             'D:/Users/user/AppData/Roaming/bar.yaml',
         ],
+    )
+
+
+def test_load_name_glob_pattern(test_files):
+    # overlay two files with known content (order should be alphabetical!)
+    reference = unwrap(loadf(test_files / 'bar.yaml', test_files / 'foo.yaml'))
+    # load the same two files, symlinked from a dot-d folder with two different path + patterns expanding to the same
+    assert equivalent(
+        load_name('example', format=YAML, load_order=loaders(glob_pattern(test_files / '{name}{suffix}.d/*{suffix}'))),
+        reference,
+    )
+
+
+def test_glob_pattern_dotfiles(test_files):
+    # would encounter "example.yaml.d", a directory
+    assert len(load_name('example', format=TOML, load_order=loaders(glob_pattern(test_files / '{name}*')))) == 0
+    # would encounter ".name.toml", a hidden file
+    assert (
+        len(load_name('example', format=TOML, load_order=loaders(glob_pattern(test_files / '{name}*/*{suffix}')))) == 0
+    )
+    # will also encounter ".name.toml", but hidden files are to be included
+    config = load_name(
+        'example',
+        format=TOML,
+        load_order=loaders(glob_pattern(test_files / '{name}*/*{suffix}', include_hidden=True)),
+    )
+    assert config.key == 'value'
+
+
+def test_glob_pattern_expansion(test_files):
+    with (
+        patch.object(Path, 'expanduser', lambda self: Path(str(self).replace('~', str(test_files)))),
+        patch('confidence.io.loadf', return_value=NOT_CONFIGURED) as mocked_loadf,
+    ):
+        # re-use example.yaml.d folder, ~/ will translate to the test_files fixture
+        load_name('example', load_order=loaders(glob_pattern('~/{name}{suffix}.d/*{suffix}')), format=YAML)
+
+    mocked_loadf.assert_called_once_with(
+        test_files / 'example.yaml.d/bar.yaml', test_files / 'example.yaml.d/foo.yaml', format=YAML
     )
 
 
