@@ -49,7 +49,7 @@ class Format(ABC):
         with Path(fname).open('wt', encoding=encoding or self.encoding) as fp:
             return self.dump(value, fp)
 
-    def __call__(self, **kwargs: typing.Any) -> 'Format':  # TODO: replace with typing.Self for Python 3.11+
+    def __call__(self, **kwargs: typing.Any) -> typing.Self:
         """
         Create a new `Format` instance similar to this one, with the
         parameters in `kwargs` set to their new values.
