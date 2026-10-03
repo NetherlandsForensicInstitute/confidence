@@ -16,6 +16,7 @@ jobs:
           python-version: '3.15'
           cache: true
           cache-dependency-path: 'pylock.toml'
+          allow-python-prereleases: true
       - name: Install check dependencies
         run: pdm install --group check
       - name: Run checks
@@ -69,6 +70,7 @@ jobs:
           python-version: '3.15'
           cache: true
           cache-dependency-path: 'pylock.toml'
+          allow-python-prereleases: true
       - name: Install test dependencies
         run: pdm install --group test
       - uses: actions/download-artifact@v7
