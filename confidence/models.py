@@ -2,9 +2,9 @@ import re
 from collections.abc import Callable, Iterable, Iterator, Mapping, MutableMapping, Sequence
 from enum import Enum
 from itertools import chain
-from typing import Any
+from typing import Any, Self
 
-from typing_extensions import Self, sentinel
+from typing_extensions import sentinel
 
 from confidence.exceptions import ConfiguredReferenceError, NotConfiguredError
 from confidence.utils import Conflict, merge_into, split_keys
