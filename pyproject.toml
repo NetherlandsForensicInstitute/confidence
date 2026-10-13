@@ -50,7 +50,7 @@ version = {source = "scm"}
 
 [tool.pdm.scripts]
 all = {composite = ["check", "test"]}
-benchmark = "pdm run test --benchmark-only --benchmark-autosave tests/"
+benchmark = "pytest --benchmark-only --benchmark-autosave tests/"
 benchmark-against = {keep_going = true, composite = [
     "git rev-parse {args}",
     "pdm run benchmark",
