@@ -72,18 +72,16 @@ class PathGlobReader:
         for path in paths:
             if not path.is_dir() and (self.include_hidden or not path.name.startswith('.')):
                 # path is not a directory, and not hidden, or we should be keeping hidden files
-                # TODO: is Path.is_dir() good enough? a symlink could still point to a dir, whose fault is that?
                 yield path
 
     def _expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
         # format path parts separately to avoid clobbering slashes
-        path = Path(*(part.format(name=name, suffix=format.suffix) for part in self.anchor.parts))
-        pattern = self.pattern.format(name=name, suffix=format.suffix)
-        LOG.debug(f'expanded "{self.anchor / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
+        pattern = Path(*(part.format(name=name, suffix=format.suffix) for part in Path(self.pattern).parts))
+        LOG.debug(f'expanded "{self.anchor / self.pattern!s}" to "{self.anchor / pattern!s}" for {name=} and {format=}')
 
         # glob the pattern, potentially drop dotfiles and sort the result to force a deterministic ordering
-        paths = sorted(self._select(path.glob(pattern)))
-        LOG.debug(f'glob pattern "{path / pattern!s}" matched {len(paths)} paths')
+        paths = sorted(self._select(self.anchor.glob(str(pattern))))
+        LOG.debug(f'glob pattern "{self.anchor / pattern!s}" matched {len(paths)} paths')
         return paths
 
     def __call__(self, name: str, format: Format = YAML) -> Configuration:
