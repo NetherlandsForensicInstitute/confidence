@@ -69,7 +69,10 @@ fix = {composite = [
     "ruff format confidence/ tests/",
     "ruff check --fix confidence/ tests/",
 ]}
-test = "coverage run --branch --source confidence --module pytest --strict-markers --benchmark-skip tests/"
+test = {composite = [
+    "coverage run --branch --source confidence --module pytest --strict-markers --benchmark-skip tests/",
+    "coverage report",
+]}
 update-lock = "pdm lock --group :all"
 
 [tool.ruff]
