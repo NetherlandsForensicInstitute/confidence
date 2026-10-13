@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from functools import partial
 from itertools import product
-from os import PathLike, environ, pathsep
+from os import environ, pathsep
 from pathlib import Path
 from string import Formatter
 from typing import Any, TextIO
@@ -180,13 +180,13 @@ def read_envvar_dir(envvar: str, name: str, format: Format = YAML) -> Configurat
     return loadf(config_path, format=format, default=NOT_CONFIGURED)
 
 
-def glob_pattern(pattern: PathLike, include_hidden: bool = False) -> Callable[[str, Format], Configuration]:
+def glob_pattern(pattern: str | Path, include_hidden: bool = False) -> Callable[[str, Format], Configuration]:
     """
     Create a loader that applies ``pattern`` to load multiple files into a
     `Configuration`.
 
     The result of this will still apply the loader arguments like ``name`` and
-    ``format``, use this in conjunction with `load_name` and / or ``loaders`.
+    ``format``, use this in conjunction with `load_name` and / or ``loaders``.
     To mimic the behaviour of something like ``apt``, for example, which will
     load ``.conf`` files in an application specific format from a 'dot-d'
     folder, while still allowing overrides through environment variables,
@@ -338,7 +338,7 @@ def load(*fps: TextIO, format: Format = YAML, missing: Any = Missing.SILENT) -> 
 
 
 def loadf(
-    *fnames: str | PathLike,
+    *fnames: str | Path,
     format: Format = YAML,
     default: Any = NO_DEFAULT,
     missing: Any = Missing.SILENT,
@@ -463,7 +463,7 @@ def dump(
 
 def dumpf(
     value: Any,
-    fname: str | PathLike,
+    fname: str | Path,
     format: Format = YAML,
     encoding: None = None,  # NB: parameter is deprecated, see _check_format_encoding
 ) -> None:
