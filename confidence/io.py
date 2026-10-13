@@ -64,7 +64,7 @@ def read_xdg_config_home(name: str, format: Format = YAML) -> Configuration:
 
 @dataclass(frozen=True)
 class PathGlobReader:
-    path: Path
+    anchor: Path
     pattern: str
     include_hidden: bool = False
 
@@ -77,9 +77,9 @@ class PathGlobReader:
 
     def _expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
         # format path parts separately to avoid clobbering slashes
-        path = Path(*(part.format(name=name, suffix=format.suffix) for part in self.path.parts))
+        path = Path(*(part.format(name=name, suffix=format.suffix) for part in self.anchor.parts))
         pattern = self.pattern.format(name=name, suffix=format.suffix)
-        LOG.debug(f'expanded "{self.path / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
+        LOG.debug(f'expanded "{self.anchor / self.pattern!s}" to "{path / pattern!s}" for {name=} and {format=}')
 
         # glob the pattern, potentially drop dotfiles and sort the result to force a deterministic ordering
         paths = sorted(self._select(path.glob(pattern)))
@@ -204,11 +204,11 @@ def glob_pattern(pattern: PathLike, include_hidden: bool = False) -> Callable[[s
         pattern
     :returns: a `Loadable` to be part of a load order to `load_name`
     """
-    # split pattern into a root and a pattern to be able to use Path.glob() later
+    # split pattern into an anchor and a pattern to be able to use Path.glob() later
     # make sure to expand user paths now to enable a sensible split
     pattern = Path(pattern).expanduser()
-    root = Path(pattern.root)
-    return PathGlobReader(root, str(pattern.relative_to(root)), include_hidden=include_hidden)
+    anchor = Path(pattern.anchor)
+    return PathGlobReader(anchor, str(pattern.relative_to(anchor)), include_hidden=include_hidden)
 
 
 class Locality(IntEnum):
