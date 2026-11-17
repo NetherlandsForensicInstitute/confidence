@@ -1,8 +1,8 @@
 Changes
 =======
 
-development (main)
-------------------
+0.19 (2026-11-17)
+-----------------
 
 - Drop support for Python 3.10.
 - Rename the 'empty' fallback value to `NOT_CONFIGURED` (old name `NotConfigured` is retained for backwards compatibility).
