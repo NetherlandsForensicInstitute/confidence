@@ -18,7 +18,6 @@ from confidence import (
     loaders,
     loadf,
     loads,
-    unwrap,
 )
 from confidence.formats import JSON, TOML, YAML
 from confidence.io import (
@@ -426,8 +425,8 @@ def test_load_name_envvar_dir(tilde_home_user):
 
 def test_load_name_glob_pattern(test_files):
     # overlay two files with known content (order should be alphabetical!)
-    reference = unwrap(loadf(test_files / 'bar.yaml', test_files / 'foo.yaml'))
-    # load the same two files, symlinked from a dot-d folder with two different path + patterns expanding to the same
+    reference = loadf(test_files / 'bar.yaml', test_files / 'foo.yaml')
+    # load the same two files, symlinked from a dot-d folder
     assert equivalent(
         load_name('example', format=YAML, load_order=loaders(glob_pattern(test_files / '{name}{suffix}.d/*{suffix}'))),
         reference,
