@@ -71,7 +71,8 @@ class PathGlobReader:
     def _select(self, paths: Iterable[Path]) -> Iterable[Path]:
         for path in paths:
             if not path.is_dir() and (self.include_hidden or not path.name.startswith('.')):
-                # path is not a directory, and not hidden, or we should be keeping hidden files
+                # path is not a directory, and should be included (we're either required to include hidden files, or
+                # the file isn't considered hidden)
                 yield path
 
     def _expand(self, name: str, format: Format = YAML) -> Sequence[Path]:
@@ -86,7 +87,7 @@ class PathGlobReader:
 
     def __call__(self, name: str, format: Format = YAML) -> Configuration:
         if paths := self._expand(name, format):
-            # provide no default here, glob pattern does match files, these should be loadable
+            # provide no default here, glob pattern did match files, these should be loadable
             return loadf(*paths, format=format)
         else:
             # no paths, empty configuration
